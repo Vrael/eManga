@@ -14,4 +14,7 @@
 	    <item>Favourites</item>  
 	</string-array>
 	
+    <!-- Ormlite -->
+    <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
+	
 </resources>

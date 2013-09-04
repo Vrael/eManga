@@ -1,7 +1,12 @@
 package com.emanga;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -13,10 +18,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
+import android.widget.Toast;
+
+import com.emanga.database.OrmLiteFragment;
+import com.emanga.models.Chapter;
+import com.emanga.views.Thumbnail;
 
 public class MainActivity extends FragmentActivity {
-
+	
 	AppSectionsPagerAdapter mAppSectionsPagerAdapter;
 	ViewPager mViewPager;
 	
@@ -46,6 +58,7 @@ public class MainActivity extends FragmentActivity {
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         initTabs(actionBar);
     }
+    
     /**
      * Initialize tabs
      * @param actionBar
@@ -85,9 +98,9 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-	// Inflate the menu; this adds items to the action bar if it is present.
-	getMenuInflater().inflate(com.emanga.R.menu.main, menu);
-	return super.onCreateOptionsMenu(menu);
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(com.emanga.R.menu.main, menu);
+		return super.onCreateOptionsMenu(menu);
     }
     
     @Override
@@ -114,10 +127,6 @@ public class MainActivity extends FragmentActivity {
     	@Override
     	public Fragment getItem(int i){
     		Fragment fragment = new SectionFragment();
-            Bundle args = new Bundle();
-            // Our object is just an integer :-P
-            args.putInt(SectionFragment.ARG_OBJECT, i + 1);
-            fragment.setArguments(args);
             return fragment;
     	}
 
@@ -132,20 +141,57 @@ public class MainActivity extends FragmentActivity {
 	    }
     }
     
-    public static class SectionFragment extends Fragment {
-    	public static final String ARG_OBJECT = "object";
+    public static class SectionFragment extends OrmLiteFragment {  	
     	
     	@Override
         public View onCreateView(LayoutInflater inflater,
                 ViewGroup container, Bundle savedInstanceState) {
-            // The last two arguments ensure LayoutParams are inflated
-            // properly.
+			
+			// Adapter for the gridview
+			ThumbnailAdapter adapter = new ThumbnailAdapter(getActivity());
+
+			new LoadLatestMangas(adapter).execute();
+			
+			// The last two arguments ensure LayoutParams are inflated properly.
             View rootView = inflater.inflate(
                     R.layout.fragment_section, container, false);
-            Bundle args = getArguments();
-            ((TextView) rootView.findViewById(android.R.id.text1)).setText(
-                    Integer.toString(args.getInt(ARG_OBJECT)));
+            
+            GridView gridview = (GridView) rootView.findViewById(R.id.grid_view); 
+            gridview.setAdapter(adapter);
+        
+            gridview.setOnItemClickListener(new OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                    Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
+                }
+            });
+
             return rootView;
+        }
+    	
+    	private class LoadLatestMangas extends AsyncTask<Void, Integer, List<Thumbnail>> {
+
+        	private ThumbnailAdapter adapter;
+        	
+        	public LoadLatestMangas(ThumbnailAdapter adap){
+        		adapter = adap;
+        	}
+        	
+    		@Override
+    		protected List<Thumbnail> doInBackground(Void... params) {
+    			//TODO: For the moment this returns all chapters, but this will must return last week chapters
+    			Iterator<Chapter> it = getHelper().getChapterRunDao().queryForAll().iterator();
+    			List<Thumbnail> thumbs = new ArrayList<Thumbnail>();
+    			while(it.hasNext()) {
+    				thumbs.add(new Thumbnail(it.next()));
+    			}
+    			return thumbs;
+    		}
+        	
+    		@Override
+    		protected void onPostExecute(List<Thumbnail> result) {
+    			adapter.updateThumbnails(result);
+    			super.onPostExecute(result);
+    		}
         }
     }
 }

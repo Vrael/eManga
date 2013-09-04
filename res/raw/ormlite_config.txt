@@ -1,0 +1,123 @@
+#
+# generated on 2013/09/04 07:29:53
+#
+# --table-start--
+dataClass=com.emanga.models.Link
+tableName=link
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=url
+# --field-end--
+# --field-start--
+fieldName=state
+# --field-end--
+# --field-start--
+fieldName=attempts
+# --field-end--
+# --field-start--
+fieldName=timeResponse
+# --field-end--
+# --field-start--
+fieldName=chapter
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.emanga.models.Chapter
+tableName=chapter
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=date
+# --field-end--
+# --field-start--
+fieldName=number
+indexName=chapter_number_idx
+# --field-end--
+# --field-start--
+fieldName=manga
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=links
+foreignCollection=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.emanga.models.Manga
+tableName=manga
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=title
+indexName=manga_title_idx
+# --field-end--
+# --field-start--
+fieldName=cover
+# --field-end--
+# --field-start--
+fieldName=description
+# --field-end--
+# --field-start--
+fieldName=publicationStart
+# --field-end--
+# --field-start--
+fieldName=publicationEnd
+# --field-end--
+# --field-start--
+fieldName=chapters
+foreignCollection=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.emanga.models.Genre
+tableName=genre
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+indexName=genre_name_idx
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.emanga.models.GenreManga
+tableName=genremanga
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=genre
+columnName=genre_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=manga
+columnName=manga_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
