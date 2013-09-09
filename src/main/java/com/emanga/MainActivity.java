@@ -1,18 +1,18 @@
 package com.emanga;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
-import android.os.AsyncTask;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,14 +24,16 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.emanga.database.OrmLiteFragment;
-import com.emanga.models.Chapter;
+import com.emanga.services.MangaCrawler;
 import com.emanga.views.Thumbnail;
 
 public class MainActivity extends FragmentActivity {
 	
+	private static final String TAG = MainActivity.class.getName();
+	
 	AppSectionsPagerAdapter mAppSectionsPagerAdapter;
 	ViewPager mViewPager;
-	
+
     /**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
@@ -42,6 +44,9 @@ public class MainActivity extends FragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        // Starts Manga Crawler Service
+        startService(new Intent(this, MangaCrawler.class));
         
         // Home button navigates to main activity
         final ActionBar actionBar = getActionBar();
@@ -139,19 +144,38 @@ public class MainActivity extends FragmentActivity {
 	    public CharSequence getPageTitle(int position) {
 	        return "OBJECT " + (position + 1);
 	    }
+		
     }
     
     public static class SectionFragment extends OrmLiteFragment {  	
     	
+    	public ThumbnailAdapter adapter;
+    
+    	public BroadcastReceiver receiver = new BroadcastReceiver() {
+    		/**
+        	 * When Manga Crawler Service publishes a new Thumbnail, get it from
+        	 * intent and adds it to adapter. Then notify for update the view.
+        	 */
+    		@Override
+    	    public void onReceive(Context context, Intent intent) {
+    			Log.d(TAG, "Receiver new thumb from Manga Crawler!");
+    			Bundle bundle = intent.getExtras();
+    			if (bundle != null) {
+
+    				Thumbnail thumb = bundle.getParcelable(MangaCrawler.THUMBNAIL);
+    				adapter.thumbnails.add(thumb);
+    				adapter.notifyDataSetChanged();
+    				Log.d(TAG, "Adapter notifyed about a new thumb");
+    			}
+    		};
+    	};
+    	
     	@Override
         public View onCreateView(LayoutInflater inflater,
                 ViewGroup container, Bundle savedInstanceState) {
-			
-			// Adapter for the gridview
-			ThumbnailAdapter adapter = new ThumbnailAdapter(getActivity());
-
-			new LoadLatestMangas(adapter).execute();
-			
+    		
+    		adapter = new ThumbnailAdapter(getActivity());
+    		
 			// The last two arguments ensure LayoutParams are inflated properly.
             View rootView = inflater.inflate(
                     R.layout.fragment_section, container, false);
@@ -164,35 +188,18 @@ public class MainActivity extends FragmentActivity {
                     Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
                 }
             });
+            
+            // Suscribe fragment receiver to service
+            IntentFilter filter = new IntentFilter(MangaCrawler.NOTIFICATION);
+            getActivity().getApplicationContext().registerReceiver(receiver, filter);
 
             return rootView;
         }
     	
-    	private class LoadLatestMangas extends AsyncTask<Void, Integer, List<Thumbnail>> {
-
-        	private ThumbnailAdapter adapter;
-        	
-        	public LoadLatestMangas(ThumbnailAdapter adap){
-        		adapter = adap;
-        	}
-        	
-    		@Override
-    		protected List<Thumbnail> doInBackground(Void... params) {
-    			//TODO: For the moment this returns all chapters, but this will must return last week chapters
-    			Iterator<Chapter> it = getHelper().getChapterRunDao().queryForAll().iterator();
-    			List<Thumbnail> thumbs = new ArrayList<Thumbnail>();
-    			while(it.hasNext()) {
-    				thumbs.add(new Thumbnail(it.next()));
-    			}
-    			return thumbs;
-    		}
-        	
-    		@Override
-    		protected void onPostExecute(List<Thumbnail> result) {
-    			adapter.updateThumbnails(result);
-    			super.onPostExecute(result);
-    		}
-        }
+    	public void onDestroyView() {
+    		super.onDestroyView();
+    		getActivity().getApplicationContext().unregisterReceiver(receiver);
+    	}
     }
 }
 

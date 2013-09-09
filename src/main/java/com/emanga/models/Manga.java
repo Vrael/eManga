@@ -14,7 +14,7 @@ public class Manga {
 	@DatabaseField(index = true)
 	public String title;
 	@DatabaseField
-	public int cover;
+	public String cover;
 	@DatabaseField
 	public String description;
 	@DatabaseField

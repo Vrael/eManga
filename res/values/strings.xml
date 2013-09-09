@@ -6,6 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
     <string name="hello_world">Hello world!</string>
+    <string name="service_name">Mangas Search Service</string>
     
     <string-array name="tabs_titles">  
 	    <item>New</item>  
