@@ -1,6 +1,9 @@
 package com.emanga.services;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,8 +25,12 @@ public class MangaCrawler extends IntentService {
 	public static final String NOTIFICATION = "com.emanga.services";
 	public static final String THUMBNAIL = "thumb";
 	
+	private ExecutorService executor;
+	
 	public MangaCrawler() {
 		super("MangaCrawler");
+		// Pool of threads for manga processing.
+		executor = Executors.newFixedThreadPool(2);
 	}
 		
 	@Override
@@ -38,34 +45,63 @@ public class MangaCrawler extends IntentService {
 			
 			Elements mangas = doc.select(".manga_updates dl");
 			
-			int size = mangas.size();
-			int i = 1;
-			for(Element manga: mangas){
-				Elements images = Jsoup.connect(ROOTURL + manga.select("dt a[href]").attr("href"))
-						.userAgent("Mozilla")
-						.cookie("auth", "token")
-						.get()
-    					.select(".manga_detail_top img");
+			Log.d(TAG, mangas.size() + " will be process");
+			
+			// Task to get latest chapters
+			class LastChapterTask implements Runnable {
+				private final int i;
+				private final Element manga;
+				public LastChapterTask(int num, Element m){ i=num; manga=m; }
 				
-				Log.d(TAG, "Procesing manga " + i + " of " + size);
-				// When new thumb is ready it publishes
-				publishThumb(
-					new Thumbnail(
-						manga.select("dd a[href]").first().text(), // Get title
-						images.get(0).attr("src") // Get cover
-					));
-				
-				// Get date
-				manga.select("dt .time").first().text();
-				// Get link of chapter
-				manga.select("dd a[href]").first().attr("href");
-				i++;
+				public void run(){
+					Log.d(TAG, "Processing new manga (" + i + ")");
+					try {
+						Elements images = Jsoup.connect(ROOTURL + manga.select("dt a[href]").attr("href"))
+								.userAgent("Mozilla")
+								.cookie("auth", "token")
+								.get()
+								.select(".manga_detail_top img");
+						
+						manga.select("dt .time").first().text(); 			// Get date
+						manga.select("dd a[href]").first().attr("href"); 	// Get link of chapter
+						
+						publishThumb(new Thumbnail(
+								manga.select("dd a[href]").first().text(), 	// Get title
+								images.get(0).attr("src") 					// Get cover
+								));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		Log.d(TAG, "Finished");
+			int i = 1;
+			// Launch all tasks
+			for(Element manga: mangas){
+				executor.execute(new LastChapterTask(i,manga));
+				i++;
+			}
+			// Disable new tasks from being submitted
+			executor.shutdown();
+		   try {
+		     // Wait a while for existing tasks to terminate
+		     if (!executor.awaitTermination(3, TimeUnit.MINUTES)) {
+		       executor.shutdownNow(); // Cancel currently executing tasks
+		       // Wait a while for tasks to respond to being cancelled
+		       if (!executor.awaitTermination(60, TimeUnit.SECONDS))
+		           System.err.println("Executor of mangas did not terminate");
+		     }
+		   } catch (InterruptedException ie) {
+	         // (Re-)Cancel if current thread also interrupted
+	         executor.shutdownNow();
+	         // Preserve interrupt status
+	         Thread.currentThread().interrupt();
+		   }
+	       System.out.println("Finished all Mangas");
+	       
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		} 
 	}
 	
 	private void publishThumb(Thumbnail thumb) {
