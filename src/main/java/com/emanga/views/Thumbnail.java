@@ -10,15 +10,24 @@ import android.os.Parcelable;
 public class Thumbnail implements Parcelable {
 	public String title;
 	public String image;
+	public String date;
+	public String number;
+	public String url;
 	
-	public Thumbnail(String text, String img) {
+	public Thumbnail(String text, String img, String time, String nChapter, String link) {
 		title = text;
 		image = img;
+		date = time;
+		number = nChapter;
+		url = link;
 	}
 	
 	public Thumbnail(Parcel in) {
 		title = in.readString();
 		image = in.readString();
+		date = in.readString();
+		number = in.readString();
+		url = in.readString();
 	}
 	
 	public int describeContents() {
@@ -28,6 +37,9 @@ public class Thumbnail implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(title);
 		dest.writeString(image);
+		dest.writeString(date);
+		dest.writeString(number);
+		dest.writeString(url);
 	}
 	
 	public static final Parcelable.Creator<Thumbnail> CREATOR = new Parcelable.Creator<Thumbnail>() {

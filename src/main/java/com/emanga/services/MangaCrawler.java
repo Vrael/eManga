@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,6 +27,8 @@ public class MangaCrawler extends IntentService {
 	public static final String NOTIFICATION = "com.emanga.services";
 	public static final String THUMBNAIL = "thumb";
 	
+	private static final byte NUMBEROFCHAPTERS = 5;
+	
 	private ExecutorService executor;
 	
 	public MangaCrawler() {
@@ -43,7 +47,7 @@ public class MangaCrawler extends IntentService {
 					  .timeout(6000)
 					  .get();
 			
-			Elements mangas = doc.select(".manga_updates dl");
+			Elements mangas = doc.select(".manga_updates dl:lt(" + NUMBEROFCHAPTERS + ")");
 			
 			Log.d(TAG, mangas.size() + " will be process");
 			
@@ -56,18 +60,27 @@ public class MangaCrawler extends IntentService {
 				public void run(){
 					Log.d(TAG, "Processing new manga (" + i + ")");
 					try {
-						Elements images = Jsoup.connect(ROOTURL + manga.select("dt a[href]").attr("href"))
+						Elements mangaHeader = manga.select("dt a[href]");
+						Elements images = Jsoup.connect(ROOTURL + mangaHeader.attr("href"))
 								.userAgent("Mozilla")
 								.cookie("auth", "token")
 								.get()
 								.select(".manga_detail_top img");
 						
-						manga.select("dt .time").first().text(); 			// Get date
-						manga.select("dd a[href]").first().attr("href"); 	// Get link of chapter
+						
+						Element link = manga.select("dd a[href]").first();
+						
+						// Pattern for looking for the number of chapter, eg: Dr· Frost 24
+						Pattern p = Pattern.compile("\\d+$");
+						Matcher m = p.matcher(link.text());
+						m.find();
 						
 						publishThumb(new Thumbnail(
-								manga.select("dd a[href]").first().text(), 	// Get title
-								images.get(0).attr("src") 					// Get cover
+								mangaHeader.first().text(), 				// Get title
+								images.get(0).attr("src"), 					// Get cover
+								manga.select("dt .time").first().text(), 	// Get date
+								m.group(),		 							// Get chapter number
+								link.attr("href")						 	// Get link of chapter
 								));
 					} catch (IOException e) {
 						e.printStackTrace();
