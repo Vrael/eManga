@@ -5,7 +5,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     
     <dimen name="gridview_thumb_width">104dp</dimen>
-    <dimen name="gridview_thumb_height">200dp</dimen>
+    <dimen name="gridview_thumb_height">214dp</dimen>
     
     <dimen name="gridview_cover_height">138dp</dimen>
 

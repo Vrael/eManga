@@ -63,6 +63,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     	TextView date;
     	ImageView cover;
     	TextView title;
+    	TextView chapter;
         // if it's not recycled, initialize some attributes
     	if (convertView == null) {  
     		/* --------- */
@@ -82,6 +83,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     		date = new TextView(mContext);
     		cover = new ImageView(mContext);
     		title = new TextView(mContext);
+    		chapter = new TextView(mContext);
     		
     		LinearLayout.LayoutParams paramsText = new LinearLayout.LayoutParams(
     				LayoutParams.MATCH_PARENT,
@@ -94,7 +96,8 @@ public class ThumbnailAdapter extends BaseAdapter {
     		title.setLayoutParams(paramsText);
     		
     		date.setMaxLines(1);
-    		title.setMaxLines(2);
+    		title.setMaxLines(1);
+    		chapter.setMaxLines(1);
     		
     		cover.setLayoutParams(new LinearLayout.LayoutParams(
     				(int) mContext.getResources().getDimension(R.dimen.gridview_thumb_width),
@@ -103,13 +106,16 @@ public class ThumbnailAdapter extends BaseAdapter {
     		
     		date.setGravity(Gravity.CENTER);
     		title.setGravity(Gravity.CENTER);
+    		chapter.setGravity(Gravity.CENTER);
     		
     		date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+    		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
     		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
     		
     		layout.addView(date);
     		layout.addView(cover);
     		layout.addView(title);
+    		layout.addView(chapter);
     		
     	} else {
     		layout = (LinearLayout) convertView;
@@ -117,6 +123,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     		date = (TextView) layout.getChildAt(0);
     		cover = (ImageView) layout.getChildAt(1);
     		title = (TextView) layout.getChildAt(2);
+    		chapter = (TextView) layout.getChildAt(3);
     	}
     	
     	Thumbnail thumb = getItem(position);
@@ -124,6 +131,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     	date.setText(thumb.date);
     	imageLoader.displayImage(getItem(position).image, cover, options);
     	title.setText(thumb.title);
+    	chapter.setText(thumb.number);
     	
         return layout;
     }
