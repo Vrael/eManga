@@ -1,5 +1,8 @@
 package com.emanga;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.content.BroadcastReceiver;
@@ -150,20 +153,33 @@ public class MainActivity extends FragmentActivity {
     public static class SectionFragment extends OrmLiteFragment {  	
     	
     	public ThumbnailAdapter adapter;
-    
+    	
     	public BroadcastReceiver receiver = new BroadcastReceiver() {
+    		// Keeps the position of empty thumbs respect adapter.thumbnails list 
+    		// (this thumbs represents an execution task in MangaCrawler Service)
+    		List<Byte> emptyPositions = new ArrayList<Byte>();
+    		
     		/**
         	 * When Manga Crawler Service publishes a new Thumbnail, get it from
         	 * intent and adds it to adapter. Then notify for update the view.
         	 */
     		@Override
     	    public void onReceive(Context context, Intent intent) {
+    			List<Thumbnail> thumbs = adapter.thumbnails;
     			Log.d(TAG, "Receiver new thumb from Manga Crawler!");
     			Bundle bundle = intent.getExtras();
     			if (bundle != null) {
 
     				Thumbnail thumb = bundle.getParcelable(MangaCrawler.THUMBNAIL);
-    				adapter.thumbnails.add(thumb);
+    				if(thumb.url == null) {
+    					thumb.title = "Loading...";
+    					thumbs.add(thumb);
+    					emptyPositions.add((byte)(thumbs.size()-1));
+    				}
+    				else {
+    					thumbs.set(emptyPositions.get(0), thumb);
+    					emptyPositions.remove(0);
+    				}
     				adapter.notifyDataSetChanged();
     				Log.d(TAG, "Adapter notifyed about a new thumb");
     			}

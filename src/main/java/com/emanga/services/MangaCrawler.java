@@ -28,13 +28,14 @@ public class MangaCrawler extends IntentService {
 	public static final String THUMBNAIL = "thumb";
 	
 	private static final byte NUMBEROFCHAPTERS = 5;
+	private static final byte THREADPOOL = 2;
 	
 	private ExecutorService executor;
 	
 	public MangaCrawler() {
 		super("MangaCrawler");
 		// Pool of threads for manga processing.
-		executor = Executors.newFixedThreadPool(2);
+		executor = Executors.newFixedThreadPool(THREADPOOL);
 	}
 		
 	@Override
@@ -59,6 +60,12 @@ public class MangaCrawler extends IntentService {
 				
 				public void run(){
 					Log.d(TAG, "Processing new manga (" + i + ")");
+					
+					// Sends an empty thumb to the gridview will appear 
+					// an item that it is processing.
+					Thumbnail thumb = new Thumbnail();
+					publishThumb(thumb);
+					
 					try {
 						Elements mangaHeader = manga.select("dt a[href]");
 						Elements images = Jsoup.connect(ROOTURL + mangaHeader.attr("href"))
@@ -67,7 +74,6 @@ public class MangaCrawler extends IntentService {
 								.get()
 								.select(".manga_detail_top img");
 						
-						
 						Element link = manga.select("dd a[href]").first();
 						
 						// Pattern for looking for the number of chapter, eg: Dr· Frost 24
@@ -75,13 +81,14 @@ public class MangaCrawler extends IntentService {
 						Matcher m = p.matcher(link.text());
 						m.find();
 						
-						publishThumb(new Thumbnail(
-								mangaHeader.first().text(), 				// Get title
-								images.get(0).attr("src"), 					// Get cover
-								manga.select("dt .time").first().text(), 	// Get date
-								m.group(),		 							// Get chapter number
-								link.attr("href")						 	// Get link of chapter
-								));
+						// Publish the thumb with all data
+						thumb.title = mangaHeader.first().text(); 				// Get title
+						thumb.image = images.get(0).attr("src"); 				// Get cover
+						thumb.date = manga.select("dt .time").first().text(); 	// Get date
+						thumb.number = m.group();								// Get chapter number
+						thumb.url = link.attr("href");  					 	// Get link of chapter
+						publishThumb(thumb);
+						
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

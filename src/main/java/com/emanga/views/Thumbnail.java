@@ -8,11 +8,13 @@ import android.os.Parcelable;
  *	for ThumbnailAdapter 
  */
 public class Thumbnail implements Parcelable {
-	public String title;
-	public String image;
-	public String date;
-	public String number;
-	public String url;
+	public String title = null;
+	public String image = null;
+	public String date = null;
+	public String number = null;
+	public String url = null;
+	
+	public Thumbnail(){}
 	
 	public Thumbnail(String text, String img, String time, String nChapter, String link) {
 		title = text;
