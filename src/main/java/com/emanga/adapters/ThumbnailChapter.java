@@ -1,4 +1,4 @@
-package com.emanga;
+package com.emanga.adapters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,23 +19,24 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.emanga.views.Thumbnail;
+import com.emanga.R;
+import com.emanga.models.Chapter;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 
-public class ThumbnailAdapter extends BaseAdapter {
-	public static String TAG = ThumbnailAdapter.class.getName();
+public class ThumbnailChapter extends BaseAdapter {
+	public static String TAG = ThumbnailChapter.class.getName();
 	
 	private Context mContext;
 
-	public List<Thumbnail> thumbnails = new ArrayList<Thumbnail>();
+	public List<Chapter> chapters = new ArrayList<Chapter>();
 	
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	
-    public ThumbnailAdapter(Context c) {
+    public ThumbnailChapter(Context c) {
         mContext = c;
         
     	options = new DisplayImageOptions.Builder()
@@ -49,15 +50,20 @@ public class ThumbnailAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        return thumbnails.size();
+        return chapters.size();
     }
 
-    public Thumbnail getItem(int position) {
-        return thumbnails.get(position);
+    public Chapter getItem(int position) {
+        return chapters.get(position);
     }
 
     public long getItemId(int position) {
         return position;
+    }
+    
+    public void setChapters(List<Chapter> list) {
+    	chapters = list;
+    	notifyDataSetChanged();
     }
 
     // create a new TextView for each item referenced by the Adapter
@@ -68,7 +74,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     	final ProgressBar spinner;
     	final ImageView cover;
     	TextView title;
-    	TextView chapter;
+    	TextView number;
     	
         // if it's not recycled, initialize some attributes
     	if (convertView == null) {  
@@ -92,7 +98,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     		spinner = new ProgressBar(mContext, null, android.R.attr.progressBarStyleSmall);
     		cover = new ImageView(mContext);
     		title = new TextView(mContext);
-    		chapter = new TextView(mContext);
+    		number = new TextView(mContext);
     		
     		LinearLayout.LayoutParams paramsText = new LinearLayout.LayoutParams(
     				LayoutParams.MATCH_PARENT,
@@ -106,7 +112,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     		
     		date.setMaxLines(1);
     		title.setMaxLines(1);
-    		chapter.setMaxLines(1);
+    		number.setMaxLines(1);
     		
     		spinner.setVisibility(View.VISIBLE);
     		
@@ -119,7 +125,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     		
     		date.setGravity(Gravity.CENTER);
     		title.setGravity(Gravity.CENTER);
-    		chapter.setGravity(Gravity.CENTER);
+    		number.setGravity(Gravity.CENTER);
     		
     		date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
@@ -129,7 +135,7 @@ public class ThumbnailAdapter extends BaseAdapter {
     		layout.addView(spinner);
     		layout.addView(cover);
     		layout.addView(title);
-    		layout.addView(chapter);
+    		layout.addView(number);
     		
     	} else {
     		layout = (LinearLayout) convertView;
@@ -140,14 +146,15 @@ public class ThumbnailAdapter extends BaseAdapter {
     		cover.setVisibility(View.GONE);
     		
     		title = (TextView) layout.getChildAt(3);
-    		chapter = (TextView) layout.getChildAt(4);
+    		number = (TextView) layout.getChildAt(4);
     	}
     	
-    	Thumbnail thumb = getItem(position);
+    	Chapter chapter = getItem(position);
     	
-    	date.setText(thumb.date);
+    	//TODO: Change Date
+    	date.setText(String.valueOf(""));
     	
-    	imageLoader.displayImage(getItem(position).image, cover, options, new SimpleImageLoadingListener() {
+    	imageLoader.displayImage(getItem(position).manga.cover, cover, options, new SimpleImageLoadingListener() {
     		@Override
     		public void onLoadingStarted(String imageUri, View view) {
     			spinner.setVisibility(View.VISIBLE);
@@ -186,10 +193,9 @@ public class ThumbnailAdapter extends BaseAdapter {
     		}
     	});
     	
-    	title.setText(thumb.title);
-    	chapter.setText(thumb.number);
+    	title.setText(String.valueOf(chapter.manga.title));
+    	number.setText(String.valueOf(chapter.number));
     	
         return layout;
     }
-    
 }

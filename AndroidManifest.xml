@@ -24,7 +24,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-		<service android:name="com.emanga.services.MangaCrawler"></service>
+		
+		<service android:name="com.emanga.services.UpdateDatabase"></service>
     </application>
 
 </manifest>

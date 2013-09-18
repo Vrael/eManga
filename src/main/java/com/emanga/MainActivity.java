@@ -1,21 +1,19 @@
 package com.emanga;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
-import android.content.BroadcastReceiver;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,18 +24,17 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.emanga.database.OrmLiteFragment;
-import com.emanga.services.MangaCrawler;
-import com.emanga.views.Thumbnail;
+import com.emanga.adapters.ThumbnailChapter;
+import com.emanga.models.Chapter;
+import com.emanga.services.UpdateDatabase;
+import com.emanga.tasks.LatestChaptersLoader;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 	
-	private static final String TAG = MainActivity.class.getName();
-	
-	AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-	ViewPager mViewPager;
-
-    /**
+	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
+    private ViewPager mViewPager;
+    
+	/**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
      * previously being shut down then this Bundle contains the data it most 
@@ -49,58 +46,177 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
         
         // Starts Manga Crawler Service
-        startService(new Intent(this, MangaCrawler.class));
+        // startService(new Intent(this, MangaCrawler.class));
+        
+        mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
         
         // Home button navigates to main activity
         final ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         
-        //ViewPager uses support library fragments
-        mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(
-        		getSupportFragmentManager());
+        // Specify that tabs should be displayed in the action bar.
+        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mAppSectionsPagerAdapter);
-     
-        // Specify that tabs should be displayed in the action bar.
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        initTabs(actionBar);
+        
+        // 4 Tabs: New, Library, Read, Favourites
+        for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
+        	// Create a tab with text corresponding to the page title defined by the adapter.
+            // Also specify this Activity object, which implements the TabListener interface, as the
+            // listener for when this tab is selected.
+        	actionBar.addTab(
+    			actionBar.newTab()
+                	.setText(mAppSectionsPagerAdapter.getPageTitle(i))
+                    .setTabListener(this));
+        }
+    }
+    
+    
+    /**
+     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
+     * sections of the app.
+     */
+    public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
+
+    	private Context mContext;
+    	
+        public AppSectionsPagerAdapter(FragmentManager fm, Context ctx) {
+            super(fm);
+            mContext = ctx;
+        }
+
+        @Override
+        public Fragment getItem(int i) {
+            switch (i) {
+                case 0:
+                    return new LatestSectionFragment();
+                
+                case 1:
+                	return new LibrarySectionFragment();
+                	
+                case 2: 
+                	return new FavouritesSectionFragment();
+                
+                default:
+                   return new HistorySectionFragment();
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 4;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+        	return mContext.getResources().getStringArray(R.array.tabs_titles)[position];
+        }
     }
     
     /**
-     * Initialize tabs
-     * @param actionBar
+     * A fragment that with Latest Chapters of Manga
      */
-    public void initTabs(ActionBar actionBar) {
-    	// Create a tab listener that is called when the user changes tabs.
-        ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-			public void onTabReselected(Tab tab,
-					android.app.FragmentTransaction ft) {
-				// TODO Auto-generated method stub
-				// show the given tab
-				
-			}
+    public static class LatestSectionFragment extends Fragment
+    	implements LoaderManager.LoaderCallbacks<List<Chapter>> {
+    	
+    	private ThumbnailChapter mAdapter;
+        
+    	@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			
+			mAdapter = new ThumbnailChapter(getActivity());
+			// Starts Update Database Services
+			getActivity().startService(new Intent(getActivity(), UpdateDatabase.class));
+		}
+    	
+    	@Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        	View rootView = inflater.inflate(
+	                R.layout.fragment_section, container, false);
+        	
+            GridView gridview = (GridView) rootView.findViewById(R.id.grid_view); 
+	        gridview.setAdapter(mAdapter);
+	    
+	        gridview.setOnItemClickListener(new OnItemClickListener() {
+	            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+	                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
+	            }
+	        });
+	        
+	        return rootView;
+        }
+    	
+    	@Override
+    	public void onActivityCreated(Bundle savedInstanceState) {
+    		super.onActivityCreated(savedInstanceState);
+    		
+    		getLoaderManager().initLoader(0, null, this);
+    	}
 
-			public void onTabSelected(Tab tab,
-					android.app.FragmentTransaction ft) {
-				// TODO Auto-generated method stub
-				// hide the given tab
-				
-			}
+		public android.support.v4.content.Loader<List<Chapter>> onCreateLoader(
+				int id, Bundle args) {
+			return new LatestChaptersLoader(getActivity());
+		}
 
-			public void onTabUnselected(Tab tab,
-					android.app.FragmentTransaction ft) {
-				// TODO Auto-generated method stub
-				// probably ignore this event
-				
-			}
-        };
+		public void onLoadFinished(
+				android.support.v4.content.Loader<List<Chapter>> loader,
+				List<Chapter> chapters) {
+			
+			mAdapter.setChapters(chapters);
+		}
 
-        // 4 Tabs: New, Library, Read, Favourites
-        for(String title : getResources().getStringArray(R.array.tabs_titles)) {
-	        actionBar.addTab(actionBar.newTab()
-	        		.setText(title)
-	                .setTabListener(tabListener));
+		public void onLoaderReset(
+				android.support.v4.content.Loader<List<Chapter>> arg0) {
+			mAdapter.setChapters(null);
+		}
+		
+    }
+    
+    /**
+     * A fragment that with all Mangas orders by genre
+     */
+    public static class LibrarySectionFragment extends Fragment {    	
+    	
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        	View rootView = inflater.inflate(
+	                R.layout.fragment_section, container, false);
+      	
+        	return rootView;
+        }
+    }
+    
+    /**
+     * A fragment that with favourites Mangas
+     */
+    public static class FavouritesSectionFragment extends Fragment {
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        	View rootView = inflater.inflate(
+	                R.layout.fragment_section, container, false);
+        	
+        	return rootView;
+        }
+    }
+    
+    /**
+     * A fragment that with history
+     */
+    public static class HistorySectionFragment extends Fragment {
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        	View rootView = inflater.inflate(
+	                R.layout.fragment_section, container, false);
+        	
+        	return rootView;
         }
     }
 
@@ -125,97 +241,17 @@ public class MainActivity extends FragmentActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-    
-    public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
-    	
-    	public AppSectionsPagerAdapter(FragmentManager fm) {
-    		super(fm);
-    	}
-    	
-    	@Override
-    	public Fragment getItem(int i){
-    		Fragment fragment = new SectionFragment();
-            return fragment;
-    	}
 
-		@Override
-		public int getCount() {
-			return 4;
-		}
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {	
+	}
+
+	public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		// When the given tab is selected, switch to the corresponding page in the ViewPager.
+        mViewPager.setCurrentItem(tab.getPosition());
 		
-		@Override
-	    public CharSequence getPageTitle(int position) {
-	        return "OBJECT " + (position + 1);
-	    }
-		
-    }
-    
-    public static class SectionFragment extends OrmLiteFragment {  	
-    	
-    	public ThumbnailAdapter adapter;
-    	
-    	public BroadcastReceiver receiver = new BroadcastReceiver() {
-    		// Keeps the position of empty thumbs respect adapter.thumbnails list 
-    		// (this thumbs represents an execution task in MangaCrawler Service)
-    		List<Byte> emptyPositions = new ArrayList<Byte>();
-    		
-    		/**
-        	 * When Manga Crawler Service publishes a new Thumbnail, get it from
-        	 * intent and adds it to adapter. Then notify for update the view.
-        	 */
-    		@Override
-    	    public void onReceive(Context context, Intent intent) {
-    			List<Thumbnail> thumbs = adapter.thumbnails;
-    			Log.d(TAG, "Receiver new thumb from Manga Crawler!");
-    			Bundle bundle = intent.getExtras();
-    			if (bundle != null) {
+	}
 
-    				Thumbnail thumb = bundle.getParcelable(MangaCrawler.THUMBNAIL);
-    				if(thumb.url == null) {
-    					thumb.title = "Loading...";
-    					thumbs.add(thumb);
-    					emptyPositions.add((byte)(thumbs.size()-1));
-    				}
-    				else {
-    					thumbs.set(emptyPositions.get(0), thumb);
-    					emptyPositions.remove(0);
-    				}
-    				adapter.notifyDataSetChanged();
-    				Log.d(TAG, "Adapter notifyed about a new thumb");
-    			}
-    		};
-    	};
-    	
-    	@Override
-        public View onCreateView(LayoutInflater inflater,
-                ViewGroup container, Bundle savedInstanceState) {
-    		
-    		adapter = new ThumbnailAdapter(getActivity());
-    		
-			// The last two arguments ensure LayoutParams are inflated properly.
-            View rootView = inflater.inflate(
-                    R.layout.fragment_section, container, false);
-            
-            GridView gridview = (GridView) rootView.findViewById(R.id.grid_view); 
-            gridview.setAdapter(adapter);
-        
-            gridview.setOnItemClickListener(new OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                    Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
-                }
-            });
-            
-            // Suscribe fragment receiver to service
-            IntentFilter filter = new IntentFilter(MangaCrawler.NOTIFICATION);
-            getActivity().getApplicationContext().registerReceiver(receiver, filter);
-
-            return rootView;
-        }
-    	
-    	public void onDestroyView() {
-    		super.onDestroyView();
-    		getActivity().getApplicationContext().unregisterReceiver(receiver);
-    	}
-    }
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+	} 
 }
 

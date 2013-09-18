@@ -1,19 +1,21 @@
 package com.emanga.database;
 
-
-
-import android.support.v4.app.Fragment;
+import android.app.IntentService;
+import android.content.Intent;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
-public class OrmLiteFragment extends Fragment {
+public abstract class OrmliteIntentService extends IntentService {
+	public OrmliteIntentService(String name) {
+		super(name);
+	}
 
-    private DatabaseHelper databaseHelper = null;
+	private DatabaseHelper databaseHelper = null;
 
     protected DatabaseHelper getHelper() {
         if (databaseHelper == null) {
             databaseHelper =
-                OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class);
+                OpenHelperManager.getHelper(this, DatabaseHelper.class);
         }
         return databaseHelper;
     }
@@ -26,4 +28,7 @@ public class OrmLiteFragment extends Fragment {
             databaseHelper = null;
         }
     }
+
+	@Override
+	protected abstract void onHandleIntent(Intent intent);
 }

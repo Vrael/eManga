@@ -1,5 +1,5 @@
 #
-# generated on 2013/09/04 07:29:53
+# generated on 2013/09/17 07:50:33
 #
 # --table-start--
 dataClass=com.emanga.models.Link
@@ -11,15 +11,6 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=url
-# --field-end--
-# --field-start--
-fieldName=state
-# --field-end--
-# --field-start--
-fieldName=attempts
-# --field-end--
-# --field-start--
-fieldName=timeResponse
 # --field-end--
 # --field-start--
 fieldName=chapter
@@ -46,6 +37,7 @@ indexName=chapter_number_idx
 # --field-start--
 fieldName=manga
 foreign=true
+foreignAutoRefresh=true
 # --field-end--
 # --field-start--
 fieldName=links
