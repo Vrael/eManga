@@ -1,5 +1,7 @@
-package com.emanga.tasks;
+package com.emanga.loaders;
 
+import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -13,6 +15,8 @@ import com.emanga.database.DatabaseHelper;
 import com.emanga.models.Chapter;
 import com.emanga.services.UpdateDatabase;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	
@@ -21,17 +25,31 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	private List<Chapter> chapters;
 	private ChapterIntentReceiver mChapterObserver;
 	
+	private Calendar time = Calendar.getInstance();
+	
 	public LatestChaptersLoader(Context context) {
 		super(context);
+		time.add(Calendar.DATE, -7);
 	}
+	
 
 	@Override
 	public List<Chapter> loadInBackground() {
 		Log.d(TAG, "Getting latest chapters from DB");
 		DatabaseHelper helper = OpenHelperManager.getHelper(getContext(), DatabaseHelper.class);
-		
-		//TODO: This must be change for last chapters (eg: 20)
-		chapters = helper.getChapterRunDao().queryForAll();
+		try {
+			RuntimeExceptionDao<Chapter, Integer> chapterDao = helper.getChapterRunDao();
+			// Returns all chapters from last week
+			QueryBuilder<Chapter, Integer> qBc = chapterDao.queryBuilder();
+			qBc.where().ge(Chapter.DATE_COLUMN_NAME, time.getTime());
+			qBc.orderBy(Chapter.DATE_COLUMN_NAME, false);
+			
+			chapters = qBc.query();
+		} catch (SQLException e) {
+			Log.e(TAG, "Error when it was getting chapters from database");
+			e.printStackTrace();
+		}
+				
 		return chapters;
 	}
 	

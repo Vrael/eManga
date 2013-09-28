@@ -7,12 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.emanga.R;
+import com.emanga.models.Category;
+import com.emanga.models.CategoryManga;
 import com.emanga.models.Chapter;
-import com.emanga.models.Genre;
-import com.emanga.models.GenreManga;
 import com.emanga.models.Link;
 import com.emanga.models.Manga;
-
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -30,15 +29,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private static final int DATABASE_VERSION = 2;
 
 	// the DAO objects
-	private Dao<Genre, Integer> genreDao = null;
-	private Dao<Manga, Integer> mangaDao = null;
-	private Dao<GenreManga, Integer> genreMangaDao = null;
+	private Dao<Category, Integer> categoryDao = null;
+	private Dao<Manga, String> mangaDao = null;
+	private Dao<CategoryManga, Integer> CategoryMangaDao = null;
 	private Dao<Chapter, Integer> chapterDao = null;
 	private Dao<Link, Integer> linkDao = null;
 	
-	private RuntimeExceptionDao<Genre, Integer> genreRuntimeDao = null;
-	private RuntimeExceptionDao<Manga, Integer> mangaRuntimeDao = null;
-	private RuntimeExceptionDao<GenreManga, Integer> genreMangaRuntimeDao = null;
+	private RuntimeExceptionDao<Category, Integer> categoryRuntimeDao = null;
+	private RuntimeExceptionDao<Manga, String> mangaRuntimeDao = null;
+	private RuntimeExceptionDao<CategoryManga, Integer> CategoryMangaRuntimeDao = null;
 	private RuntimeExceptionDao<Chapter, Integer> chapterRuntimeDao = null;
 	private RuntimeExceptionDao<Link, Integer> linkRuntimeDao = null;
 
@@ -54,8 +53,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
 		try {
 			Log.i(DatabaseHelper.class.getName(), "onCreate");
-			TableUtils.createTable(connectionSource, GenreManga.class);
-			TableUtils.createTable(connectionSource, Genre.class);
+			TableUtils.createTable(connectionSource, CategoryManga.class);
+			TableUtils.createTable(connectionSource, Category.class);
 			TableUtils.createTable(connectionSource, Manga.class);
 			TableUtils.createTable(connectionSource, Chapter.class);
 			TableUtils.createTable(connectionSource, Link.class);
@@ -77,8 +76,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Link.class, true);
 			TableUtils.dropTable(connectionSource, Chapter.class, true);
 			TableUtils.dropTable(connectionSource, Manga.class, true);
-			TableUtils.dropTable(connectionSource, Genre.class, true);
-			TableUtils.dropTable(connectionSource, GenreManga.class, true);
+			TableUtils.dropTable(connectionSource, Category.class, true);
+			TableUtils.dropTable(connectionSource, CategoryManga.class, true);
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -91,22 +90,22 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	 * Returns the Database Access Object (DAO) for our classes. It will create it or just give the cached
 	 * value.
 	 */
-	public Dao<Genre, Integer> getGenreDao() throws SQLException {
-		if(genreDao == null)
-			getDao(Genre.class);
-		return genreDao;
+	public Dao<Category, Integer> getCategoryDao() throws SQLException {
+		if(categoryDao == null)
+			getDao(Category.class);
+		return categoryDao;
 	}
 	
-	public Dao<Manga, Integer> getMangaDao() throws SQLException {
+	public Dao<Manga, String> getMangaDao() throws SQLException {
 		if(mangaDao == null)
 			getDao(Manga.class);
 		return mangaDao;
 	}
 	
-	public Dao<GenreManga, Integer> getGenreMangaDao() throws SQLException {
-		if(genreMangaDao == null)
-			getDao(GenreManga.class);
-		return genreMangaDao;
+	public Dao<CategoryManga, Integer> getCategoryMangaDao() throws SQLException {
+		if(CategoryMangaDao == null)
+			getDao(CategoryManga.class);
+		return CategoryMangaDao;
 	}
 	public Dao<Chapter, Integer> getChapterDao() throws SQLException {
 		if(chapterDao == null)
@@ -125,22 +124,22 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	 * create it or just give the cached value. 
 	 * RuntimeExceptionDao only through RuntimeExceptions.
 	 */
-	public RuntimeExceptionDao<Genre, Integer> getGenreRunDao() {
-		if (genreRuntimeDao == null) 
-			genreRuntimeDao = getRuntimeExceptionDao(Genre.class);
-		return genreRuntimeDao;
+	public RuntimeExceptionDao<Category, Integer> getCategoryRunDao() {
+		if (categoryRuntimeDao == null) 
+			categoryRuntimeDao = getRuntimeExceptionDao(Category.class);
+		return categoryRuntimeDao;
 	}
 	
-	public RuntimeExceptionDao<Manga, Integer> getMangaRunDao() {
+	public RuntimeExceptionDao<Manga, String> getMangaRunDao() {
 		if (mangaRuntimeDao == null) 
 			mangaRuntimeDao = getRuntimeExceptionDao(Manga.class);
 		return mangaRuntimeDao;
 	}
 	
-	public RuntimeExceptionDao<GenreManga, Integer> getGenreMangaRunDao() {
-		if (genreMangaRuntimeDao == null) 
-			genreMangaRuntimeDao = getRuntimeExceptionDao(GenreManga.class);
-		return genreMangaRuntimeDao;
+	public RuntimeExceptionDao<CategoryManga, Integer> getCategoryMangaRunDao() {
+		if (CategoryMangaRuntimeDao == null) 
+			CategoryMangaRuntimeDao = getRuntimeExceptionDao(CategoryManga.class);
+		return CategoryMangaRuntimeDao;
 	}
 	
 	public RuntimeExceptionDao<Chapter, Integer> getChapterRunDao() {
@@ -161,7 +160,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	@Override
 	public void close() {
 		super.close();
-		genreRuntimeDao = null;
+		categoryRuntimeDao = null;
 		mangaRuntimeDao = null;
 		chapterRuntimeDao = null;
 		linkRuntimeDao = null;

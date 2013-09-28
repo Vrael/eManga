@@ -1,5 +1,5 @@
 #
-# generated on 2013/09/17 07:50:33
+# generated on 2013/09/23 07:34:12
 #
 # --table-start--
 dataClass=com.emanga.models.Link
@@ -51,12 +51,8 @@ dataClass=com.emanga.models.Manga
 tableName=manga
 # --table-fields-start--
 # --field-start--
-fieldName=id
-generatedId=true
-# --field-end--
-# --field-start--
 fieldName=title
-indexName=manga_title_idx
+id=true
 # --field-end--
 # --field-start--
 fieldName=cover
@@ -78,8 +74,8 @@ foreignCollection=true
 # --table-end--
 #################################
 # --table-start--
-dataClass=com.emanga.models.Genre
-tableName=genre
+dataClass=com.emanga.models.Category
+tableName=category
 # --table-fields-start--
 # --field-start--
 fieldName=id
@@ -87,22 +83,22 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=name
-indexName=genre_name_idx
+indexName=category_name_idx
 # --field-end--
 # --table-fields-end--
 # --table-end--
 #################################
 # --table-start--
-dataClass=com.emanga.models.GenreManga
-tableName=genremanga
+dataClass=com.emanga.models.CategoryManga
+tableName=categorymanga
 # --table-fields-start--
 # --field-start--
 fieldName=id
 generatedId=true
 # --field-end--
 # --field-start--
-fieldName=genre
-columnName=genre_id
+fieldName=category
+columnName=category_id
 foreign=true
 # --field-end--
 # --field-start--

@@ -1,7 +1,11 @@
 package com.emanga.adapters;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,8 +30,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.SimpleImageLoadingListener;
 
-public class ThumbnailChapter extends BaseAdapter {
-	public static String TAG = ThumbnailChapter.class.getName();
+public class ThumbnailChapterAdapter extends BaseAdapter {
+	public static String TAG = ThumbnailChapterAdapter.class.getName();
 	
 	private Context mContext;
 
@@ -36,7 +40,9 @@ public class ThumbnailChapter extends BaseAdapter {
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	
-    public ThumbnailChapter(Context c) {
+	private static DateFormat df = DateFormat.getDateInstance(DateFormat.DEFAULT, new Locale("es"));
+	
+    public ThumbnailChapterAdapter(Context c) {
         mContext = c;
         
     	options = new DisplayImageOptions.Builder()
@@ -151,8 +157,7 @@ public class ThumbnailChapter extends BaseAdapter {
     	
     	Chapter chapter = getItem(position);
     	
-    	//TODO: Change Date
-    	date.setText(String.valueOf(""));
+    	date.setText(ThumbnailChapterAdapter.formatDate(chapter.date));
     	
     	imageLoader.displayImage(getItem(position).manga.cover, cover, options, new SimpleImageLoadingListener() {
     		@Override
@@ -197,5 +202,22 @@ public class ThumbnailChapter extends BaseAdapter {
     	number.setText(String.valueOf(chapter.number));
     	
         return layout;
+    }
+    
+    public static String formatDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        
+        Calendar today = Calendar.getInstance();
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DATE, -1);
+
+        if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+            return "Hoy";
+        } else if (calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) && calendar.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) {
+            return "Ayer";
+        } else {
+            return df.format(date);
+        }
     }
 }

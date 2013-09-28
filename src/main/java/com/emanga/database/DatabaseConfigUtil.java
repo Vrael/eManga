@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import com.emanga.models.Chapter;
-import com.emanga.models.Genre;
-import com.emanga.models.GenreManga;
+import com.emanga.models.Category;
+import com.emanga.models.CategoryManga;
 import com.emanga.models.Link;
 import com.emanga.models.Manga;
 import com.j256.ormlite.android.apptools.OrmLiteConfigUtil;
-
 
 /**
  * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
@@ -20,8 +19,8 @@ public class DatabaseConfigUtil extends OrmLiteConfigUtil {
 		Link.class,
 		Chapter.class,
 		Manga.class,
-		Genre.class,
-		GenreManga.class,
+		Category.class,
+		CategoryManga.class,
 	};
 	
 	public static void main(String[] args) throws SQLException, IOException {

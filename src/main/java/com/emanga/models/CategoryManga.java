@@ -6,20 +6,20 @@ import com.j256.ormlite.field.DatabaseField;
  * Many to many relationship between Genres and Mangas
  */
 
-public class GenreManga {
+public class CategoryManga {
 	@DatabaseField(generatedId = true)
 	public int id;
-	@DatabaseField(foreign = true, columnName="genre_id")
-	public Genre genre;
+	@DatabaseField(foreign = true, columnName="category_id")
+	public Category category;
 	@DatabaseField(foreign = true, columnName="manga_id")
 	public Manga manga;
 	
-	public GenreManga(){
+	public CategoryManga(){
 		//needed by ormlite
 	}
 	
-	public GenreManga(Genre g, Manga m){
-		genre = g;
+	public CategoryManga(Category g, Manga m){
+		category = g;
 		manga = m;
 	}
 }

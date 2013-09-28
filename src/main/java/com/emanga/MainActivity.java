@@ -24,10 +24,14 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.emanga.adapters.ThumbnailChapter;
+import com.emanga.adapters.CarouselMangaAdapter;
+import com.emanga.adapters.ThumbnailChapterAdapter;
+import com.emanga.loaders.LatestChaptersLoader;
+import com.emanga.loaders.LibraryLoader;
 import com.emanga.models.Chapter;
+import com.emanga.models.Manga;
 import com.emanga.services.UpdateDatabase;
-import com.emanga.tasks.LatestChaptersLoader;
+import com.emanga.utils.HorizontalListView;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 	
@@ -44,9 +48,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        // Starts Manga Crawler Service
-        // startService(new Intent(this, MangaCrawler.class));
         
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
         
@@ -120,13 +121,14 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public static class LatestSectionFragment extends Fragment
     	implements LoaderManager.LoaderCallbacks<List<Chapter>> {
     	
-    	private ThumbnailChapter mAdapter;
+    	private ThumbnailChapterAdapter mAdapter;
         
     	@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			
-			mAdapter = new ThumbnailChapter(getActivity());
+			mAdapter = new ThumbnailChapterAdapter(getActivity());
+			
 			// Starts Update Database Services
 			getActivity().startService(new Intent(getActivity(), UpdateDatabase.class));
 		}
@@ -178,16 +180,58 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     /**
      * A fragment that with all Mangas orders by genre
      */
-    public static class LibrarySectionFragment extends Fragment {    	
-    	
+    public static class LibrarySectionFragment extends Fragment 
+    	implements LoaderManager.LoaderCallbacks<List<Manga>> {    	  	
+        
+    	private HorizontalListView mCarousel;
+        private CarouselMangaAdapter mAdapter;
+        
+        @Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			mAdapter = new CarouselMangaAdapter(getActivity());
+        }
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
+        	
         	View rootView = inflater.inflate(
-	                R.layout.fragment_section, container, false);
-      	
+	                R.layout.library, container, false);
+    		
+        	mCarousel = (HorizontalListView) rootView.findViewById(R.id.carousel_covers);
+        	mCarousel.setAdapter(mAdapter);
+        	
+        	mCarousel.setOnItemClickListener(new OnItemClickListener() {
+	            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+	                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
+	            }
+	        });
         	return rootView;
         }
+        
+        @Override
+    	public void onActivityCreated(Bundle savedInstanceState) {
+    		super.onActivityCreated(savedInstanceState);
+    		
+    		getLoaderManager().initLoader(1, null, this);
+    	}
+
+		public android.support.v4.content.Loader<List<Manga>> onCreateLoader(
+				int id, Bundle args) {
+			return new LibraryLoader(getActivity());
+		}
+
+		public void onLoadFinished(
+				android.support.v4.content.Loader<List<Manga>> loader,
+				List<Manga> mangas) {
+			
+			mAdapter.setMangas(mangas);
+		}
+
+		public void onLoaderReset(
+				android.support.v4.content.Loader<List<Manga>> arg0) {
+			mAdapter.setMangas(null);
+		}
     }
     
     /**
