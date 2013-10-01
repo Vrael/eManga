@@ -3,7 +3,7 @@ package com.emanga.services;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +34,9 @@ public class UpdateDatabase extends OrmliteIntentService {
 	
 	private static final String ACTION = "com.manga.intent.action";
 	public static final String ACTION_LATEST_CHAPTERS = ACTION + ".latestChapters";
+	public static final String INTENT_CHAPTER_ID = "chapterId";
 	
-	private static final byte NUMBER_OF_MANGAS = 50;
+	private static final byte NUMBER_OF_MANGAS = 30;
 	
 	public UpdateDatabase() {
 		super("UpdateDBService");
@@ -46,14 +47,13 @@ public class UpdateDatabase extends OrmliteIntentService {
 		Log.d(TAG, "Updating Database");
 		long start = System.currentTimeMillis();
 		updateLatestChapters();
-		//updateCategories();
-		//updateMangaList();
+		updateCategories();
+		updateMangaList();
 		long end = System.currentTimeMillis();
 		Log.d(TAG, "Services live in: " + (end - start)/1000 + " s");
 	}
 	
 	private void updateLatestChapters() {
-		long start = System.currentTimeMillis();
 		Log.d(TAG, "Updating latest chapters from " + esMangaHere.LATEST_CHAPTERS_URL);
 		try {
 			Document doc = getURL(esMangaHere.LATEST_CHAPTERS_URL);
@@ -61,82 +61,83 @@ public class UpdateDatabase extends OrmliteIntentService {
 			
 			RuntimeExceptionDao<Manga, String> mangaDao = getHelper().getMangaRunDao();
 			Manga m;
+			int chapterId = -1;
 			for(Element manga : mangas){
 				// See if manga exists previously
 				m = mangaDao.queryForId(esMangaHere.parseTitleManga(manga));
 				if (m == null){
-					createMangaWithChapter(mangaDao, manga);
-					sendBroadcast(new Intent(ACTION_LATEST_CHAPTERS));
+					chapterId = createMangaWithChapter(mangaDao, manga);
 				} else {
-					// Manga already exists so it will see manga chapters
-					Elements chapters = manga.select("dd a[href]");
-				
-					for(Element chapter: chapters) {
-						try {
-							int number = esMangaHere.parseNumberChapter(chapter);
-							
-							if(!hasChapter(mangaDao, m, number)) {
-								// Chapters doesn't exists so we create it
-								createChapter(m, number, esMangaHere.parseUrlChapter(chapter), esMangaHere.parseChapterDate(chapter));
-								sendBroadcast(new Intent(ACTION_LATEST_CHAPTERS));
-							} 
-							// If chapters exist do nothing
-						} catch (ParseException e){
-							Log.e(TAG, "Couldn't parse from chapter html");
-						}
-					}
+					// Manga already exists so it will save only new manga chapters
+					chapterId = createChapters(mangaDao, m, manga.select("dd a[href]"));
 				}
-			}	
-			
+				
+				// Send an intent with the latest chapter id of this manga (most recently chapter only)
+				sendBroadcast((new Intent(ACTION_LATEST_CHAPTERS))
+						.putExtra(INTENT_CHAPTER_ID, chapterId));
+			}
 		} catch (IOException e){
 			Log.e(TAG, "Latest chapters couldn't be retrived");
 		}
-		long end = System.currentTimeMillis();
-		Log.d(TAG, "UpdateLatestChapters in: " + (end - start)/1000 + " s");
 	}
 	
+	private int createChapters(RuntimeExceptionDao<Manga, String> mangaDao, Manga manga, Elements html){
+		List<Integer> ids = new ArrayList<Integer>(html.size());
+		for(Element chapter: html) {
+			try {
+				int number = esMangaHere.parseNumberChapter(chapter);
+				
+				if(!hasChapter(mangaDao, manga, number)) {
+					// Chapters doesn't exists so we create it
+					ids.add(createChapter(manga, number, esMangaHere.parseUrlChapter(chapter), 
+							esMangaHere.parseChapterDate(chapter)));
+				} 
+				// If chapters exist do nothing
+			} catch (ParseException e){
+				Log.e(TAG, "Couldn't parse from chapter html");
+			}
+		}
+		// First id is the latest chapter (see esMangaHere/latest)
+		return (!ids.isEmpty())? ids.get(0) : -1;
+	}
 	/**
 	 * Parse html source and create a Manga with its Chapters in the DB
 	 * @param html (currently only valid for http://es.mangahere.com/latest )
 	 * @throws IOException 
 	 */
-	private void createMangaWithChapter(RuntimeExceptionDao<Manga, String> mangaDao, Element html) {
+	private int createMangaWithChapter(RuntimeExceptionDao<Manga, String> mangaDao, Element html) {
+		int chapterId = -1;
 		try {
 			Element mangaHeader = html.select("dt a[href]").first();
 			String cover = getURL(esMangaHere.ROOT_URL + mangaHeader.attr("href"))		// Get cover
 					.select(".manga_detail_top img").first().attr("src");
 					 
 			Manga manga = new Manga(mangaHeader.text(), cover);
-			
-			RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
-			RuntimeExceptionDao<Link, Integer> linkDao = getHelper().getLinkRunDao();
-			
 			mangaDao.create(manga);
 			
-			Chapter chapter = null;
-			Elements chaptersHtml = html.select("dd a[href]");	// html of chapters list
-			for(Element chapterHtml: chaptersHtml) {
-				try {
-					chapter = new Chapter(
-							esMangaHere.parseNumberChapter(chapterHtml),
-							esMangaHere.parseChapterDate(html),
-							manga
-							);
-					chapterDao.create(chapter);
-					
-					linkDao.create(new Link(
-							chapterHtml.attr("href"),
-							chapter
-							));
-					
-				} catch (ParseException e){
-					Log.e(TAG, "Couldn't parse the date of chapter. Chapter wasn't save in database");
-					e.printStackTrace();
-				}
+			// Elements from each html chapters list
+			Elements chaptersHtml = html.select("dd a[href]");	
+			
+			try {
+				// Latest chapter will process separated for to get its id
+				chapterId = createChapter(manga, esMangaHere.parseNumberChapter(chaptersHtml.get(0)), 
+						chaptersHtml.get(0).attr("href"), esMangaHere.parseChapterDate(html));
+				chaptersHtml.remove(0);
+				
+				// Process the rest of chapters
+				for(Element chapterHtml: chaptersHtml) {
+					createChapter(manga, esMangaHere.parseNumberChapter(chapterHtml), 
+							chapterHtml.attr("href"), esMangaHere.parseChapterDate(html));
+				}				
+			} catch (ParseException e){
+				Log.e(TAG, "Couldn't parse the date of chapter. Chapter wasn't save in database");
+				e.printStackTrace();
 			}
+			
 		} catch (IOException e){
 			Log.e(TAG, "Cover couldn't be retrived");
 		}
+		return chapterId;
 	}
 	
 	private boolean hasChapter(RuntimeExceptionDao<Manga, String> mangaDao, Manga manga, int number) {
@@ -163,13 +164,14 @@ public class UpdateDatabase extends OrmliteIntentService {
 	 * @param number
 	 * @param htmlChapter
 	 */
-	private void createChapter(Manga manga, int number, String url, Date date) {
+	private int createChapter(Manga manga, int number, String url, Date date) {
 		RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
 		RuntimeExceptionDao<Link, Integer> linkDao = getHelper().getLinkRunDao();
 	
 		Chapter chapter = new Chapter(number, date, manga);
 		chapterDao.create(chapter);
 		linkDao.create(new Link(url, chapter));
+		return chapter.id;
 	}
 	
 	private void updateCategories() {

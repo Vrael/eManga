@@ -1,6 +1,7 @@
 package com.emanga.loaders;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -22,60 +23,79 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	
 	private static final String TAG = LatestChaptersLoader.class.getName(); 
 			
-	private List<Chapter> chapters;
+	public List<Chapter> chapters;
+	private List<Integer> newChapters = new ArrayList<Integer>();
 	private ChapterIntentReceiver mChapterObserver;
+	
+	private RuntimeExceptionDao<Chapter, Integer> chapterDao;
+	private QueryBuilder<Chapter, Integer> qBcLocal;
 	
 	private Calendar time = Calendar.getInstance();
 	
 	public LatestChaptersLoader(Context context) {
 		super(context);
 		time.add(Calendar.DATE, -7);
+		
+		chapterDao = OpenHelperManager.getHelper(getContext(), DatabaseHelper.class)
+				.getChapterRunDao();
+		
+		try {
+			qBcLocal = chapterDao.queryBuilder();
+			qBcLocal.where().ge(Chapter.DATE_COLUMN_NAME, time.getTime());
+			qBcLocal.orderBy(Chapter.DATE_COLUMN_NAME, false);
+		} catch (SQLException e) {
+			Log.e(TAG, "Error when it was building the chapters query");
+			e.printStackTrace();
+		}
+
 	}
 	
 
 	@Override
 	public List<Chapter> loadInBackground() {
-		Log.d(TAG, "Getting latest chapters from DB");
-		DatabaseHelper helper = OpenHelperManager.getHelper(getContext(), DatabaseHelper.class);
+		List<Chapter> data = null;
 		try {
-			RuntimeExceptionDao<Chapter, Integer> chapterDao = helper.getChapterRunDao();
-			// Returns all chapters from last week
-			QueryBuilder<Chapter, Integer> qBc = chapterDao.queryBuilder();
-			qBc.where().ge(Chapter.DATE_COLUMN_NAME, time.getTime());
-			qBc.orderBy(Chapter.DATE_COLUMN_NAME, false);
+			if(!newChapters.isEmpty()){
+				data = new ArrayList<Chapter>();
+				for(Integer id : newChapters) {
+					data.add(chapterDao.queryForId(id));
+				}
+				newChapters.clear();
+				
+			} else {
+				data = qBcLocal.query();
+			}
 			
-			chapters = qBc.query();
 		} catch (SQLException e) {
-			Log.e(TAG, "Error when it was getting chapters from database");
+			Log.e(TAG, "Error when it was loading chapters from DB");
 			e.printStackTrace();
 		}
-				
-		return chapters;
+		return data;
 	}
 	
    @Override
-   public void deliverResult(List<Chapter> chaps) {
+   public void deliverResult(List<Chapter> data) {
 	   if (isReset()) {
 		   // An async query came in while the loader is stopped.  We
            // don't need the result.
-		   if (chaps != null) {
-			   onReleaseResources(chaps);
+		   if (data != null) {
+			   onReleaseResources(data);
 		   }
 	   }
  
 	   // Hold a reference to the old data so it doesn't get garbage collected.
 	   // We must protect it until the new data has been delivered.
 	   List<Chapter> oldData = chapters;
-	   chapters = chaps;
+	   chapters = data;
  
 	   if (isStarted()) {
 		   // If the Loader is currently started, we can immediately
            // deliver its results.
-		   super.deliverResult(chaps);
+		   super.deliverResult(data);
 	   }
  
 	   // Invalidate the old data as we don't need it any more.
-	   if (oldData != null && oldData != chapters) {
+	   if (oldData != null && oldData != data) {
 		   onReleaseResources(oldData);
 	   }
    }
@@ -151,7 +171,10 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	   @Override
 	   public void onReceive(Context context, Intent intent) {
 		   Log.d(TAG, "New Chapter received in the Loader!");
-		   // Tell the loader about the change
+		   
+		   mLoader.newChapters.add(intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
+		   
+		   // Tell the loader about the new chapters
 		   mLoader.onContentChanged();
 	   }
    }

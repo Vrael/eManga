@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -158,20 +159,15 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		getLoaderManager().initLoader(0, null, this);
     	}
 
-		public android.support.v4.content.Loader<List<Chapter>> onCreateLoader(
-				int id, Bundle args) {
+		public Loader<List<Chapter>> onCreateLoader(int id, Bundle args) {
 			return new LatestChaptersLoader(getActivity());
 		}
 
-		public void onLoadFinished(
-				android.support.v4.content.Loader<List<Chapter>> loader,
-				List<Chapter> chapters) {
-			
-			mAdapter.setChapters(chapters);
+		public void onLoadFinished(Loader<List<Chapter>> loader, List<Chapter> chapters) {
+			mAdapter.addChapters(chapters);
 		}
 
-		public void onLoaderReset(
-				android.support.v4.content.Loader<List<Chapter>> arg0) {
+		public void onLoaderReset(Loader<List<Chapter>> chapters) {
 			mAdapter.setChapters(null);
 		}
 		
@@ -183,7 +179,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public static class LibrarySectionFragment extends Fragment 
     	implements LoaderManager.LoaderCallbacks<List<Manga>> {    	  	
         
-    	private HorizontalListView mCarousel;
+    	private HorizontalListView mHorizontalList;
         private CarouselMangaAdapter mAdapter;
         
         @Override
@@ -198,14 +194,16 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         	View rootView = inflater.inflate(
 	                R.layout.library, container, false);
     		
-        	mCarousel = (HorizontalListView) rootView.findViewById(R.id.carousel_covers);
-        	mCarousel.setAdapter(mAdapter);
+        	mHorizontalList = (HorizontalListView) rootView.findViewById(R.id.carousel_covers);
         	
-        	mCarousel.setOnItemClickListener(new OnItemClickListener() {
+        	mHorizontalList.setOnItemClickListener(new OnItemClickListener() {
 	            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 	                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
 	            }
 	        });
+        	
+        	mHorizontalList.setAdapter(mAdapter);
+        	
         	return rootView;
         }
         
@@ -216,20 +214,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		getLoaderManager().initLoader(1, null, this);
     	}
 
-		public android.support.v4.content.Loader<List<Manga>> onCreateLoader(
+		public Loader<List<Manga>> onCreateLoader(
 				int id, Bundle args) {
 			return new LibraryLoader(getActivity());
 		}
 
-		public void onLoadFinished(
-				android.support.v4.content.Loader<List<Manga>> loader,
-				List<Manga> mangas) {
+		public void onLoadFinished( Loader<List<Manga>> loader, List<Manga> mangas ) {
 			
 			mAdapter.setMangas(mangas);
 		}
 
-		public void onLoaderReset(
-				android.support.v4.content.Loader<List<Manga>> arg0) {
+		public void onLoaderReset(Loader<List<Manga>> mangas) {
 			mAdapter.setMangas(null);
 		}
     }

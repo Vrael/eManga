@@ -9,16 +9,11 @@ import java.util.Locale;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.util.TypedValue;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,99 +66,43 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	chapters = list;
     	notifyDataSetChanged();
     }
+    
+    public void addChapters(List<Chapter> list) {
+    	chapters.addAll(list);
+    	notifyDataSetChanged();
+    }
 
     // create a new TextView for each item referenced by the Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
-    	
-    	LinearLayout layout;
-    	TextView date;
-    	final ProgressBar spinner;
-    	final ImageView cover;
-    	TextView title;
-    	TextView number;
+    	final ViewHolder holder;
     	
         // if it's not recycled, initialize some attributes
     	if (convertView == null) {  
-    		/* --------------------- */
-    		/* | Date  	           | */
-    		/* | Cover <-> Spinner | */
-    		/* | Title 			   | */
-    		/* | Number			   | */
-    		/* --------------------- */
-    		layout = new LinearLayout(mContext);
-    		layout.setOrientation(LinearLayout.VERTICAL);
-    		layout.setLayoutParams(new GridView.LayoutParams(
-    			     (int) mContext.getResources().getDimension(R.dimen.gridview_thumb_width),
-    			     (int) mContext.getResources().getDimension(R.dimen.gridview_thumb_height)
-    			     ));
+    		convertView = LayoutInflater.from(mContext).inflate(R.layout.thumbnail_item, parent, false);
     		
-    		layout.setBackgroundColor(Color.WHITE);
+    		holder = new ViewHolder();
+    		holder.date = (TextView) convertView.findViewById(R.id.thumb_date);
+    		holder.cover = (ImageView) convertView.findViewById(R.id.thumb_cover);
+    		holder.progressbar = (ProgressBar) convertView.findViewById(R.id.thumb_progressbar);
+    		holder.title = (TextView) convertView.findViewById(R.id.thumb_title);
+    		holder.number = (TextView) convertView.findViewById(R.id.thumb_number);
     		
-    		date = new TextView(mContext);
-    		// Shows while image is loading then spinner will be replace by the image
-    		spinner = new ProgressBar(mContext, null, android.R.attr.progressBarStyleSmall);
-    		cover = new ImageView(mContext);
-    		title = new TextView(mContext);
-    		number = new TextView(mContext);
-    		
-    		LinearLayout.LayoutParams paramsText = new LinearLayout.LayoutParams(
-    				LayoutParams.MATCH_PARENT,
-    				LayoutParams.WRAP_CONTENT
-    				);
-    		
-    		paramsText.setMargins(8, 8, 8, 8);
-    		
-    		date.setLayoutParams(paramsText);
-    		title.setLayoutParams(paramsText);
-    		
-    		date.setMaxLines(1);
-    		title.setMaxLines(1);
-    		number.setMaxLines(1);
-    		
-    		spinner.setVisibility(View.VISIBLE);
-    		
-    		cover.setLayoutParams(new LinearLayout.LayoutParams(
-    				(int) mContext.getResources().getDimension(R.dimen.gridview_thumb_width),
-    				(int) mContext.getResources().getDimension(R.dimen.gridview_cover_height)
-    				));
-    		
-    		cover.setVisibility(View.GONE);
-    		
-    		date.setGravity(Gravity.CENTER);
-    		title.setGravity(Gravity.CENTER);
-    		number.setGravity(Gravity.CENTER);
-    		
-    		date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
-    		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-    		title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-    		
-    		layout.addView(date);
-    		layout.addView(spinner);
-    		layout.addView(cover);
-    		layout.addView(title);
-    		layout.addView(number);
-    		
-    	} else {
-    		layout = (LinearLayout) convertView;
-    		
-    		date = (TextView) layout.getChildAt(0);
-    		spinner = (ProgressBar) layout.getChildAt(1);
-    		cover = (ImageView) layout.getChildAt(2);
-    		cover.setVisibility(View.GONE);
-    		
-    		title = (TextView) layout.getChildAt(3);
-    		number = (TextView) layout.getChildAt(4);
-    	}
+    		convertView.setTag(holder);
+		} else {
+		    holder = (ViewHolder) convertView.getTag();
+		}	
     	
     	Chapter chapter = getItem(position);
     	
-    	date.setText(ThumbnailChapterAdapter.formatDate(chapter.date));
+    	holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.date));
+    	holder.title.setText(String.valueOf(chapter.manga.title));
+    	holder.number.setText(String.valueOf(chapter.number));
     	
-    	imageLoader.displayImage(getItem(position).manga.cover, cover, options, new SimpleImageLoadingListener() {
+    	imageLoader.displayImage(chapter.manga.cover, holder.cover, options, new SimpleImageLoadingListener() {
     		@Override
     		public void onLoadingStarted(String imageUri, View view) {
-    			spinner.setVisibility(View.VISIBLE);
-    			cover.setVisibility(View.GONE);
+    			holder.progressbar.setVisibility(View.VISIBLE);
+    			holder.cover.setVisibility(View.GONE);
     		}
 
     		@Override
@@ -188,20 +127,25 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     		}
     			Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
 
-    			spinner.setVisibility(View.GONE);
+    			holder.progressbar.setVisibility(View.GONE);
     		}
 
     		@Override
     		public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-    			spinner.setVisibility(View.GONE);
-    			cover.setVisibility(View.VISIBLE);
+    			holder.progressbar.setVisibility(View.GONE);
+    			holder.cover.setVisibility(View.VISIBLE);
     		}
     	});
     	
-    	title.setText(String.valueOf(chapter.manga.title));
-    	number.setText(String.valueOf(chapter.number));
-    	
-        return layout;
+        return convertView;
+    }
+    
+    class ViewHolder {
+    	public TextView date;
+    	public ProgressBar progressbar;
+    	public ImageView cover;
+    	public TextView title;
+    	public TextView number;
     }
     
     public static String formatDate(Date date) {
