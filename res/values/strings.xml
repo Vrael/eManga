@@ -7,15 +7,18 @@
     <string name="action_search">Search</string>
     <string name="hello_world">Hello world!</string>
     <string name="service_name">Mangas Search Service</string>
-    
-    <string-array name="tabs_titles">  
-	    <item>New</item>  
-	    <item>Library</item>  
-	    <item>Read</item>  
-	    <item>Favourites</item>  
-	</string-array>
-	
+
+    <string-array name="tabs_titles">
+        <item>New</item>
+        <item>Library</item>
+        <item>Read</item>
+        <item>Favourites</item>
+    </string-array>
+
     <!-- Ormlite -->
     <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
-	
+    <string name="title_activity_reader">Reader</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
 </resources>

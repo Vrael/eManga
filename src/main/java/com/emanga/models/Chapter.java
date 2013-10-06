@@ -12,7 +12,7 @@ public class Chapter {
 	public static final String ID_COLUMN_NAME = "id";
 	public static final String DATE_COLUMN_NAME = "date";
 	public static final String NUMBER_COLUMN_NAME = "number";
-	public static final String MANGA_COLUMN_NAME = "manga";
+	public static final String MANGA_COLUMN_NAME = "manga_id";
 	public static final String LINKS_COLUMN_NAME = "links";
 	
 	@DatabaseField(generatedId = true)

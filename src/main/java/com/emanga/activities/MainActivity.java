@@ -1,5 +1,6 @@
-package com.emanga;
+package com.emanga.activities;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import android.app.ActionBar;
@@ -25,17 +26,20 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.emanga.R;
 import com.emanga.adapters.CarouselMangaAdapter;
 import com.emanga.adapters.ThumbnailChapterAdapter;
+import com.emanga.database.OrmliteFragment;
 import com.emanga.loaders.LatestChaptersLoader;
 import com.emanga.loaders.LibraryLoader;
 import com.emanga.models.Chapter;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateDatabase;
 import com.emanga.utils.HorizontalListView;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
-	
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
     
@@ -176,7 +180,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     /**
      * A fragment that with all Mangas orders by genre
      */
-    public static class LibrarySectionFragment extends Fragment 
+    public static class LibrarySectionFragment extends OrmliteFragment 
     	implements LoaderManager.LoaderCallbacks<List<Manga>> {    	  	
         
     	private HorizontalListView mHorizontalList;
@@ -198,7 +202,23 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         	
         	mHorizontalList.setOnItemClickListener(new OnItemClickListener() {
 	            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-	                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
+	            	// TODO: For now it will take always the first chapter (it must change in the future to last read)
+	            	try {
+	            		RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
+	            		QueryBuilder<Chapter, Integer> qBc = chapterDao.queryBuilder();
+	            	
+						qBc.where().eq(Chapter.MANGA_COLUMN_NAME, mAdapter.getItem(position).title);
+						Chapter chapter = qBc.queryForFirst();
+						// TODO: Change this, query two times, one here and then in ReaderActivity
+						Intent intent = new Intent(getActivity(), ReaderActivity.class);
+		            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter.id);
+		            	
+		            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
+		            	startActivity(intent);
+					} catch (SQLException e) {
+						Toast.makeText(getActivity(), "Sorry, this manga hasn't chapters yet!", Toast.LENGTH_SHORT).show();
+						e.printStackTrace();
+					}
 	            }
 	        });
         	
