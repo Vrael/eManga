@@ -148,8 +148,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 	        gridview.setAdapter(mAdapter);
 	    
 	        gridview.setOnItemClickListener(new OnItemClickListener() {
-	            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-	                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
+	        	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+            		Intent intent = new Intent(getActivity(), ReaderActivity.class);
+	            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, ((ThumbnailChapterAdapter.ViewHolder) v.getTag()).id);
+	            	
+	            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
+	            	startActivity(intent);
 	            }
 	        });
 	        

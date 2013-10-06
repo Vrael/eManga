@@ -94,6 +94,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	
     	Chapter chapter = getItem(position);
     	
+    	holder.id = chapter.id;
     	holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.date));
     	holder.title.setText(String.valueOf(chapter.manga.title));
     	holder.number.setText(String.valueOf(chapter.number));
@@ -140,7 +141,8 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
         return convertView;
     }
     
-    class ViewHolder {
+    public static class ViewHolder {
+    	public int id;
     	public TextView date;
     	public ProgressBar progressbar;
     	public ImageView cover;
