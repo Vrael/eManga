@@ -2,6 +2,8 @@ package com.emanga.adapters;
 
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +33,8 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	
+	private Comparator<Chapter> mComparator; 
+	
 	private static DateFormat df = DateFormat.getDateInstance(DateFormat.DEFAULT, new Locale("es"));
 	
     public ThumbnailChapterAdapter(Context c) {
@@ -43,7 +47,14 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
 	    	.cacheOnDisc(true)
 	    	.displayer(new RoundedBitmapDisplayer(5))
 	    	.build();
+    	
     	imageLoader = ImageLoader.getInstance();
+    	
+    	mComparator = new Comparator<Chapter>() {
+    		public int compare(Chapter chap1, Chapter chap2) {
+    	        return chap1.date.compareTo(chap2.date) * -1;
+    	    }
+    	};
     }
 
     public int getCount() {
@@ -64,7 +75,8 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     }
     
     public void addChapters(List<Chapter> list) {
-    	chapters.addAll(list);
+    	chapters.addAll(0, list);
+    	Collections.sort(chapters, mComparator);
     	notifyDataSetChanged();
     }
 

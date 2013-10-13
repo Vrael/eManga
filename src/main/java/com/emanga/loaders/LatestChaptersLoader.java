@@ -42,15 +42,12 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 		try {
 			qBcLocal = chapterDao.queryBuilder();
 			qBcLocal.where().ge(Chapter.DATE_COLUMN_NAME, time.getTime());
-			// TODO: Change because it is getting the first chapter of the latest chapters: eg: 133 - 132 - (131)
-			qBcLocal.orderBy(Chapter.NUMBER_COLUMN_NAME, false).orderBy(Chapter.DATE_COLUMN_NAME, false);
-			qBcLocal.groupBy(Chapter.MANGA_COLUMN_NAME);
-			
+			qBcLocal.groupBy(Chapter.MANGA_COLUMN_NAME).having("MAX(" + Chapter.DATE_COLUMN_NAME + ")");
+			qBcLocal.orderBy(Chapter.DATE_COLUMN_NAME, true);
 		} catch (SQLException e) {
 			Log.e(TAG, "Error when it was building the chapters query");
 			e.printStackTrace();
 		}
-
 	}
 	
 
@@ -59,8 +56,10 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 		List<Chapter> latest = null;
 		try {
 			if(!newChapters.isEmpty()){
+				System.out.println("Manga nuevo: " + newChapters.get(0));
 				latest = new ArrayList<Chapter>();
 				for(Integer id : newChapters) {
+					System.out.println(id);
 					latest.add(chapterDao.queryForId(id));
 				}
 				newChapters.clear();
@@ -167,13 +166,14 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	   
 	   public ChapterIntentReceiver(LatestChaptersLoader loader) {
 		   mLoader = loader;
-		   IntentFilter filter = new IntentFilter(UpdateDatabase.ACTION_LATEST_CHAPTERS);
-		   mLoader.getContext().registerReceiver(this, filter);
+		   mLoader.getContext().registerReceiver(this, new IntentFilter(UpdateDatabase.ACTION_LATEST_CHAPTERS));
+		   mLoader.getContext().registerReceiver(this, new IntentFilter(UpdateDatabase.ACTION_LATEST_MANGAS));
 	   }
 	   
 	   @Override
 	   public void onReceive(Context context, Intent intent) {
-		   Log.d(TAG, "New Chapter received in the Loader!");
+		   Log.d(TAG, "New Chapter received in the Loader! " +
+				   intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
 		   
 		   mLoader.newChapters.add(intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
 		   

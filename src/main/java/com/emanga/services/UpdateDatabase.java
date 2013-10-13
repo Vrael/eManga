@@ -70,7 +70,8 @@ public class UpdateDatabase extends OrmliteIntentService {
 				if (m == null){
 					chapterId = createMangaWithChapter(mangaDao, manga);
 					// Send an intent with the latest manga id for updates Library
-					sendBroadcast(new Intent(ACTION_LATEST_MANGAS));
+					sendBroadcast((new Intent(ACTION_LATEST_MANGAS))
+							.putExtra(INTENT_CHAPTER_ID, chapterId));
 				} else {
 					// Manga already exists so it will save only new manga chapters
 					chapterId = createChapters(mangaDao, m, manga.select("dd a[href]"));
