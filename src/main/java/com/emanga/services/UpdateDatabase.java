@@ -149,13 +149,12 @@ public class UpdateDatabase extends OrmliteIntentService {
 		RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
 		
 		QueryBuilder<Chapter, Integer> cQb = chapterDao.queryBuilder();
-		QueryBuilder<Manga, String> mQb = mangaDao.queryBuilder();
 		
 		Chapter chapter = null;
 		try {
-			mQb.where().eq(Manga.TITLE_COLUMN_NAME, manga.title);
-			cQb.where().eq(Chapter.NUMBER_COLUMN_NAME, number);
-			chapter = cQb.join(mQb).queryForFirst();
+			cQb.where().eq(Chapter.MANGA_COLUMN_NAME, manga.title).and()
+				.eq(Chapter.NUMBER_COLUMN_NAME, number);
+			chapter = cQb.queryForFirst();
 		} catch (SQLException e) {
 			Log.e(TAG, "An error happened when it was checking if the chapter already exists");
 			e.printStackTrace();
