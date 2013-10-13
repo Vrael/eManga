@@ -50,7 +50,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 		long start = System.currentTimeMillis();
 		updateLatestChapters();
 		updateCategories();
-		updateMangaList();
+		// updateMangaList();
 		long end = System.currentTimeMillis();
 		Log.d(TAG, "Services live in: " + (end - start)/1000 + " s");
 	}
@@ -111,6 +111,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 	 * @throws IOException 
 	 */
 	private int createMangaWithChapter(RuntimeExceptionDao<Manga, String> mangaDao, Element html) {
+		RuntimeExceptionDao<Link, Integer> linkDao = getHelper().getLinkRunDao();
 		int chapterId = -1;
 		try {
 			Element mangaHeader = html.select("dt a[href]").first();
@@ -118,6 +119,9 @@ public class UpdateDatabase extends OrmliteIntentService {
 					.select(".manga_detail_top img").first().attr("src");
 					 
 			Manga manga = new Manga(mangaHeader.text(), cover);
+			manga.link = new Link(mangaHeader.attr("abs:href"));
+			
+			linkDao.create(manga.link);
 			mangaDao.create(manga);
 			
 			// Elements from each html chapters list
@@ -217,65 +221,60 @@ public class UpdateDatabase extends OrmliteIntentService {
 		Log.d(TAG, "Getting mangas from " + esMangaHere.MANGAS_LIST_URL);
 		
 		try {
-			Document html = getURL(esMangaHere.MANGAS_LIST_URL);
 			final RuntimeExceptionDao<Manga, String> mangaDao = getHelper().getMangaRunDao();
 			
 			Document htmlDirectory = getURL(esMangaHere.MANGA_CATALOG_URL);
 			// N pages in http://es.mangahere.com/directory/1...N.htm
-			final int pages = Integer.valueOf(htmlDirectory.select(".next-page a:nth-last-child(2)").first().text()) + 1; 
 			// +1 is for performance in the loops
+			final int pages = Integer.valueOf(htmlDirectory.select(".next-page a:nth-last-child(2)").first().text()) + 1; 
 			
-			// Check number of mangas in DB and remote site
-			if (esMangaHere.parseMangasCount(html) != mangaDao.countOf()) {
-				Log.d(TAG, "Online: " + esMangaHere.parseMangasCount(html) + " - BD: " + mangaDao.countOf());
-				final HashMap<String, Category> categories = getCategories();
-				
-				// Queue with html of each page http://es.mangahere.com/directory/1...N.htm
-				final BlockingQueue<Document> downloads = new LinkedBlockingQueue<Document>();
-				
-				// Thread for downloads
-				new Thread(new Runnable(){
-					public void run(){
-						for(int i = 1; i < pages; i++){
-							Log.d(TAG, "Download: " + i);
-							try {
-								downloads.put(getURL((new StringBuilder(esMangaHere.ROOT_URL))
-										.append("/directory/").append(i).append(".htm").toString()));
-							} catch (IOException e){
-								Log.e(TAG, "Error downloading " + esMangaHere.ROOT_URL + "/directory/" + i + ".htm");
-							} catch (InterruptedException e) {
-								Log.e(TAG, "Error while it was adding a Doc to queue");
-								e.printStackTrace();
-							}
+			final HashMap<String, Category> categories = getCategories();
+			
+			// Queue with html of each page http://es.mangahere.com/directory/1...N.htm
+			final BlockingQueue<Document> downloads = new LinkedBlockingQueue<Document>();
+			
+			// Thread for downloads
+			new Thread(new Runnable(){
+				public void run(){
+					for(int i = 1; i < pages; i++){
+						Log.d(TAG, "Download: " + i);
+						try {
+							downloads.put(getURL((new StringBuilder(esMangaHere.ROOT_URL))
+									.append("/directory/").append(i).append(".htm").toString()));
+						} catch (IOException e){
+							Log.e(TAG, "Error downloading " + esMangaHere.ROOT_URL + "/directory/" + i + ".htm");
+						} catch (InterruptedException e) {
+							Log.e(TAG, "Error while it was adding a Doc to queue");
+							e.printStackTrace();
 						}
 					}
-				}).start();
-				
-				// Processed mangas
-				for(int i = 1; i < pages; i++){
-					Log.d(TAG, "Processing directory ( " + i + " )");
-					mangaDao.callBatchTasks(
-						new Callable<Void>(){
-							public Void call() throws Exception {	
-								storeMangas(mangaDao, esMangaHere.parseMangasDirectory(downloads.take(), categories));
-								return null;
-							}
-						}
-					);
 				}
-				Log.d(TAG, "Mangas in DB: " + mangaDao.countOf());
-			} else {
-				Log.d(TAG, "Mangas already are updated");
+			}).start();
+			
+			// Processed mangas
+			for(int i = 1; i < pages; i++){
+				Log.d(TAG, "Processing directory ( " + i + " )");
+				mangaDao.callBatchTasks(
+					new Callable<Void>(){
+						public Void call() throws Exception {	
+							storeMangas(mangaDao, esMangaHere.parseMangasDirectory(downloads.take(), categories));
+							return null;
+						}
+					}
+				);
 			}
-		} catch (IOException e) {
-			Log.e(TAG, "Error downloading " + esMangaHere.MANGAS_LIST_URL);
-			e.printStackTrace();
+			Log.d(TAG, "Mangas in DB: " + mangaDao.countOf());
+		} catch (IOException e1) {
+			Log.e(TAG, "Managa Catalog couldn't be retrived!");
+			e1.printStackTrace();
 		}
 	}
 	
 	private void storeMangas(final RuntimeExceptionDao<Manga, String> mangaDao, final Manga[] mangas){
 		RuntimeExceptionDao<CategoryManga, Integer> categoryMangaDao = getHelper().getCategoryMangaRunDao();
+		RuntimeExceptionDao<Link, Integer> linkDao = getHelper().getLinkRunDao();
 		for(Manga m : mangas){
+			linkDao.createOrUpdate(m.link);
 			mangaDao.createOrUpdate(m);
 			for(Category c : m.categories) {
 				categoryMangaDao.createOrUpdate(new CategoryManga(c,m)); 
@@ -297,7 +296,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 	 * @param url
 	 * @return Document or null
 	 */
-	private Document getURL(String url) throws IOException {
+	public static Document getURL(String url) throws IOException {
 		return Jsoup.connect(url)
 					  .userAgent("Mozilla")
 					  .cookie("auth", "token")

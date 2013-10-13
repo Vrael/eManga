@@ -7,6 +7,7 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -100,8 +101,11 @@ public void onLoadFinished(Loader<MangaItem> loader, MangaItem data) {
 	image.setVisibility(View.VISIBLE);
 	
 	text = (TextView) rootView.findViewById(R.id.manga_description); 
-	text.setText(mManga.manga.description);
+	text.setText((mManga.manga.description == null || mManga.manga.description.isEmpty())? 
+			"< There isn't a description about this manga yet >": mManga.manga.description);
 	text.setVisibility(View.VISIBLE);
+	
+	((Button) rootView.findViewById(R.id.manga_button_start)).setVisibility(View.VISIBLE);
 	
 	// TODO: Falta las categorías!!
 	// TODO: Falta el Listener del botón!!

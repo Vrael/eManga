@@ -29,6 +29,8 @@ public class Manga {
 	public Date publicationEnd;
 	@ForeignCollectionField
 	public ForeignCollection<Chapter> chapters;
+	@DatabaseField(foreign = true)
+	public Link link;
 	
 	// Handle categories for N - N relationship in CategoryManga
 	public List<Category> categories;
@@ -46,9 +48,10 @@ public class Manga {
 		cover = image;
 	}
 	
-	public Manga(String name, String image, List<Category> categoriesList) {
+	public Manga(String name, String image, List<Category> categoriesList, Link url) {
 		title = name;
 		cover = image;
 		categories = categoriesList;
+		link = url;
 	}
 }

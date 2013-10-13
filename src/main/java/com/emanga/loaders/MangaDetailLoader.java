@@ -1,21 +1,29 @@
 package com.emanga.loaders;
 
+import java.io.IOException;
 import java.sql.SQLException;
+
+import org.jsoup.nodes.Document;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
+import android.util.Log;
 
 import com.emanga.database.DatabaseHelper;
 import com.emanga.models.Category;
 import com.emanga.models.CategoryManga;
+import com.emanga.models.Link;
 import com.emanga.models.Manga;
 import com.emanga.models.MangaContent;
 import com.emanga.models.MangaContent.MangaItem;
+import com.emanga.services.UpdateDatabase;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 public class MangaDetailLoader extends AsyncTaskLoader<MangaContent.MangaItem> {
+	
+	private static final String TAG = MangaDetailLoader.class.getName();
 	
 	// It is the same as manga title
 	private String mangaId;
@@ -25,6 +33,7 @@ public class MangaDetailLoader extends AsyncTaskLoader<MangaContent.MangaItem> {
 	private RuntimeExceptionDao<Manga, String> mangaDao;
 	private RuntimeExceptionDao<Category, Integer> categoryDao;
 	private RuntimeExceptionDao<CategoryManga, Integer> categoryMangaDao;
+	private RuntimeExceptionDao<Link, Integer> linkDao;
 	
 	public MangaDetailLoader(Context context, String id) {
 		super(context);
@@ -34,6 +43,7 @@ public class MangaDetailLoader extends AsyncTaskLoader<MangaContent.MangaItem> {
 		mangaDao = helper.getMangaRunDao();
 		categoryDao = helper.getCategoryRunDao();
 		categoryMangaDao = helper.getCategoryMangaRunDao();
+		linkDao = helper.getLinkRunDao();
 	}
 
 	@Override
@@ -44,13 +54,31 @@ public class MangaDetailLoader extends AsyncTaskLoader<MangaContent.MangaItem> {
 			// Get the manga by Id
 			mangaItem.manga = mangaDao.queryForId(mangaId);
 			
+			// Get manga description if it isn't in database yet
+			if(mangaItem.manga.description == null){
+				//TODO Move this to UpdateDatbaseService (url connections manager)
+				try {
+					linkDao.refresh(mangaItem.manga.link);
+					
+					Document doc = UpdateDatabase.getURL(mangaItem.manga.link.url);
+					mangaItem.manga.description = doc.select("#show").first().ownText();
+					System.out.println(doc.select("#show").first().ownText());
+					mangaDao.update(mangaItem.manga);
+				} catch (IOException e) {
+					Log.e(TAG, "Manga description couldn't be retrived!");
+					e.printStackTrace();
+				}
+			}
+			
 			// Get the category list
 			QueryBuilder<Category, Integer> qBc = categoryDao.queryBuilder();
 			QueryBuilder<CategoryManga, Integer> qBcm = categoryMangaDao.queryBuilder();
 			qBcm.where().eq(CategoryManga.MANGA_COLUMN_NAME, mangaId);
 			qBc.join(qBcm);
 			mangaItem.categories = qBc.query();
+			
 			manga = mangaItem;
+			
 			// TODO: Make something with chapters...
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

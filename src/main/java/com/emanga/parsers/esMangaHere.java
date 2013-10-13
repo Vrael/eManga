@@ -16,6 +16,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.emanga.models.Category;
+import com.emanga.models.Link;
 import com.emanga.models.Manga;
 import com.emanga.utils.Dictionary;
 
@@ -135,23 +136,27 @@ public class esMangaHere {
 	 */
 	public static Manga[] parseMangasDirectory(Document documentsHtml, HashMap<String,Category> categories){
 		Elements mangasHtml = documentsHtml.select(".directory_list ul li");
-		
 		Manga[] mangas = new Manga[mangasHtml.size()];
 		
 		Elements covers = mangasHtml.select(".manga_img img");
+		Elements titles = mangasHtml.select(".title a");
 		Elements categoriesName = mangasHtml.select(".manga_text p:nth-of-type(2)");
 		
 		Iterator<Element> itcategoriesName = categoriesName.iterator();
+		Iterator<Element> itcovers = covers.iterator();
+		
 		int i = 0;
-		for(Element cover : covers) {
+		for(Element title: titles){
 			mangas[i] = new Manga(
-					cover.attr("alt").toLowerCase(),
-					cover.attr("src").replaceAll("thumb_", ""),
+					title.text().toLowerCase(),
+					itcovers.next().attr("src").replaceAll("thumb_", ""),
 					// Arrays.asList is not a real list (it can't add objects as .add instead of it use [i])
-					Arrays.asList(getCategoriesFromString(itcategoriesName.next().text(), categories))
+					Arrays.asList(getCategoriesFromString(itcategoriesName.next().text(), categories)),
+					new Link(title.attr("href"))
 					);
 			i++;
 		}
+		
 		return mangas;
 	}
 		

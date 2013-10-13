@@ -14,7 +14,7 @@ public class Link {
 	@DatabaseField
 	public String url;
 	@DatabaseField(foreign = true)
-	private Chapter chapter;
+	public Chapter chapter;
 	
 	public Link() {
 		// needed by ormlite
@@ -23,5 +23,9 @@ public class Link {
 	public Link(String link, Chapter c) {
 		url = link;
 		chapter = c;
+	}
+
+	public Link(String link){
+		url = link;
 	}
 }

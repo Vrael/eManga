@@ -1,5 +1,5 @@
 #
-# generated on 2013/09/23 07:34:12
+# generated on 2013/10/13 04:20:46
 #
 # --table-start--
 dataClass=com.emanga.models.Link
@@ -69,6 +69,10 @@ fieldName=publicationEnd
 # --field-start--
 fieldName=chapters
 foreignCollection=true
+# --field-end--
+# --field-start--
+fieldName=link
+foreign=true
 # --field-end--
 # --table-fields-end--
 # --table-end--
