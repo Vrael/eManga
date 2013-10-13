@@ -40,6 +40,22 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.emanga.activities.MainActivity" />
         </activity>
+        <activity
+            android:name="com.emanga.MangaListActivity"
+            android:label="@string/title_manga_list"
+            android:parentActivityName="com.emanga.activities.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.emanga.activities.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.emanga.MangaDetailActivity"
+            android:label="@string/title_manga_detail"
+            android:parentActivityName=".MangaListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MangaListActivity" />
+        </activity>
     </application>
 
 </manifest>

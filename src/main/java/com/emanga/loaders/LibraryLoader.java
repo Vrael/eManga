@@ -1,5 +1,6 @@
 package com.emanga.loaders;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import android.content.BroadcastReceiver;
@@ -13,6 +14,7 @@ import com.emanga.database.DatabaseHelper;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateDatabase;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 public class LibraryLoader extends AsyncTaskLoader<List<Manga>> {
 	
@@ -21,17 +23,41 @@ public class LibraryLoader extends AsyncTaskLoader<List<Manga>> {
 	private List<Manga> mangas;
 	private MangaIntentReceiver mMangaObserver;
 	
+	private DatabaseHelper helper;
+	
+	private QueryBuilder<Manga, String> qBm;
+	private static final long POSITION = 0;
+	private static final long AMOUNT = 12;
+	
 	public LibraryLoader(Context context) {
 		super(context);
+		helper = OpenHelperManager.getHelper(getContext(), DatabaseHelper.class);
+		
+		try {	
+			 qBm = helper.getMangaRunDao().queryBuilder();
+			 qBm.orderBy(Manga.TITLE_COLUMN_NAME, true);
+			 qBm.offset(POSITION).limit(AMOUNT);
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override
 	public List<Manga> loadInBackground() {
 		Log.d(TAG, "Getting latest mangas from DB");
-		DatabaseHelper helper = OpenHelperManager.getHelper(getContext(), DatabaseHelper.class);
 		
 		//TODO: This must be change for all mangas, but loaded when there is scroll event
-		mangas = helper.getMangaRunDao().queryForAll();
+	
+		try {
+			mangas = qBm.query();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		return mangas;
 	}
 	
@@ -126,7 +152,7 @@ public class LibraryLoader extends AsyncTaskLoader<List<Manga>> {
 	   
 	   public MangaIntentReceiver(LibraryLoader loader) {
 		   mLoader = loader;
-		   IntentFilter filter = new IntentFilter(UpdateDatabase.ACTION_LATEST_CHAPTERS);
+		   IntentFilter filter = new IntentFilter(UpdateDatabase.ACTION_LATEST_MANGAS);
 		   mLoader.getContext().registerReceiver(this, filter);
 	   }
 	   

@@ -17,7 +17,7 @@ import com.emanga.models.Manga;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-public class CarouselMangaAdapter extends BaseAdapter {
+public class MangaItemListAdapter extends BaseAdapter {
     private Context mContext;
 
     public List<Manga> mangas = new ArrayList<Manga>();
@@ -25,7 +25,7 @@ public class CarouselMangaAdapter extends BaseAdapter {
     private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	
-    public CarouselMangaAdapter(Context c) {
+    public MangaItemListAdapter(Context c) {
     	mContext = c;
     	
     	options = new DisplayImageOptions.Builder()
@@ -50,21 +50,16 @@ public class CarouselMangaAdapter extends BaseAdapter {
         return position;
     }
     
-    public void setMangas(List<Manga> list) {
-    	mangas = list;
-    	notifyDataSetChanged();
-    }
-    
     public View getView(int position, View convertView, ViewGroup parent){
     	ViewHolder holder;
 
 		if (convertView == null) {
-			convertView = LayoutInflater.from(mContext).inflate(R.layout.carousel_item, parent, false);
+			convertView = LayoutInflater.from(mContext).inflate(R.layout.manga_item_list, parent, false);
 
 			holder = new ViewHolder();
-			holder.cover = (ImageView) convertView.findViewById(R.id.carousel_cover);
-			holder.title = (TextView) convertView.findViewById(R.id.carousel_title);
-			holder.description = (TextView) convertView.findViewById(R.id.carousel_description);
+			holder.cover = (ImageView) convertView.findViewById(R.id.manga_list_cover);
+			holder.title = (TextView) convertView.findViewById(R.id.manga_list_title);
+			// holder.description = (TextView) convertView.findViewById(R.id.carousel_description);
 
 			convertView.setTag(holder);
 		} else {
@@ -74,16 +69,7 @@ public class CarouselMangaAdapter extends BaseAdapter {
 		Manga m = getItem(position);
         
 		holder.title.setText(m.title);
-		//TODO: Change to m.description
-        holder.description.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-    			+ "Duis ut bibendum magna. Quisque tempus imperdiet lacus, ut tincidunt purus hendrerit ac. "
-    			+ "Praesent adipiscing, nisl eu tincidunt pellentesque, orci ipsum iaculis nisi, "
-    			+ "a scelerisque turpis massa in libero. Fusce et magna urna. Aliquam tristique viverra diam nec ornare. "
-    			+ "Maecenas ornare enim eu est iaculis luctus. Praesent at imperdiet sapien. "
-    			+ "Cras molestie ultricies neque sit amet cursus. Donec condimentum pretium porta. "
-    			+ "Aliquam elementum dignissim tellus sit amet vulputate. Fusce nec mauris feugiat, sodales est sit amet, "
-    			+ "congue mi. Vivamus iaculis molestie velit, sit amet dictum eros bibendum eu. "
-    			+ "Nam libero nulla, mattis ut augue ut, porta dignissim lectus.");
+        // holder.description.setText(m.description);
         imageLoader.displayImage(m.cover, holder.cover, options);
 		
         return convertView;
@@ -92,6 +78,6 @@ public class CarouselMangaAdapter extends BaseAdapter {
     static class ViewHolder {
     	public ImageView cover;
     	public TextView title;
-    	public TextView description;
+    	// public TextView description;
     }
 }

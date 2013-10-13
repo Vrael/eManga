@@ -1,6 +1,7 @@
 package com.emanga.activities;
 
-import java.sql.SQLException;
+
+
 import java.util.List;
 
 import android.app.ActionBar;
@@ -14,8 +15,10 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,22 +30,22 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.emanga.R;
-import com.emanga.adapters.CarouselMangaAdapter;
 import com.emanga.adapters.ThumbnailChapterAdapter;
-import com.emanga.database.OrmliteFragment;
+import com.emanga.fragments.LibrarySectionFragment;
+import com.emanga.fragments.MangaDetailFragment;
+import com.emanga.fragments.MangaListFragment;
 import com.emanga.loaders.LatestChaptersLoader;
-import com.emanga.loaders.LibraryLoader;
 import com.emanga.models.Chapter;
-import com.emanga.models.Manga;
 import com.emanga.services.UpdateDatabase;
-import com.emanga.utils.HorizontalListView;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.stmt.QueryBuilder;
 
-public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
+public class MainActivity extends FragmentActivity 
+	implements ActionBar.TabListener, MangaListFragment.Callbacks {
+	
+	private static final String TAG = MainActivity.class.getName();
+	
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
-    
+	
 	/**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
@@ -184,16 +187,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     /**
      * A fragment that with all Mangas orders by genre
      */
+    /*
     public static class LibrarySectionFragment extends OrmliteFragment 
     	implements LoaderManager.LoaderCallbacks<List<Manga>> {    	  	
         
     	private HorizontalListView mHorizontalList;
-        private CarouselMangaAdapter mAdapter;
+        private MangaItemListAdapter mAdapter;
         
         @Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			mAdapter = new CarouselMangaAdapter(getActivity());
+			mAdapter = new MangaItemListAdapter(getActivity());
         }
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -226,7 +230,34 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 	            }
 	        });
         	
-        	mHorizontalList.setAdapter(mAdapter);
+        	mHorizontalList.setOnHoverListener(new OnHoverListener() {
+				
+				public boolean onHover(View v, MotionEvent event) {
+					Toast.makeText(getActivity(), "HOVER EVENT!", Toast.LENGTH_SHORT).show();
+					System.out.println("HOVER EVENT!");
+					return false;
+				}
+			});
+        	
+        	mHorizontalList.setOnGenericMotionListener(new OnGenericMotionListener() {
+				
+				public boolean onGenericMotion(View v, MotionEvent event) {
+					Toast.makeText(getActivity(), "GENERIC MOTION EVENT!", Toast.LENGTH_SHORT).show();
+					System.out.println("GENERIC MOTION EVENT!");
+					return false;
+				}
+			});
+        	
+        	mHorizontalList.setOnDragListener(new OnDragListener() {
+				
+				public boolean onDrag(View v, DragEvent event) {
+					Toast.makeText(getActivity(), "DRAG MOTION EVENT!", Toast.LENGTH_SHORT).show();
+					System.out.println("DRAG MOTION EVENT!");
+					return false;
+				}
+			});
+        	
+          	mHorizontalList.setAdapter(mAdapter);
         	
         	return rootView;
         }
@@ -243,8 +274,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 			return new LibraryLoader(getActivity());
 		}
 
-		public void onLoadFinished( Loader<List<Manga>> loader, List<Manga> mangas ) {
-			
+		public void onLoadFinished( Loader<List<Manga>> loader, List<Manga> mangas ) {			
 			mAdapter.setMangas(mangas);
 		}
 
@@ -252,7 +282,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 			mAdapter.setMangas(null);
 		}
     }
-    
+    */
     /**
      * A fragment that with favourites Mangas
      */
@@ -294,7 +324,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
-            case R.id.action_search:
+        	case android.R.id.home:
+        		NavUtils.navigateUpFromSameTask(this);
+        		return true;
+        	case R.id.action_search:
                 // openSearch();
                 return true;
             case R.id.action_settings:
@@ -315,6 +348,34 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 	}
 
 	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-	} 
+	}
+
+	/**
+	 * Callback method from {@link MangaListFragment.Callbacks} indicating that
+	 * the item with the given ID was selected.
+	 */
+	public void onItemSelected(String id) {
+		if (LibrarySectionFragment.mTwoPane) {
+			// In two-pane mode, show the detail view in this activity by
+			// adding or replacing the detail fragment using a
+			// fragment transaction.
+			Bundle arguments = new Bundle();
+			arguments.putString(MangaDetailFragment.ARG_MANGA_ID, id);
+			Log.d(TAG, "Id of manga selected" + id);
+			MangaDetailFragment fragment = new MangaDetailFragment();
+			fragment.setArguments(arguments);
+			getSupportFragmentManager().beginTransaction()
+					.replace(R.id.manga_detail_container, fragment).commit();
+		}
+		else {
+			Bundle arguments = new Bundle();
+			arguments.putString(MangaDetailFragment.ARG_MANGA_ID, id);
+			Log.d(TAG, "Id of manga selected");
+			MangaDetailFragment fragment = new MangaDetailFragment();
+			fragment.setArguments(arguments);
+			getSupportFragmentManager().beginTransaction()
+					.replace(R.id.manga_list, fragment).commit();
+		}
+	}
 }
 

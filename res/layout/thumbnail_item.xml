@@ -3,7 +3,9 @@
     android:layout_width="@dimen/gridview_thumb_width"
     android:layout_height="@dimen/gridview_thumb_height"
     android:background="@android:color/white"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:layout_marginLeft="14dp"
+    android:layout_marginRight="14dp" >
     
     <TextView android:id="@+id/thumb_date"
               android:layout_width="match_parent"
@@ -13,20 +15,12 @@
               android:maxLines="1"
               android:textSize="10sp"
               android:padding="8dp" />
-    
-    <ProgressBar
-        	  android:id="@+id/thumb_progressbar"
-        	  android:layout_width="wrap_content"
-		      android:layout_height="wrap_content"
-        	  android:layout_gravity="center"
-        	  style="@android:style/Widget.ProgressBar.Small" />
-    
+       
 	<ImageView 
         	  android:id="@+id/thumb_cover"
         	  android:layout_width="@dimen/gridview_thumb_width"
               android:layout_height="@dimen/gridview_cover_height"
-              android:contentDescription="cover"
-              android:visibility="gone" />
+              android:contentDescription="cover" />
     
     <TextView android:id="@+id/thumb_title"
               android:layout_width="match_parent"

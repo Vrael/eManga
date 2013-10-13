@@ -34,9 +34,11 @@ public class UpdateDatabase extends OrmliteIntentService {
 	
 	private static final String ACTION = "com.manga.intent.action";
 	public static final String ACTION_LATEST_CHAPTERS = ACTION + ".latestChapters";
+	public static final String ACTION_LATEST_MANGAS = ACTION + ".latestMangas";
 	public static final String INTENT_CHAPTER_ID = "chapterId";
+	public static final String INTENT_MANGA_ID = "mangaId";
 	
-	private static final byte NUMBER_OF_MANGAS = 30;
+	private static final byte NUMBER_OF_MANGAS = 5;
 	
 	public UpdateDatabase() {
 		super("UpdateDBService");
@@ -67,14 +69,17 @@ public class UpdateDatabase extends OrmliteIntentService {
 				m = mangaDao.queryForId(esMangaHere.parseTitleManga(manga));
 				if (m == null){
 					chapterId = createMangaWithChapter(mangaDao, manga);
+					// Send an intent with the latest manga id for updates Library
+					sendBroadcast(new Intent(ACTION_LATEST_MANGAS));
 				} else {
 					// Manga already exists so it will save only new manga chapters
 					chapterId = createChapters(mangaDao, m, manga.select("dd a[href]"));
+					// If already the most recently chapter exists, it doesn't going to parse the rest
+					if (chapterId == -1) break;
+					// Send an intent with the latest chapter id of this manga (most recently chapter only)
+					sendBroadcast((new Intent(ACTION_LATEST_CHAPTERS))
+							.putExtra(INTENT_CHAPTER_ID, chapterId));
 				}
-				
-				// Send an intent with the latest chapter id of this manga (most recently chapter only)
-				sendBroadcast((new Intent(ACTION_LATEST_CHAPTERS))
-						.putExtra(INTENT_CHAPTER_ID, chapterId));
 			}
 		} catch (IOException e){
 			Log.e(TAG, "Latest chapters couldn't be retrived");
@@ -97,7 +102,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 				Log.e(TAG, "Couldn't parse from chapter html");
 			}
 		}
-		// First id is the latest chapter (see esMangaHere/latest)
+		// First id is the latest chapter of the manga (see esMangaHere/latest)
 		return (!ids.isEmpty())? ids.get(0) : -1;
 	}
 	/**
@@ -223,6 +228,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 			
 			// Check number of mangas in DB and remote site
 			if (esMangaHere.parseMangasCount(html) != mangaDao.countOf()) {
+				Log.d(TAG, "Online: " + esMangaHere.parseMangasCount(html) + " - BD: " + mangaDao.countOf());
 				final HashMap<String, Category> categories = getCategories();
 				
 				// Queue with html of each page http://es.mangahere.com/directory/1...N.htm
@@ -258,6 +264,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 						}
 					);
 				}
+				Log.d(TAG, "Mangas in DB: " + mangaDao.countOf());
 			} else {
 				Log.d(TAG, "Mangas already are updated");
 			}

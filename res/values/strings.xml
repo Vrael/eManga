@@ -17,8 +17,15 @@
 
     <!-- Ormlite -->
     <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
+    
+    <!-- Manga Buttons -->
+    <string name="button_start">Start</string>
     <string name="title_activity_reader">Reader</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_manga_list">Mangas</string>
+    <string name="title_manga_detail">Manga Detail</string>
+    <string name="title_item_list">Items</string>
+    <string name="title_item_detail">Item Detail</string>
 
 </resources>

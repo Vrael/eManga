@@ -42,7 +42,10 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 		try {
 			qBcLocal = chapterDao.queryBuilder();
 			qBcLocal.where().ge(Chapter.DATE_COLUMN_NAME, time.getTime());
-			qBcLocal.orderBy(Chapter.DATE_COLUMN_NAME, false);
+			// TODO: Change because it is getting the first chapter of the latest chapters: eg: 133 - 132 - (131)
+			qBcLocal.orderBy(Chapter.NUMBER_COLUMN_NAME, false).orderBy(Chapter.DATE_COLUMN_NAME, false);
+			qBcLocal.groupBy(Chapter.MANGA_COLUMN_NAME);
+			
 		} catch (SQLException e) {
 			Log.e(TAG, "Error when it was building the chapters query");
 			e.printStackTrace();
@@ -53,22 +56,24 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 
 	@Override
 	public List<Chapter> loadInBackground() {
+		List<Chapter> latest = null;
 		try {
 			if(!newChapters.isEmpty()){
+				latest = new ArrayList<Chapter>();
 				for(Integer id : newChapters) {
-					chapters.add(chapterDao.queryForId(id));
+					latest.add(chapterDao.queryForId(id));
 				}
 				newChapters.clear();
 				
 			} else {
-				chapters = qBcLocal.query();
+				latest = qBcLocal.query();
 			}
 			
 		} catch (SQLException e) {
 			Log.e(TAG, "Error when it was loading chapters from DB");
 			e.printStackTrace();
 		}
-		return chapters;
+		return latest;
 	}
 	
    @Override
