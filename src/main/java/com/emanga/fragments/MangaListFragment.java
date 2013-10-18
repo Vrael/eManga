@@ -1,17 +1,19 @@
 package com.emanga.fragments;
 
-import java.util.List;
-
 import android.app.Activity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
 import android.widget.ListView;
 
-import com.emanga.adapters.MangaItemListAdapter;
+import com.emanga.R;
+import com.emanga.adapters.MangaItemListCursorAdapter;
 import com.emanga.loaders.LibraryLoader;
+import com.emanga.models.Category;
 import com.emanga.models.Manga;
 
 /**
@@ -24,7 +26,7 @@ import com.emanga.models.Manga;
  * interface.
  */
 public class MangaListFragment extends ListFragment
-	implements LoaderManager.LoaderCallbacks<List<Manga>> {
+	implements LoaderManager.LoaderCallbacks<Cursor> {
 
 	/**
 	 * The serialization (saved instance state) Bundle key representing the
@@ -70,13 +72,20 @@ public class MangaListFragment extends ListFragment
 	 */
 	public MangaListFragment() {}
 
-	private MangaItemListAdapter mAdapter; 
+	private MangaItemListCursorAdapter mAdapter;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		mAdapter = new MangaItemListAdapter(getActivity());
+		mAdapter = new MangaItemListCursorAdapter(
+				getActivity(), 
+				R.layout.manga_item_list, 
+				null, 
+				new String[]{Manga.TITLE_COLUMN_NAME, Category.NAME_COLUMN_NAME}, 
+				new int[]{R.id.manga_list_title, R.id.manga_list_categories}, 
+				SimpleCursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+		
 		setListAdapter(mAdapter);
 		
 		getLoaderManager().initLoader(9, null, this);
@@ -118,10 +127,15 @@ public class MangaListFragment extends ListFragment
 	public void onListItemClick(ListView listView, View view, int position,
 			long id) {
 		super.onListItemClick(listView, view, position, id);
-
+		
 		// Notify the active callbacks interface (the activity, if the
 		// fragment is attached to one) that an item has been selected.
-		mCallbacks.onItemSelected(mAdapter.getItem(position).title);
+		
+		Cursor cursor = mAdapter.getCursor();
+		cursor.moveToPosition(position);
+		mCallbacks.onItemSelected(cursor.getString(
+				cursor.getColumnIndex(Manga.TITLE_COLUMN_NAME)));
+		
 	}
 
 	@Override
@@ -155,17 +169,19 @@ public class MangaListFragment extends ListFragment
 		mActivatedPosition = position;
 	}
 
-	public Loader<List<Manga>> onCreateLoader(int id, Bundle args) {
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		return new LibraryLoader(getActivity());
 	}
 
-	public void onLoadFinished(Loader<List<Manga>> loader, List<Manga> data) {
-		mAdapter.mangas = data;
-		mAdapter.notifyDataSetChanged();
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		mAdapter.swapCursor(data);
+
+	    ListView lv = getListView();
+	    lv.setFastScrollEnabled(true);
+	    lv.setScrollingCacheEnabled(true);
 	}
 
-	public void onLoaderReset(Loader<List<Manga>> loader) {
-		mAdapter.mangas.clear();
-		
+	public void onLoaderReset(Loader<Cursor> loader) {
+		mAdapter.swapCursor(null);
 	}
 }

@@ -10,18 +10,18 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable
 public class Manga {
-	public static final String TITLE_COLUMN_NAME = "title";
+	public static final String TITLE_COLUMN_NAME = "_id";
 	public static final String COVER_COLUMN_NAME = "cover";
 	public static final String DESCRIPTION_COLUMN_NAME = "description";
 	public static final String PUBLICATIONSTART_COLUMN_NAME = "publicationStart";
 	public static final String PUBLICATIONEND_COLUMN_NAME = "publicationEnd";
 	public static final String CHAPTERS_COLUMN_NAME = "chapters";
 	
-	@DatabaseField(id = true)
+	@DatabaseField(id = true, columnName = TITLE_COLUMN_NAME)
 	public String title;
 	@DatabaseField
 	public String cover;
-	@DatabaseField
+	@DatabaseField(columnName = DESCRIPTION_COLUMN_NAME)
 	public String description;
 	@DatabaseField
 	public Date publicationStart;

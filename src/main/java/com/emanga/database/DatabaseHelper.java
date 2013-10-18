@@ -3,6 +3,7 @@ package com.emanga.database;
 import java.sql.SQLException;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -13,7 +14,6 @@ import com.emanga.models.Chapter;
 import com.emanga.models.Link;
 import com.emanga.models.Manga;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
-import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
@@ -28,13 +28,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private static final String DATABASE_NAME = "emanga.db";
 	private static final int DATABASE_VERSION = 2;
 
-	// the DAO objects
-	private Dao<Category, Integer> categoryDao = null;
-	private Dao<Manga, String> mangaDao = null;
-	private Dao<CategoryManga, Integer> CategoryMangaDao = null;
-	private Dao<Chapter, Integer> chapterDao = null;
-	private Dao<Link, Integer> linkDao = null;
-	
 	private RuntimeExceptionDao<Category, Integer> categoryRuntimeDao = null;
 	private RuntimeExceptionDao<Manga, String> mangaRuntimeDao = null;
 	private RuntimeExceptionDao<CategoryManga, Integer> CategoryMangaRuntimeDao = null;
@@ -85,39 +78,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			throw new RuntimeException(e);
 		}
 	}
-
-	/**
-	 * Returns the Database Access Object (DAO) for our classes. It will create it or just give the cached
-	 * value.
-	 */
-	public Dao<Category, Integer> getCategoryDao() throws SQLException {
-		if(categoryDao == null)
-			getDao(Category.class);
-		return categoryDao;
-	}
-	
-	public Dao<Manga, String> getMangaDao() throws SQLException {
-		if(mangaDao == null)
-			getDao(Manga.class);
-		return mangaDao;
-	}
-	
-	public Dao<CategoryManga, Integer> getCategoryMangaDao() throws SQLException {
-		if(CategoryMangaDao == null)
-			getDao(CategoryManga.class);
-		return CategoryMangaDao;
-	}
-	public Dao<Chapter, Integer> getChapterDao() throws SQLException {
-		if(chapterDao == null)
-			getDao(Chapter.class);
-		return chapterDao;
-	}
-	
-	public Dao<Link, Integer> getLinkDao() throws SQLException {
-		if(linkDao == null)
-			getDao(Link.class);
-		return linkDao;
-	}
 	
 	/**
 	 * Returns the RuntimeExceptionDao, a version of a Dao for our classes. It will
@@ -164,5 +124,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		mangaRuntimeDao = null;
 		chapterRuntimeDao = null;
 		linkRuntimeDao = null;
+	}
+	
+	public Cursor getMangasWithCategories(){
+		// Field _id is the manga's title too
+		return this.getReadableDatabase().rawQuery(
+				"SELECT manga._id, manga.cover, GROUP_CONCAT(category.name, ', ')"
+				+ " AS " + Category.NAME_COLUMN_NAME + " FROM manga"
+				+ " INNER JOIN categorymanga ON categorymanga.manga_id = manga._id"
+				+ " INNER JOIN category ON category.id = categorymanga.category_id"
+				+ " GROUP BY manga._id", null);
 	}
 }

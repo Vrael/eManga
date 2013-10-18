@@ -20,12 +20,19 @@ public class MangaContent{
 		public List<Category> categories;
 		public Manga manga;
 		public List<Chapter> chapters;
-	}
-	
-	public static class MangaItemList {
-		public String id;
-		public String title;
-		public String cover;
+		
+		public MangaItem() {}
+		
+		public MangaItem(Manga m, List<Category> c){
+			manga = m;
+			categories = c;
+		}
+		
+		public MangaItem(Manga m, List<Category> c, List<Chapter> ch){
+			manga = m;
+			categories = c;
+			chapters = ch;
+		}
 	}
 }
 

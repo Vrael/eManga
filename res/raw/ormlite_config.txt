@@ -1,5 +1,5 @@
 #
-# generated on 2013/10/13 04:20:46
+# generated on 2013/10/17 02:30:18
 #
 # --table-start--
 dataClass=com.emanga.models.Link
@@ -52,6 +52,7 @@ tableName=manga
 # --table-fields-start--
 # --field-start--
 fieldName=title
+columnName=_id
 id=true
 # --field-end--
 # --field-start--
@@ -59,6 +60,7 @@ fieldName=cover
 # --field-end--
 # --field-start--
 fieldName=description
+columnName=description
 # --field-end--
 # --field-start--
 fieldName=publicationStart
