@@ -1,0 +1,79 @@
+<ScrollView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true" >
+
+	<RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:id="@+id/manga_detail"
+	    android:background="@android:color/white"
+	    tools:context=".MangaDetailFragment" >
+	    
+	    <TextView 
+	        android:id="@+id/manga_title"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:textSize="22sp"
+	        android:paddingLeft="50dp"
+	        android:paddingTop="50dp"
+	        android:paddingBottom="20dp"
+	        android:textStyle="bold"
+	        android:textAllCaps="true" />
+	    
+	    <ImageView 
+	        android:id="@+id/manga_cover"
+	        android:layout_width="138dp"
+	        android:layout_height="207dp"
+	        android:layout_below="@id/manga_title"
+	        android:layout_alignParentRight="true"
+	        android:scaleType="fitXY"
+	        android:adjustViewBounds="true"
+	        android:padding="16dp"
+	        android:contentDescription="manga's cover" />
+	    
+	    <TextView 
+	        android:id="@+id/manga_categories"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@id/manga_title"
+	        android:layout_toLeftOf="@id/manga_cover"
+	        android:padding="8dp" />
+	    
+	    <ProgressBar 
+	        android:id="@+id/manga_progressbar"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        style="@android:style/Widget.ProgressBar.Small"
+	        android:layout_centerHorizontal="true"
+	        android:layout_centerVertical="true"
+	        android:layout_toLeftOf="@id/manga_cover"
+	        android:layout_below="@id/manga_categories" />
+	    
+	    <WebView 
+	        android:id="@+id/manga_description"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:paddingTop="40dp"
+	        android:paddingLeft="70dp"
+	        android:paddingRight="70dp"
+	        android:paddingBottom="40dp"
+	        android:layout_toLeftOf="@id/manga_cover"
+	        android:layout_below="@id/manga_categories"
+	        android:visibility="gone" />
+	    
+	    <Button 
+	        android:id="@+id/manga_button_start"
+	        android:layout_width="180dp"
+	        android:layout_height="wrap_content"
+	        android:text="@string/button_start"
+	        android:layout_centerHorizontal="true"
+	        android:layout_alignParentBottom="true"
+	        android:background="#33B5E5"
+	        android:textColor="@android:color/white"
+	        android:layout_marginBottom="22dp" />
+	    
+	</RelativeLayout>
+</ScrollView>

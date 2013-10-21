@@ -6,9 +6,12 @@ import java.util.List;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
+import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -27,6 +30,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.emanga.R;
@@ -61,7 +65,6 @@ public class MainActivity extends FragmentActivity
         
         // Home button navigates to main activity
         final ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
         
         // Specify that tabs should be displayed in the action bar.
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -130,24 +133,47 @@ public class MainActivity extends FragmentActivity
     	implements LoaderManager.LoaderCallbacks<List<Chapter>> {
     	
     	private ThumbnailChapterAdapter mAdapter;
-        
+    	private ProgressBar bar;
+    	
+    	// This Receiver updates the progress bar (that indicates there are chapters 
+    	// restoring and processing from internet)
+    	private BroadcastReceiver mChapterReceiver = new BroadcastReceiver() {
+		    @Override
+		    public void onReceive(Context context, Intent intent) {
+		      bar.setProgress(bar.getProgress() + 1);
+		      if (intent.getBooleanExtra(UpdateDatabase.INTENT_LATEST_CHAPTER, false)){
+		    	  bar.setProgress(bar.getMax());
+		    	  bar.setVisibility(View.INVISIBLE);
+		      }
+		   }
+		};
+		
     	@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			
 			mAdapter = new ThumbnailChapterAdapter(getActivity());
 			
+			Activity activity = getActivity();
+			
 			// Starts Update Database Services
-			getActivity().startService(new Intent(getActivity(), UpdateDatabase.class));
+			activity.startService(new Intent(getActivity(), UpdateDatabase.class));
+			
+			activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateDatabase.ACTION_LATEST_CHAPTERS));
+			activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateDatabase.ACTION_LATEST_MANGAS));
 		}
-    	
+    		
     	@Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
         	View rootView = inflater.inflate(
 	                R.layout.fragment_section, container, false);
         	
-            GridView gridview = (GridView) rootView.findViewById(R.id.grid_view); 
+            bar = (ProgressBar) getActivity().findViewById(R.id.progressbar_background_tasks);
+            bar.setMax(UpdateDatabase.NUMBER_OF_MANGAS);
+            bar.setProgress(1);
+            
+        	GridView gridview = (GridView) rootView.findViewById(R.id.grid_view); 
 	        gridview.setAdapter(mAdapter);
 	    
 	        gridview.setOnItemClickListener(new OnItemClickListener() {
@@ -184,105 +210,6 @@ public class MainActivity extends FragmentActivity
 		
     }
     
-    /**
-     * A fragment that with all Mangas orders by genre
-     */
-    /*
-    public static class LibrarySectionFragment extends OrmliteFragment 
-    	implements LoaderManager.LoaderCallbacks<List<Manga>> {    	  	
-        
-    	private HorizontalListView mHorizontalList;
-        private MangaItemListAdapter mAdapter;
-        
-        @Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			mAdapter = new MangaItemListAdapter(getActivity());
-        }
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-        	
-        	View rootView = inflater.inflate(
-	                R.layout.library, container, false);
-    		
-        	mHorizontalList = (HorizontalListView) rootView.findViewById(R.id.carousel_covers);
-        	
-        	mHorizontalList.setOnItemClickListener(new OnItemClickListener() {
-	            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-	            	// TODO: For now it will take always the first chapter (it must change in the future to last read)
-	            	try {
-	            		RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
-	            		QueryBuilder<Chapter, Integer> qBc = chapterDao.queryBuilder();
-	            	
-						qBc.where().eq(Chapter.MANGA_COLUMN_NAME, mAdapter.getItem(position).title);
-						Chapter chapter = qBc.queryForFirst();
-						// TODO: Change this, query two times, one here and then in ReaderActivity
-						Intent intent = new Intent(getActivity(), ReaderActivity.class);
-		            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter.id);
-		            	
-		            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
-		            	startActivity(intent);
-					} catch (SQLException e) {
-						Toast.makeText(getActivity(), "Sorry, this manga hasn't chapters yet!", Toast.LENGTH_SHORT).show();
-						e.printStackTrace();
-					}
-	            }
-	        });
-        	
-        	mHorizontalList.setOnHoverListener(new OnHoverListener() {
-				
-				public boolean onHover(View v, MotionEvent event) {
-					Toast.makeText(getActivity(), "HOVER EVENT!", Toast.LENGTH_SHORT).show();
-					System.out.println("HOVER EVENT!");
-					return false;
-				}
-			});
-        	
-        	mHorizontalList.setOnGenericMotionListener(new OnGenericMotionListener() {
-				
-				public boolean onGenericMotion(View v, MotionEvent event) {
-					Toast.makeText(getActivity(), "GENERIC MOTION EVENT!", Toast.LENGTH_SHORT).show();
-					System.out.println("GENERIC MOTION EVENT!");
-					return false;
-				}
-			});
-        	
-        	mHorizontalList.setOnDragListener(new OnDragListener() {
-				
-				public boolean onDrag(View v, DragEvent event) {
-					Toast.makeText(getActivity(), "DRAG MOTION EVENT!", Toast.LENGTH_SHORT).show();
-					System.out.println("DRAG MOTION EVENT!");
-					return false;
-				}
-			});
-        	
-          	mHorizontalList.setAdapter(mAdapter);
-        	
-        	return rootView;
-        }
-        
-        @Override
-    	public void onActivityCreated(Bundle savedInstanceState) {
-    		super.onActivityCreated(savedInstanceState);
-    		
-    		getLoaderManager().initLoader(1, null, this);
-    	}
-
-		public Loader<List<Manga>> onCreateLoader(
-				int id, Bundle args) {
-			return new LibraryLoader(getActivity());
-		}
-
-		public void onLoadFinished( Loader<List<Manga>> loader, List<Manga> mangas ) {			
-			mAdapter.setMangas(mangas);
-		}
-
-		public void onLoaderReset(Loader<List<Manga>> mangas) {
-			mAdapter.setMangas(null);
-		}
-    }
-    */
     /**
      * A fragment that with favourites Mangas
      */
@@ -373,8 +300,11 @@ public class MainActivity extends FragmentActivity
 			Log.d(TAG, "Id of manga selected");
 			MangaDetailFragment fragment = new MangaDetailFragment();
 			fragment.setArguments(arguments);
-			getSupportFragmentManager().beginTransaction()
-					.replace(R.id.manga_list, fragment).commit();
+			getSupportFragmentManager()
+					.beginTransaction()
+					.replace(R.id.manga_list, fragment)
+					.addToBackStack(null)
+					.commit();
 		}
 	}
 }

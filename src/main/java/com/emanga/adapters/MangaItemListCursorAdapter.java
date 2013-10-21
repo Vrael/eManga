@@ -39,7 +39,7 @@ implements SectionIndexer{
 	    	.showImageOnFail(R.drawable.ic_content_remove)
 	    	.cacheInMemory(true)
 	    	.cacheOnDisc(true)
-	    	.displayer(new RoundedBitmapDisplayer(5))
+	    	.displayer(new RoundedBitmapDisplayer(10))
 	    	.build();
 	
         imageLoader = ImageLoader.getInstance();

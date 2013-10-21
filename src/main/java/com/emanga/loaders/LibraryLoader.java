@@ -28,7 +28,7 @@ public class LibraryLoader extends AsyncTaskLoader<Cursor> {
 
 	@Override
 	public Cursor loadInBackground() {
-		Log.d(TAG, "Getting latest mangas from DB");
+		Log.d(TAG, "Getting mangas from DB");
 		Cursor mangasCursor = helper.getMangasWithCategories();
 		mData = mangasCursor;
 		return mangasCursor;

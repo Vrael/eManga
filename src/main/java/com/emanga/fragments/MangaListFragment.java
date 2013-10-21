@@ -88,7 +88,7 @@ public class MangaListFragment extends ListFragment
 		
 		setListAdapter(mAdapter);
 		
-		getLoaderManager().initLoader(9, null, this);
+		getLoaderManager().initLoader(3, null, this);
 	}
 
 	@Override

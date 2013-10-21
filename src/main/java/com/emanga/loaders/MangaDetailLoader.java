@@ -51,6 +51,7 @@ public class MangaDetailLoader extends AsyncTaskLoader<MangaContent.MangaItem> {
 		MangaContent.MangaItem mangaItem = null;
 		try {
 			mangaItem = new MangaItem();
+			
 			// Get the manga by Id
 			mangaItem.manga = mangaDao.queryForId(mangaId);
 			
@@ -61,9 +62,11 @@ public class MangaDetailLoader extends AsyncTaskLoader<MangaContent.MangaItem> {
 					linkDao.refresh(mangaItem.manga.link);
 					
 					Document doc = UpdateDatabase.getURL(mangaItem.manga.link.url);
-					mangaItem.manga.description = doc.select("#show").first().ownText();
-					System.out.println(doc.select("#show").first().ownText());
-					mangaDao.update(mangaItem.manga);
+					String description = doc.select("#show").first().ownText();
+					if(description.matches("\\S+")){
+						mangaItem.manga.description = description;
+						mangaDao.update(mangaItem.manga);
+					}
 				} catch (IOException e) {
 					Log.e(TAG, "Manga description couldn't be retrived!");
 					e.printStackTrace();

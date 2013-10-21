@@ -172,13 +172,17 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	   
 	   @Override
 	   public void onReceive(Context context, Intent intent) {
+		   int chapterId = intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1);
+		   
 		   Log.d(TAG, "New Chapter received in the Loader! " +
 				   intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
 		   
-		   mLoader.newChapters.add(intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
+		   if (chapterId > -1) {
+			   mLoader.newChapters.add(intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
 		   
-		   // Tell the loader about the new chapters
-		   mLoader.onContentChanged();
+			   // Tell the loader about the new chapters
+			   mLoader.onContentChanged();
+		   }
 	   }
    }
 }

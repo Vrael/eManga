@@ -36,9 +36,10 @@ public class UpdateDatabase extends OrmliteIntentService {
 	public static final String ACTION_LATEST_CHAPTERS = ACTION + ".latestChapters";
 	public static final String ACTION_LATEST_MANGAS = ACTION + ".latestMangas";
 	public static final String INTENT_CHAPTER_ID = "chapterId";
+	public static final String INTENT_LATEST_CHAPTER = "latestChapter";
 	public static final String INTENT_MANGA_ID = "mangaId";
 	
-	private static final byte NUMBER_OF_MANGAS = 5;
+	public static final byte NUMBER_OF_MANGAS = 5;
 	
 	public UpdateDatabase() {
 		super("UpdateDBService");
@@ -69,6 +70,7 @@ public class UpdateDatabase extends OrmliteIntentService {
 				m = mangaDao.queryForId(esMangaHere.parseTitleManga(manga));
 				if (m == null){
 					chapterId = createMangaWithChapter(mangaDao, manga);
+					if (chapterId == -1) break;
 					// Send an intent with the latest manga id for updates Library
 					sendBroadcast((new Intent(ACTION_LATEST_MANGAS))
 							.putExtra(INTENT_CHAPTER_ID, chapterId));
@@ -76,7 +78,12 @@ public class UpdateDatabase extends OrmliteIntentService {
 					// Manga already exists so it will save only new manga chapters
 					chapterId = createChapters(mangaDao, m, manga.select("dd a[href]"));
 					// If already the most recently chapter exists, it doesn't going to parse the rest
-					if (chapterId == -1) break;
+					if (chapterId == -1){
+						// Send a message warning that it was the last chapter (for progress bar)
+						sendBroadcast((new Intent(ACTION_LATEST_CHAPTERS))
+								.putExtra(INTENT_LATEST_CHAPTER, true));
+						break;
+					}
 					// Send an intent with the latest chapter id of this manga (most recently chapter only)
 					sendBroadcast((new Intent(ACTION_LATEST_CHAPTERS))
 							.putExtra(INTENT_CHAPTER_ID, chapterId));
@@ -303,5 +310,30 @@ public class UpdateDatabase extends OrmliteIntentService {
 					  .cookie("auth", "token")
 					  .timeout(20000)
 					  .get();
+	}
+	
+	public boolean updateMangaDescription(String mangaId){
+		boolean resul = false;
+		
+		RuntimeExceptionDao<Manga, String> mangaDao = getHelper().getMangaRunDao();
+		RuntimeExceptionDao<Link, Integer> linkDao = getHelper().getLinkRunDao();
+		
+		Manga manga = mangaDao.queryForId(mangaId);
+		linkDao.refresh(manga.link);
+		
+		try {
+			Document doc = getURL(manga.link.url);
+			String description = doc.select("#show").first().ownText();
+			if(description.matches("\\S+")){
+				manga.description = description;
+				mangaDao.update(manga);
+				resul = true;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		return resul;
 	}
 }
