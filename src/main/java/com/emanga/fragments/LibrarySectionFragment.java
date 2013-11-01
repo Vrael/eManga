@@ -1,5 +1,6 @@
 package com.emanga.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.emanga.R;
+import com.emanga.services.UpdateMangasService;
 
 public class LibrarySectionFragment extends Fragment {
 
@@ -20,6 +22,9 @@ public class LibrarySectionFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		 // Check if categories in database are updated
+         getActivity().startService(new Intent(getActivity(), UpdateMangasService.class));
+        
 		rootView = getLayoutInflater(savedInstanceState).inflate(R.layout.manga_list, null, false);
 		
 		if (rootView.findViewById(R.id.manga_detail_container) != null) {

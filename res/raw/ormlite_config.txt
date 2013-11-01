@@ -1,5 +1,5 @@
 #
-# generated on 2013/10/17 02:30:18
+# generated on 2013/11/01 02:15:38
 #
 # --table-start--
 dataClass=com.emanga.models.Link
@@ -7,13 +7,16 @@ tableName=link
 # --table-fields-start--
 # --field-start--
 fieldName=id
-generatedId=true
+columnName=_id
+id=true
 # --field-end--
 # --field-start--
 fieldName=url
+columnName=url
 # --field-end--
 # --field-start--
 fieldName=chapter
+columnName=chapter_id
 foreign=true
 # --field-end--
 # --table-fields-end--
@@ -25,23 +28,29 @@ tableName=chapter
 # --table-fields-start--
 # --field-start--
 fieldName=id
-generatedId=true
+columnName=_id
+id=true
 # --field-end--
 # --field-start--
 fieldName=date
+columnName=date
 # --field-end--
 # --field-start--
 fieldName=number
+columnName=number
 indexName=chapter_number_idx
 # --field-end--
 # --field-start--
 fieldName=manga
+columnName=manga_id
 foreign=true
 foreignAutoRefresh=true
 # --field-end--
 # --field-start--
 fieldName=links
+columnName=links
 foreignCollection=true
+foreignCollectionColumnName=links
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -51,9 +60,13 @@ dataClass=com.emanga.models.Manga
 tableName=manga
 # --table-fields-start--
 # --field-start--
-fieldName=title
+fieldName=id
 columnName=_id
 id=true
+# --field-end--
+# --field-start--
+fieldName=title
+columnName=title
 # --field-end--
 # --field-start--
 fieldName=cover
@@ -63,18 +76,12 @@ fieldName=description
 columnName=description
 # --field-end--
 # --field-start--
-fieldName=publicationStart
-# --field-end--
-# --field-start--
-fieldName=publicationEnd
-# --field-end--
-# --field-start--
 fieldName=chapters
 foreignCollection=true
 # --field-end--
 # --field-start--
 fieldName=link
-foreign=true
+columnName=chapters
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -85,10 +92,12 @@ tableName=category
 # --table-fields-start--
 # --field-start--
 fieldName=id
-generatedId=true
+columnName=_id
+id=true
 # --field-end--
 # --field-start--
 fieldName=name
+columnName=name
 indexName=category_name_idx
 # --field-end--
 # --table-fields-end--
@@ -100,7 +109,8 @@ tableName=categorymanga
 # --table-fields-start--
 # --field-start--
 fieldName=id
-generatedId=true
+columnName=_id
+id=true
 # --field-end--
 # --field-start--
 fieldName=category

@@ -1,7 +1,5 @@
 package com.emanga.activities;
 
-
-
 import java.util.List;
 
 import android.app.ActionBar;
@@ -40,7 +38,7 @@ import com.emanga.fragments.MangaDetailFragment;
 import com.emanga.fragments.MangaListFragment;
 import com.emanga.loaders.LatestChaptersLoader;
 import com.emanga.models.Chapter;
-import com.emanga.services.UpdateDatabase;
+import com.emanga.services.UpdateLatestChaptersService;
 
 public class MainActivity extends FragmentActivity 
 	implements ActionBar.TabListener, MangaListFragment.Callbacks {
@@ -50,6 +48,7 @@ public class MainActivity extends FragmentActivity
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
 	
+    
 	/**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
@@ -59,6 +58,10 @@ public class MainActivity extends FragmentActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Check if categories in database are updated
+        // startService(new Intent(this, UpdateMangasService.class));
+        
         setContentView(R.layout.activity_main);
         
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
@@ -83,8 +86,7 @@ public class MainActivity extends FragmentActivity
                     .setTabListener(this));
         }
     }
-    
-    
+      
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
      * sections of the app.
@@ -140,11 +142,11 @@ public class MainActivity extends FragmentActivity
     	private BroadcastReceiver mChapterReceiver = new BroadcastReceiver() {
 		    @Override
 		    public void onReceive(Context context, Intent intent) {
-		      bar.setProgress(bar.getProgress() + 1);
-		      if (intent.getBooleanExtra(UpdateDatabase.INTENT_LATEST_CHAPTER, false)){
-		    	  bar.setProgress(bar.getMax());
-		    	  bar.setVisibility(View.INVISIBLE);
-		      }
+		    	Log.d(TAG, "Progress received from Latest Chapters Service");
+		    	
+		    	bar.setProgress(
+		    		intent.getIntExtra(UpdateLatestChaptersService.EXTRA_CHAPTERS_PROCESS, 100)
+		    		);
 		   }
 		};
 		
@@ -157,12 +159,16 @@ public class MainActivity extends FragmentActivity
 			Activity activity = getActivity();
 			
 			// Starts Update Database Services
-			activity.startService(new Intent(getActivity(), UpdateDatabase.class));
-			
-			activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateDatabase.ACTION_LATEST_CHAPTERS));
-			activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateDatabase.ACTION_LATEST_MANGAS));
+			activity.startService(new Intent(getActivity(), UpdateLatestChaptersService.class));
+			activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateLatestChaptersService.ACTION_PROGRESS));
 		}
     		
+    	@Override
+    	public void onDestroy(){
+    		super.onDestroy();
+    		getActivity().unregisterReceiver(mChapterReceiver);
+    	}
+    	
     	@Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
@@ -170,7 +176,6 @@ public class MainActivity extends FragmentActivity
 	                R.layout.fragment_section, container, false);
         	
             bar = (ProgressBar) getActivity().findViewById(R.id.progressbar_background_tasks);
-            bar.setMax(UpdateDatabase.NUMBER_OF_MANGAS);
             bar.setProgress(1);
             
         	GridView gridview = (GridView) rootView.findViewById(R.id.grid_view); 
@@ -281,13 +286,13 @@ public class MainActivity extends FragmentActivity
 	 * Callback method from {@link MangaListFragment.Callbacks} indicating that
 	 * the item with the given ID was selected.
 	 */
-	public void onItemSelected(String id) {
+	public void onItemSelected(int id) {
 		if (LibrarySectionFragment.mTwoPane) {
 			// In two-pane mode, show the detail view in this activity by
 			// adding or replacing the detail fragment using a
 			// fragment transaction.
 			Bundle arguments = new Bundle();
-			arguments.putString(MangaDetailFragment.ARG_MANGA_ID, id);
+			arguments.putInt(MangaDetailFragment.ARG_MANGA_ID, id);
 			Log.d(TAG, "Id of manga selected" + id);
 			MangaDetailFragment fragment = new MangaDetailFragment();
 			fragment.setArguments(arguments);
@@ -296,8 +301,8 @@ public class MainActivity extends FragmentActivity
 		}
 		else {
 			Bundle arguments = new Bundle();
-			arguments.putString(MangaDetailFragment.ARG_MANGA_ID, id);
-			Log.d(TAG, "Id of manga selected");
+			arguments.putInt(MangaDetailFragment.ARG_MANGA_ID, id);
+			Log.d(TAG, "Id of manga selected: " + id);
 			MangaDetailFragment fragment = new MangaDetailFragment();
 			fragment.setArguments(arguments);
 			getSupportFragmentManager()

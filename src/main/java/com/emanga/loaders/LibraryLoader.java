@@ -9,7 +9,7 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
 import com.emanga.database.DatabaseHelper;
-import com.emanga.services.UpdateDatabase;
+import com.emanga.services.UpdateMangasService;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 public class LibraryLoader extends AsyncTaskLoader<Cursor> {
@@ -29,8 +29,9 @@ public class LibraryLoader extends AsyncTaskLoader<Cursor> {
 	@Override
 	public Cursor loadInBackground() {
 		Log.d(TAG, "Getting mangas from DB");
+		
 		Cursor mangasCursor = helper.getMangasWithCategories();
-		mData = mangasCursor;
+		
 		return mangasCursor;
 	}
 	
@@ -126,13 +127,13 @@ public class LibraryLoader extends AsyncTaskLoader<Cursor> {
 	   
 	   public MangaIntentReceiver(LibraryLoader loader) {
 		   mLoader = loader;
-		   IntentFilter filter = new IntentFilter(UpdateDatabase.ACTION_LATEST_MANGAS);
+		   IntentFilter filter = new IntentFilter(UpdateMangasService.ACTION_RELOAD);
 		   mLoader.getContext().registerReceiver(this, filter);
 	   }
 	   
 	   @Override
 	   public void onReceive(Context context, Intent intent) {
-		   Log.d(TAG, "New Manga received in the Loader!");
+		   Log.d(TAG, "New Mangas received in the Library Loader from UpdateMangasService!");
 		   // Tell the loader about the change
 		   mLoader.onContentChanged();
 	   }

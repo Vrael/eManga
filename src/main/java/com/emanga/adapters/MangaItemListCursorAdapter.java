@@ -77,7 +77,11 @@ implements SectionIndexer{
     }
     
 	public Cursor swapCursor(Cursor c) {
-	    // Create our indexer
+	    Cursor mCursor = getCursor();
+		if(mCursor != null){
+	    	mCursor.close();
+	    }
+		// Create our indexer
 	    if (c != null) {
 	        mAlphaIndexer = new AlphabetIndexer(c, c.getColumnIndex(Manga.TITLE_COLUMN_NAME),
 	            " -0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");

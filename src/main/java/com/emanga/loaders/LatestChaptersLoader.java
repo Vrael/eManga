@@ -1,7 +1,6 @@
 package com.emanga.loaders;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import android.util.Log;
 
 import com.emanga.database.DatabaseHelper;
 import com.emanga.models.Chapter;
-import com.emanga.services.UpdateDatabase;
+import com.emanga.services.UpdateLatestChaptersService;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -24,7 +23,6 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	private static final String TAG = LatestChaptersLoader.class.getName(); 
 			
 	public List<Chapter> chapters;
-	private List<Integer> newChapters = new ArrayList<Integer>();
 	private ChapterIntentReceiver mChapterObserver;
 	
 	private RuntimeExceptionDao<Chapter, Integer> chapterDao;
@@ -55,19 +53,8 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	public List<Chapter> loadInBackground() {
 		List<Chapter> latest = null;
 		try {
-			if(!newChapters.isEmpty()){
-				System.out.println("Manga nuevo: " + newChapters.get(0));
-				latest = new ArrayList<Chapter>();
-				for(Integer id : newChapters) {
-					System.out.println(id);
-					latest.add(chapterDao.queryForId(id));
-				}
-				newChapters.clear();
-				
-			} else {
-				latest = qBcLocal.query();
-			}
-			
+			latest = qBcLocal.query();
+			chapters = latest;
 		} catch (SQLException e) {
 			Log.e(TAG, "Error when it was loading chapters from DB");
 			e.printStackTrace();
@@ -166,23 +153,13 @@ public class LatestChaptersLoader extends AsyncTaskLoader<List<Chapter>> {
 	   
 	   public ChapterIntentReceiver(LatestChaptersLoader loader) {
 		   mLoader = loader;
-		   mLoader.getContext().registerReceiver(this, new IntentFilter(UpdateDatabase.ACTION_LATEST_CHAPTERS));
-		   mLoader.getContext().registerReceiver(this, new IntentFilter(UpdateDatabase.ACTION_LATEST_MANGAS));
+		   mLoader.getContext().registerReceiver(this, new IntentFilter(UpdateLatestChaptersService.ACTION_RELOAD));
 	   }
 	   
 	   @Override
 	   public void onReceive(Context context, Intent intent) {
-		   int chapterId = intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1);
-		   
-		   Log.d(TAG, "New Chapter received in the Loader! " +
-				   intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
-		   
-		   if (chapterId > -1) {
-			   mLoader.newChapters.add(intent.getIntExtra(UpdateDatabase.INTENT_CHAPTER_ID, -1));
-		   
-			   // Tell the loader about the new chapters
-			   mLoader.onContentChanged();
-		   }
+		   Log.d(TAG, "New Chapter received in the Latest Chapters Loader from UpdateLatestChaptersService!");
+		   mLoader.onContentChanged();
 	   }
    }
 }

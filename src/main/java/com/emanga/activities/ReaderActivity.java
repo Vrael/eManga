@@ -46,7 +46,7 @@ public class ReaderActivity extends FragmentActivity
 		mPager = (ViewPager) findViewById(R.id.fullscreen_pager);
 		mPager.setAdapter(mAdapter);
 		
-		getSupportLoaderManager().initLoader(2, null, this);
+		getSupportLoaderManager().initLoader(9, null, this);
 	}
 	
 	// Adapter for framents which contains the ImageViews children

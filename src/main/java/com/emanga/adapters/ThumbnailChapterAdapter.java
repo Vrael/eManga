@@ -75,7 +75,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     }
     
     public void addChapters(List<Chapter> list) {
-    	chapters.addAll(0, list);
+    	chapters = list;
     	Collections.sort(chapters, mComparator);
     	notifyDataSetChanged();
     }

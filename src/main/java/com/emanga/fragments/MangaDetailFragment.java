@@ -2,10 +2,14 @@ package com.emanga.fragments;
 
 import java.sql.SQLException;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +25,8 @@ import com.emanga.database.OrmliteFragment;
 import com.emanga.loaders.MangaDetailLoader;
 import com.emanga.models.Category;
 import com.emanga.models.Chapter;
-import com.emanga.models.MangaContent;
-import com.emanga.models.MangaContent.MangaItem;
+import com.emanga.models.Manga;
+import com.emanga.services.UpdateDescriptionService;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -35,7 +39,7 @@ import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
  * {@link MangaDetailActivity} on handsets.
  */
 public class MangaDetailFragment extends OrmliteFragment 
-	implements LoaderManager.LoaderCallbacks<MangaContent.MangaItem>{
+	implements LoaderManager.LoaderCallbacks<Manga>{
 	/**
 	 * The fragment argument representing the item ID that this fragment
 	 * represents.
@@ -43,19 +47,33 @@ public class MangaDetailFragment extends OrmliteFragment
 	public static final String ARG_MANGA_ID = "manga_id";
 	
 	/**
-	 * Manga that data will look for in database
-	 */
-	private String mangaId;
-	/**
 	 * The manga content this fragment is presenting.
 	 */
-	private MangaContent.MangaItem mManga;
+	private int mangaId;
+	private Manga mManga;
 	
 	private DisplayImageOptions options;
 	private ImageLoader imageLoader;
 	
 	private View rootView;
+	private Loader<Manga> mLoader;
 	
+	
+	private BroadcastReceiver mResultReceiver = new BroadcastReceiver() {
+		@Override
+        public void onReceive(Context context, Intent intent) {
+			// If there is a new description in DB, loader reload the data
+			if(intent.getBooleanExtra(UpdateDescriptionService.RELOAD, false)){
+        		mLoader.onContentChanged();
+        	} else {
+        		// If not, shows a message
+        		TextView description = (TextView) rootView.findViewById(R.id.manga_description);
+        		description.setText("< No description yet >");
+        		description.setGravity(Gravity.CENTER);
+        	}
+        }
+    };
+    
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
 	 * fragment (e.g. upon screen orientation changes).
@@ -67,8 +85,8 @@ public class MangaDetailFragment extends OrmliteFragment
 		super.onCreate(savedInstanceState);
 		
 		if (getArguments().containsKey(ARG_MANGA_ID)) {
-			mangaId = getArguments().getString(ARG_MANGA_ID);
-			getLoaderManager().initLoader(8, null, this);
+			mangaId = getArguments().getInt(ARG_MANGA_ID);
+			mLoader = getLoaderManager().restartLoader(4, null, this);
 		}
 		
 		options = new DisplayImageOptions.Builder()
@@ -80,6 +98,10 @@ public class MangaDetailFragment extends OrmliteFragment
 	    	.build();
 		
 		imageLoader = ImageLoader.getInstance();
+		
+		// Register the result of service that gets the description from internet
+		getActivity().registerReceiver(mResultReceiver, 
+				new IntentFilter(UpdateDescriptionService.ACTION_RELOAD));
 	}
 	
 	@Override
@@ -91,37 +113,37 @@ public class MangaDetailFragment extends OrmliteFragment
 		return rootView;
 	}
 	
-	public Loader<MangaItem> onCreateLoader(int id, Bundle args) {
+	public Loader<Manga> onCreateLoader(int id, Bundle args) {
 		return new MangaDetailLoader(getActivity(), mangaId);
 	}
 	
-	public void onLoadFinished(Loader<MangaItem> loader, MangaItem data) {
-		mManga = data;
+	public void onLoadFinished(Loader<Manga> loader, Manga manga) {
+		mManga = manga;
 		
 		ProgressBar bar = (ProgressBar) rootView.findViewById(R.id.manga_progressbar);
 		bar.setVisibility(View.GONE);
 		
 		TextView text = (TextView) rootView.findViewById(R.id.manga_title); 
-		text.setText(data.manga.title);
+		text.setText(manga.title);
 		
 		ImageView image = (ImageView) rootView.findViewById(R.id.manga_cover); 
-		imageLoader.displayImage(mManga.manga.cover, image, options);
+		imageLoader.displayImage(manga.cover, image, options);
 		
 		
 		text = (TextView) rootView.findViewById(R.id.manga_categories);
 		StringBuilder names = new StringBuilder();
 		// Create a string with the categories names and upper case the first letter, eg: Love, Action
-		Category category = data.categories.get(0);
+		Category category = manga.categories.get(0);
 		names.append(" ").append(Character.toUpperCase(category.name.charAt(0))).append(category.name.substring(1));
-		data.categories.remove(0);
-		for(Category c : data.categories){
+		manga.categories.remove(0);
+		for(Category c : manga.categories){
 			names.append(", ").append(Character.toUpperCase(c.name.charAt(0))).append(c.name.substring(1));
 		}
 		text.setText(names);
 			
 		text = (TextView) rootView.findViewById(R.id.manga_description); 
-		String descriptionText = (mManga.manga.description == null || mManga.manga.description.isEmpty())?
-				"< No description yet >" : data.manga.description;
+		String descriptionText = (manga.description == null || manga.description.isEmpty())?
+				"Loading..." : manga.description;
 		text.setText(descriptionText);
 		text.setVisibility(View.VISIBLE);
 		
@@ -133,7 +155,7 @@ public class MangaDetailFragment extends OrmliteFragment
             		RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
             		QueryBuilder<Chapter, Integer> qBc = chapterDao.queryBuilder();
             	
-					qBc.where().eq(Chapter.MANGA_COLUMN_NAME, mManga.manga.title);
+					qBc.where().eq(Chapter.MANGA_COLUMN_NAME, mManga.title);
 					Chapter chapter = qBc.queryForFirst();
 					
 					Intent intent = new Intent(getActivity(), ReaderActivity.class);
@@ -149,7 +171,14 @@ public class MangaDetailFragment extends OrmliteFragment
         });
 	}
 	
-	public void onLoaderReset(Loader<MangaItem> loader) {
+	public void onLoaderReset(Loader<Manga> loader) {
 		mManga = null;
+	}
+	
+	@Override
+	public void onDestroy(){
+		super.onDestroy();
+		// Unregister service broadcast receiver
+		getActivity().unregisterReceiver(mResultReceiver);
 	}
 }

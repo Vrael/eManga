@@ -54,7 +54,7 @@ public class MangaListFragment extends ListFragment
 		/**
 		 * Callback for when an item has been selected.
 		 */
-		public void onItemSelected(String id);
+		public void onItemSelected(int id);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class MangaListFragment extends ListFragment
 	 * nothing. Used only when this fragment is not attached to an activity.
 	 */
 	private static Callbacks sMangaCallbacks = new Callbacks() {
-		public void onItemSelected(String id) {
+		public void onItemSelected(int id) {
 		}
 	};
 
@@ -88,7 +88,7 @@ public class MangaListFragment extends ListFragment
 		
 		setListAdapter(mAdapter);
 		
-		getLoaderManager().initLoader(3, null, this);
+		getLoaderManager().initLoader(1, null, this);
 	}
 
 	@Override
@@ -133,8 +133,8 @@ public class MangaListFragment extends ListFragment
 		
 		Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
-		mCallbacks.onItemSelected(cursor.getString(
-				cursor.getColumnIndex(Manga.TITLE_COLUMN_NAME)));
+		mCallbacks.onItemSelected(cursor.getInt(
+				cursor.getColumnIndex(Manga.ID_COLUMN_NAME)));
 		
 	}
 

@@ -8,8 +8,4 @@
     <dimen name="gridview_thumb_height">234dp</dimen>
     
     <dimen name="gridview_cover_height">138dp</dimen>
-    
-    <dimen name="carousel_cover_height">210dp</dimen>
-    <dimen name="carousel_cover_width">180dp</dimen>
-
 </resources>
