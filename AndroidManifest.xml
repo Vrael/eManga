@@ -30,21 +30,28 @@
 
         <service 
             android:name="com.emanga.services.UpdateMangasService"
-            android:process=":UpdateDatabaseService"
+            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>
         
         <service 
             android:name="com.emanga.services.UpdateLatestChaptersService"
-            android:process=":UpdateDatabaseService"
+            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>
         
         <service 
             android:name="com.emanga.services.UpdateDescriptionService"
-            android:process=":UpdateDatabaseService"
+            android:process=":eMangaServices"
+            android:icon="@drawable/ic_spider"
+            android:exported="false" >
+        </service>
+        
+        <service 
+            android:name="com.emanga.services.PagesService"
+            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>

@@ -41,7 +41,7 @@ public class UpdateMangasService extends OrmliteIntentService {
 				// +1 is for performance in the loops
 				final int pages = Integer.valueOf(htmlDirectory.select(".next-page a:nth-last-child(2)").first().text()) + 1;
 				
-				// Queue with html of each page http://es.mangahere.com/directory/1...N.htm
+				// Queue with html of each page http://es.mangahere.com/directory/1..N.htm?last_chapter_time_za=
 				final BlockingQueue<Document> downloads = new LinkedBlockingQueue<Document>();
 				
 				// Thread for downloads
@@ -51,7 +51,7 @@ public class UpdateMangasService extends OrmliteIntentService {
 							Log.d(TAG, "Download: " + i);
 							try {
 								downloads.put(Internet.getURL((new StringBuilder(esMangaHere.ROOT_URL))
-										.append("/directory/").append(i).append(".htm").toString()));
+										.append("/directory/").append(i).append(".htm?last_chapter_time_za=").toString()));
 							} catch (IOException e){
 								Log.e(TAG, "Error downloading " + esMangaHere.ROOT_URL + "/directory/" + i + ".htm");
 							} catch (InterruptedException e) {

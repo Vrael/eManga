@@ -27,9 +27,27 @@ public class esMangaHere {
 	public static final String ROOT_URL = "http://es.mangahere.com";
 	public static final String LATEST_CHAPTERS_URL = ROOT_URL + "/latest";
 	public static final String MANGAS_LIST_URL = ROOT_URL + "/mangalist";
-	public static final String MANGA_CATALOG_URL = ROOT_URL + "/directory/?name.az";
+	public static final String MANGA_CATALOG_URL = ROOT_URL + "/directory/1.htm?last_chapter_time_za=";
 	
 	public static final String TAG = "esMangaHere";
+	
+	/**
+	 * eg: http://es.mangahere.com/store/manga/976/53.0/compressed/k003.jpg
+	 * @param doc with chapter page html
+	 * @return url as a string of page image
+	 */
+	public static String getPageImage(Document doc){
+		return doc.select(".read_img a img").first().absUrl("src");
+	}
+	
+	/**
+	 * eg: http://es.mangahere.com/manga/nanatsu_no_taizai/c53/
+	 * @param doc with chapter page html
+	 * @return url as a string of next page
+	 */
+	public static String nextPageChapter(Document doc){
+		return doc.select(".read_img a").first().absUrl("href");
+	}
 	
 	public static String parseCoverManga(Document doc){
 		return doc.select(".img").attr("src");

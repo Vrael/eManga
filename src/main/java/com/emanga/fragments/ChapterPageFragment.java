@@ -78,7 +78,6 @@ public class ChapterPageFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Load image into ImageView
-        // TODO: Change this for use Universal Image Loader
         imageLoader.displayImage(mUrl, mImageView, options);
     }
 }
