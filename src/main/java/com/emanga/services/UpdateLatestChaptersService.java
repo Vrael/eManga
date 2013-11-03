@@ -61,7 +61,7 @@ public class UpdateLatestChaptersService extends OrmliteIntentService {
 			sendBroadcast(process);
 			
 			// Parse mangas
-			Manga[] mangas = esMangaHere.parseMangasWithChapters(doc, intent.getIntExtra("number", 9));
+			Manga[] mangas = esMangaHere.parseMangasWithChapters(doc, intent.getIntExtra("number", 20));
 			
 			// Notify progress
 			process.putExtra(EXTRA_CHAPTERS_PROCESS, 60);
@@ -99,7 +99,6 @@ public class UpdateLatestChaptersService extends OrmliteIntentService {
 			
 			for(Manga m : mangas){
 				if(!dao.idExists(m.id)){
-					System.out.println("Recuperando cover de: " + m.title);
 					m.cover = esMangaHere.parseCoverManga(Internet.getURL(m.link));
 				}
 			}

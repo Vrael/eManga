@@ -2,20 +2,22 @@ package com.emanga.parsers;
 
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import android.text.format.Time;
 
 import com.emanga.models.Category;
 import com.emanga.models.Chapter;
@@ -81,21 +83,41 @@ public class esMangaHere {
 	 * @throws ParseException
 	 */
 	public static Date parseChapterDate(Element mangaHtml) throws ParseException{
-		String date = mangaHtml.select(".time").first().text();
+		String date = mangaHtml.select(".time").first().text().toUpperCase();
 		// esMangaHere has this types of dates
-		DateTimeFormatter fmtDate = DateTimeFormat.forPattern("MMM dd, yyyy hh:mma"); 
-		DateTimeFormatter fmt = DateTimeFormat.forPattern("hh:mma");
 		
-		DateTime dt = null;
-	    if(date.indexOf("Hoy") != -1){
-	    	dt = fmt.parseLocalTime(date.replace("Hoy ", "")).toDateTimeToday();
-	    } else if(date.indexOf("Ayer") != -1){
-	    	dt = fmt.parseLocalTime(date.replace("Ayer ", "")).toDateTimeToday();
-	    	dt = dt.minusDays(1);
+		SimpleDateFormat sdfDate = new SimpleDateFormat("MMM dd, yyyy hh:mmaa", Locale.US);
+		SimpleDateFormat sdf = new SimpleDateFormat("hh:mmaa", Locale.US);
+		
+		Calendar now = Calendar.getInstance();
+		Calendar parse = Calendar.getInstance(); 
+		
+		if(date.indexOf("HOY") != -1 ){
+			date = date.replaceAll("\\p{Cntrl}", "").replace("HOY ", "");
+	    	parse.setTime(sdf.parse(date));
+	    	
+	    	parse.set(Calendar.SECOND, now.get(Calendar.SECOND));
+	    	parse.set(Calendar.YEAR, now.get(Calendar.YEAR));
+			parse.set(Calendar.MONTH, now.get(Calendar.MONTH));
+			parse.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH));
+			parse.set(Calendar.ZONE_OFFSET, now.get(Calendar.ZONE_OFFSET));
+			
+	    } else if(date.indexOf("AYER") != -1){
+	    	date = date.replaceAll("\\p{Cntrl}", "").replace("AYER ", "");
+	    	parse.setTime(sdf.parse(date));
+	    	
+	    	parse.set(Calendar.SECOND, now.get(Calendar.SECOND));
+	    	parse.set(Calendar.YEAR, now.get(Calendar.YEAR));
+			parse.set(Calendar.MONTH, now.get(Calendar.MONTH));
+			parse.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH) -1);
+			parse.set(Calendar.ZONE_OFFSET, now.get(Calendar.ZONE_OFFSET));
+			
 	    } else {
-	    	dt = fmtDate.parseDateTime(date);
+	    	date = date.replaceAll("\\p{Cntrl}", "");
+	    	parse.setTime(sdfDate.parse(date));
 	    }
-	    return dt.toDate();
+		
+		return parse.getTime();
 	}
 	
 	/**
@@ -197,17 +219,27 @@ public class esMangaHere {
 		Chapter c;
 		Elements chaptersHtml;
 		Element mangaHeader;
+		
+		// Process mangas
 		for(Element mangaHtml : mangasHtml){
 			mangaHeader = mangaHtml.select("dt a").first();
+			manga = new Manga(mangaHeader.text());
+			manga.link = mangaHeader.attr("abs:href");
+			chaptersHtml = mangaHtml.select("dd a");
+			chapters = new Chapter[chaptersHtml.size()];
+			Date date;
 			try {
-				manga = new Manga(mangaHeader.text());
-				manga.link = mangaHeader.attr("abs:href");
-				chaptersHtml = mangaHtml.select("dd a");
-				chapters = new Chapter[chaptersHtml.size()];
+				date = esMangaHere.parseChapterDate(mangaHtml);
+			} catch (ParseException e){
+				System.out.println("It was an error parsing date for chapters in manga: " + manga.title);
+				e.printStackTrace();
+				date = new Date();
+			}
 			
-				Date date = esMangaHere.parseChapterDate(mangaHtml);
-				for(Element chapterHtml : chaptersHtml){
-					url = new Link(chapterHtml.attr("href"));
+			// Process chapters
+			for(Element chapterHtml : chaptersHtml){
+				try {
+					url = new Link(chapterHtml.attr("href"));				
 					c = new Chapter(
 							esMangaHere.parseNumberChapter(chapterHtml),
 							date, 
@@ -219,16 +251,15 @@ public class esMangaHere {
 					j++;
 					// All chapters has same publish date, so this emulate a second difference
 					date.setTime(date.getTime() - 1000);
+
+				} catch (UnsupportedEncodingException e){
+					System.out.println("It was an error parsing title for to create manga ID: " + manga.title);
 				}
-				
-				manga.chaptersList = chapters;
-				j = 0;
-				
-			} catch (ParseException e){
-				System.out.println("It was an error parsing date for chapters in manga: " + manga.title);
-			} catch (UnsupportedEncodingException e){
-				System.out.println("It was an error parsing title for to create manga ID: " + manga.title);
+
 			}
+			
+			manga.chaptersList = chapters;
+			j = 0;
 			
 			mangas[i] = manga;
 			i++;

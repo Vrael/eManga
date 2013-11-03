@@ -10,6 +10,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SET_DEBUG_APP"></uses-permission>
 
     <application
         android:name="com.emanga.controllers.App"
@@ -30,28 +31,24 @@
 
         <service 
             android:name="com.emanga.services.UpdateMangasService"
-            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>
         
         <service 
             android:name="com.emanga.services.UpdateLatestChaptersService"
-            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>
         
         <service 
             android:name="com.emanga.services.UpdateDescriptionService"
-            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>
         
         <service 
             android:name="com.emanga.services.PagesService"
-            android:process=":eMangaServices"
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>

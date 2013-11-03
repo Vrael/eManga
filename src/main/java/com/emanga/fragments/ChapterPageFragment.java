@@ -1,5 +1,6 @@
 package com.emanga.fragments;
 
+import uk.co.senab.photoview.PhotoViewAttacher;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -73,11 +74,16 @@ public class ChapterPageFragment extends Fragment {
         
         return linearLayout;
     }
-
+    
+    PhotoViewAttacher mAttacher;
+    
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Load image into ImageView
         imageLoader.displayImage(mUrl, mImageView, options);
+        
+        // Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
+        mAttacher = new PhotoViewAttacher(mImageView);
     }
 }

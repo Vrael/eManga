@@ -14,6 +14,7 @@ import com.emanga.models.CategoryManga;
 import com.emanga.models.Chapter;
 import com.emanga.models.Link;
 import com.emanga.models.Manga;
+import com.j256.ormlite.android.AndroidDatabaseResults;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -22,8 +23,6 @@ import com.j256.ormlite.stmt.SelectArg;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-
-
 /**
  * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
  * the DAOs used by the other classes.
@@ -31,7 +30,7 @@ import com.j256.ormlite.table.TableUtils;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private static final String DATABASE_NAME = "emanga.db";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 
 	private RuntimeExceptionDao<Category, Integer> categoryRuntimeDao = null;
 	private RuntimeExceptionDao<Manga, Integer> mangaRuntimeDao = null;
@@ -138,6 +137,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	
 	public Cursor getMangasWithCategories(){
 		// Field _id is the manga's title too
+		
 		return this.getReadableDatabase().rawQuery(
 				"SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(category.name, ', ')"
 				+ " AS " + Category.NAME_COLUMN_NAME + " FROM manga"

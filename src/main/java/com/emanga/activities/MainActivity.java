@@ -58,10 +58,6 @@ public class MainActivity extends FragmentActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        // Check if categories in database are updated
-        // startService(new Intent(this, UpdateMangasService.class));
-        
         setContentView(R.layout.activity_main);
         
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
@@ -153,7 +149,6 @@ public class MainActivity extends FragmentActivity
     	@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			
 			mAdapter = new ThumbnailChapterAdapter(getActivity());
 			
 			Activity activity = getActivity();
