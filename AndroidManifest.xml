@@ -55,7 +55,7 @@
 
         <activity
             android:name="com.emanga.activities.ReaderActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="landscape"
             android:label="@string/title_activity_reader"
             android:parentActivityName="com.emanga.activities.MainActivity"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >

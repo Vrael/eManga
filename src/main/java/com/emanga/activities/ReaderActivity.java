@@ -10,13 +10,13 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
 
 import com.emanga.R;
 import com.emanga.fragments.ChapterPageFragment;
 import com.emanga.services.PagesService;
+import com.emanga.utils.CustomViewPager;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -35,7 +35,7 @@ public class ReaderActivity extends FragmentActivity {
 	
 	private int chapterId;
 	private ImagePagerAdapter mAdapter;
-	private ViewPager mPager;
+	private CustomViewPager mPager;
 	
 	// This Receiver updates urls of pages from Pages Service
 	private BroadcastReceiver mPageReceiver = new BroadcastReceiver() {
@@ -55,7 +55,6 @@ public class ReaderActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_reader);
-		
 		chapterId = getIntent().getIntExtra(ACTION_OPEN_CHAPTER, 0);
 		
 		Intent intent = new Intent(this, PagesService.class);
@@ -63,14 +62,14 @@ public class ReaderActivity extends FragmentActivity {
 		startService(intent);
 		
 		mAdapter = new ImagePagerAdapter(getSupportFragmentManager());
-		mPager = (ViewPager) findViewById(R.id.fullscreen_pager);
+		mPager = (CustomViewPager) findViewById(R.id.fullscreen_pager);
 		mPager.setAdapter(mAdapter);
 		
 		registerReceiver(mPageReceiver, new IntentFilter(PagesService.ACTION_ADD_PAGE));
 	}
 	
 	// Adapter for framents which contains the ImageViews children
-	public static class ImagePagerAdapter extends FragmentStatePagerAdapter {
+	public static class ImagePagerAdapter extends FragmentPagerAdapter {
         public ArrayList<String> pagesLinks = new ArrayList<String>(30);
 
         public ImagePagerAdapter(FragmentManager fm) {

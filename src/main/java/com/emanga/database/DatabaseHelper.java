@@ -14,7 +14,6 @@ import com.emanga.models.CategoryManga;
 import com.emanga.models.Chapter;
 import com.emanga.models.Link;
 import com.emanga.models.Manga;
-import com.j256.ormlite.android.AndroidDatabaseResults;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
