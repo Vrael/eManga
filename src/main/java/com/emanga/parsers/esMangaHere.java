@@ -307,13 +307,14 @@ public class esMangaHere {
 	
 	/**
 	 * Build an url with esMangaHere pattern
+	 * Note(Android Docs):  If you actually want to match only ASCII characters, 
+	 * specify the explicit characters you want; if you mean 0-9 use [0-9] rather than \d, 
+	 * which would also include Gurmukhi digits and so forth
 	 * eg: http://es.mangahere.com/manga/yamada_kun_to_nananin_no_majo/c83/
 	 */
 	public static String buildChapterUrl(String mangaName, int numberChapter){
-		mangaName = mangaName.replaceAll("-", "_").replaceAll("'", "_")
-				.replaceAll("\\s+", "_").replaceAll("[^\\w+^\\sº]", "")
-				.replaceAll("^_", "").replaceAll("_$", "")
-				.replaceAll("_+", "_")
+		mangaName = mangaName.replaceAll("[^a-zA-Z_0-9]+", "_").replaceAll("_+", "_")
+				.replaceAll("^_|_$", "")
 				.toLowerCase(Locale.US);
 		System.out.println("Manga name: " + mangaName);
 		return String.format(Locale.US, "http://es.mangahere.com/manga/%s/c%d", mangaName, numberChapter);

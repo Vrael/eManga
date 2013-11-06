@@ -29,7 +29,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.emanga.R;
 import com.emanga.adapters.ThumbnailChapterAdapter;
