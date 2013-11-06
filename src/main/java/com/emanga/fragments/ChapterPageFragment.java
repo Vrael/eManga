@@ -1,10 +1,8 @@
 package com.emanga.fragments;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -102,11 +100,13 @@ public class ChapterPageFragment extends Fragment {
 
 			public void onLoadingComplete(String imageUri, View view,
 					Bitmap loadedImage) {
-
-		        // Resize the image view to full with screen
-				mImageView.setImageBitmap(adjustWith(mImageView));
-				// Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
-		        mAttacher = new PhotoViewAttacher(mImageView);
+				
+				if(loadedImage != null){
+			        // Resize the image view to full with screen
+					mImageView.setImageBitmap(adjustWith(loadedImage));
+					// Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
+			        mAttacher = new PhotoViewAttacher(mImageView);
+				}
 			}
 
 			public void onLoadingCancelled(String imageUri, View view) {
@@ -127,8 +127,7 @@ public class ChapterPageFragment extends Fragment {
         }
     }
     
-    private Bitmap adjustWith(ImageView image){
-    	Bitmap bitmap = ((BitmapDrawable) image.getDrawable()).getBitmap();
+    private Bitmap adjustWith(Bitmap bitmap){
     	// Get scaling factor to fit the max possible width of the ImageView
         float scalingFactor = getBitmapScalingFactor(bitmap);
 

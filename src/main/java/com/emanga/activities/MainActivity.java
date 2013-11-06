@@ -38,6 +38,7 @@ import com.emanga.fragments.MangaDetailFragment;
 import com.emanga.fragments.MangaListFragment;
 import com.emanga.loaders.LatestChaptersLoader;
 import com.emanga.models.Chapter;
+import com.emanga.models.Manga;
 import com.emanga.services.UpdateLatestChaptersService;
 
 public class MainActivity extends FragmentActivity 
@@ -179,9 +180,13 @@ public class MainActivity extends FragmentActivity
 	        gridview.setOnItemClickListener(new OnItemClickListener() {
 	        	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
             		Intent intent = new Intent(getActivity(), ReaderActivity.class);
-	            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, ((ThumbnailChapterAdapter.ViewHolder) v.getTag()).id);
+            		Chapter chapter = mAdapter.getItem(position);
+	            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter.number);
+	            	intent.putExtra(Chapter.ID_COLUMN_NAME, chapter.id);
+	            	intent.putExtra(Manga.TITLE_COLUMN_NAME, chapter.manga.title);
+	            	intent.putExtra(Manga.ID_COLUMN_NAME, chapter.manga.id);
 	            	
-	            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
+	            	// Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
 	            	startActivity(intent);
 	            }
 	        });

@@ -17,8 +17,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import android.text.format.Time;
-
 import com.emanga.models.Category;
 import com.emanga.models.Chapter;
 import com.emanga.models.Link;
@@ -305,5 +303,19 @@ public class esMangaHere {
 			categories.put(c.name, c);
 		}
 		return categories;
+	}
+	
+	/**
+	 * Build an url with esMangaHere pattern
+	 * eg: http://es.mangahere.com/manga/yamada_kun_to_nananin_no_majo/c83/
+	 */
+	public static String buildChapterUrl(String mangaName, int numberChapter){
+		mangaName = mangaName.replaceAll("-", "_").replaceAll("'", "_")
+				.replaceAll("\\s+", "_").replaceAll("[^\\w+^\\sº]", "")
+				.replaceAll("^_", "").replaceAll("_$", "")
+				.replaceAll("_+", "_")
+				.toLowerCase(Locale.US);
+		System.out.println("Manga name: " + mangaName);
+		return String.format(Locale.US, "http://es.mangahere.com/manga/%s/c%d", mangaName, numberChapter);
 	}
 }

@@ -1,7 +1,5 @@
 package com.emanga.fragments;
 
-import java.sql.SQLException;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,11 +22,8 @@ import com.emanga.activities.ReaderActivity;
 import com.emanga.database.OrmliteFragment;
 import com.emanga.loaders.MangaDetailLoader;
 import com.emanga.models.Category;
-import com.emanga.models.Chapter;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateDescriptionService;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.stmt.QueryBuilder;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
@@ -150,23 +145,13 @@ public class MangaDetailFragment extends OrmliteFragment
 		Button button = (Button) rootView.findViewById(R.id.manga_button_start);
 		button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            	// TODO: For now it will take always the first chapter (it must change in the future to last read)
-            	try {
-            		RuntimeExceptionDao<Chapter, Integer> chapterDao = getHelper().getChapterRunDao();
-            		QueryBuilder<Chapter, Integer> qBc = chapterDao.queryBuilder();
+				Intent intent = new Intent(getActivity(), ReaderActivity.class);
+            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, 0);
+            	intent.putExtra(Manga.TITLE_COLUMN_NAME, mManga.title);
+            	intent.putExtra(Manga.ID_COLUMN_NAME, mManga.id);
             	
-					qBc.where().eq(Chapter.MANGA_COLUMN_NAME, mManga.title);
-					Chapter chapter = qBc.queryForFirst();
-					
-					Intent intent = new Intent(getActivity(), ReaderActivity.class);
-	            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter.id);
-	            	
-	            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
-	            	startActivity(intent);
-				} catch (SQLException e) {
-					Toast.makeText(getActivity(), "Sorry, this manga hasn't chapters yet!", Toast.LENGTH_SHORT).show();
-					e.printStackTrace();
-				}
+            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
+            	startActivity(intent);
             }
         });
 	}

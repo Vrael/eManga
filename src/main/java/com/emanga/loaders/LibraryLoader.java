@@ -119,7 +119,9 @@ public class LibraryLoader extends AsyncTaskLoader<Cursor> {
    protected void onReleaseResources(Cursor data) {
 	   // For a simple List<> there is nothing to do.  For something
        // like a Cursor, we would close it here.
-	   data.close();
+	   if(data != null){
+		   data.close();
+	   }
    }
    
    public static class MangaIntentReceiver extends BroadcastReceiver {
