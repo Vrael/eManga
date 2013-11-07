@@ -64,7 +64,7 @@ public class MainActivity extends FragmentActivity
         
         // Home button navigates to main activity
         final ActionBar actionBar = getActionBar();
-        
+        actionBar.setHomeButtonEnabled(false);
         // Specify that tabs should be displayed in the action bar.
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
@@ -81,6 +81,31 @@ public class MainActivity extends FragmentActivity
                 	.setText(mAppSectionsPagerAdapter.getPageTitle(i))
                     .setTabListener(this));
         }
+        
+        /**
+         * on swiping the viewpager make respective tab selected
+         * */
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+			public void onPageScrolled(int position, float positionOffset,
+					int positionOffsetPixels) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void onPageSelected(int position) {
+				// on changing the page
+                // make respected tab selected
+                actionBar.setSelectedNavigationItem(position);
+			}
+
+			public void onPageScrollStateChanged(int state) {
+				// TODO Auto-generated method stub
+				
+			}
+         
+           
+        });
     }
       
     /**
