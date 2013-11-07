@@ -1,7 +1,7 @@
 package com.emanga.activities;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jsoup.nodes.Document;
@@ -15,7 +15,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 
 import com.emanga.R;
@@ -45,17 +46,40 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 	private ImagePagerAdapter mAdapter;
 	private CustomViewPager mPager;
 	
-	protected AtomicReference<Integer> numberChapters; 
+	protected AtomicReference<Integer> numberChapters = new AtomicReference<Integer>(0);
+	protected int currentPage = 0;
+	protected int numberPages = 0;
 	
 	// This Receiver updates urls of pages from Pages Service
 	private BroadcastReceiver mPageReceiver = new BroadcastReceiver() {
-	    @Override
+	    private int tries = 0;
+	    
+		@Override
 	    public void onReceive(Context context, Intent intent) {
 	    	Log.d(TAG, "Received new url image from Page Service");
 	    	String url = intent.getStringExtra(PagesService.EXTRA_PAGE_URL);
-	    	if(url != null){
+	    	int nPages = intent.getIntExtra(PagesService.EXTRA_NUMBER_PAGES, 0);
+	    	System.out.println(intent.getAction());
+	    	if((intent.getAction() == PagesService.ACTION_ADD_PAGE) && (url != null)){
+	    		if(mAdapter.pagesLinks.size() == 70){
+	    			mAdapter.pagesLinks.remove(0);
+	    		}
 	    		mAdapter.pagesLinks.add(url);
 	    		mAdapter.notifyDataSetChanged();
+	    	} else if((intent.getAction() == PagesService.ACTION_COUNT_PAGES) && (nPages > 0)) {
+	    		numberPages += nPages - 1; // From 0 to N-1
+	    	} else if(intent.getAction() == PagesService.ACTION_ERROR) {
+	    		// If there was an error retry with next chapter
+	    		if(tries < 1){
+	    			System.out.println("Error! try one time more");
+	    			currentChapter++;
+	    			tries++;
+	    			Intent serviceIntent = new Intent(context, PagesService.class);
+	    			serviceIntent.putExtra(PagesService.EXTRA_MANGA_TITLE, 
+	    					intent.getStringExtra(PagesService.EXTRA_MANGA_TITLE));
+	    			serviceIntent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
+	    			startService(serviceIntent);
+	    		}
 	    	}
 	   }
 	};
@@ -68,9 +92,9 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 		currentChapter = getIntent().getIntExtra(ACTION_OPEN_CHAPTER, 0);
 		
 		// Search the number chapters of the manga
-		// new NumberChapters().execute(getIntent().getIntExtra(Manga.ID_COLUMN_NAME, 0));
+		new NumberChapters().execute(getIntent().getIntExtra(Manga.ID_COLUMN_NAME, 0));
 		
-		Intent intent = new Intent(this, PagesService.class);
+		final Intent intent = new Intent(this, PagesService.class);
 		intent.putExtra(PagesService.EXTRA_MANGA_TITLE, getIntent().getStringExtra(Manga.TITLE_COLUMN_NAME));
 		intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
 		startService(intent);
@@ -80,11 +104,38 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 		mPager.setAdapter(mAdapter);
 		
 		registerReceiver(mPageReceiver, new IntentFilter(PagesService.ACTION_ADD_PAGE));
+		registerReceiver(mPageReceiver, new IntentFilter(PagesService.ACTION_COUNT_PAGES));
+		registerReceiver(mPageReceiver, new IntentFilter(PagesService.ACTION_ERROR));
+		
+		mPager.setOnPageChangeListener(new OnPageChangeListener() {
+
+			public void onPageSelected(int position) {
+				// When only missing 3 pages for the end, it loads the next chapter
+				System.out.println("Tamaño lista: " + mAdapter.pagesLinks.size() + " position: " + position);
+				if(mAdapter.pagesLinks.size() - position < 3){
+					currentChapter++;
+					intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
+					startService(intent);
+				}
+			}
+			
+			public void onPageScrolled(int position, float positionOffset,
+					int positionOffsetPixels) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public void onPageScrollStateChanged(int state) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 	
 	// Adapter for framents which contains the ImageViews children
-	private static class ImagePagerAdapter extends FragmentPagerAdapter {
-        public ArrayList<String> pagesLinks = new ArrayList<String>(30);
+	private static class ImagePagerAdapter extends FragmentStatePagerAdapter {
+        public LinkedList<String> pagesLinks = new LinkedList<String>();
+        
 
         public ImagePagerAdapter(FragmentManager fm) {
             super(fm);
@@ -94,7 +145,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
         public int getCount() {
             return pagesLinks.size();
         }
-
+        
         @Override
         public Fragment getItem(int position) {
             return ChapterPageFragment.newInstance(pagesLinks.get(position));

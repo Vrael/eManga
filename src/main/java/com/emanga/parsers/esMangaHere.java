@@ -319,4 +319,21 @@ public class esMangaHere {
 		System.out.println("Manga name: " + mangaName);
 		return String.format(Locale.US, "http://es.mangahere.com/manga/%s/c%d", mangaName, numberChapter);
 	}
+
+	public static int numberPageChapter(Document doc) throws DocException {
+		int size = doc.select(".readpage_top .wid60 option").size();
+		if(size == 0){
+			throw new DocException("Incorrect html document");
+		}
+		return size;
+	}
+	
+	public static class DocException extends Exception {
+	    
+		private static final long serialVersionUID = 1L;
+
+		public DocException( String s ) {
+	      super(s);
+	    }
+	}
 }

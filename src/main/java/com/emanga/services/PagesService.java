@@ -1,15 +1,17 @@
 package com.emanga.services;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.jsoup.nodes.Document;
 
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.emanga.database.OrmliteIntentService;
+import com.emanga.models.Manga;
 import com.emanga.parsers.esMangaHere;
+import com.emanga.parsers.esMangaHere.DocException;
 import com.emanga.utils.Internet;
 
 public class PagesService extends OrmliteIntentService{
@@ -17,10 +19,13 @@ public class PagesService extends OrmliteIntentService{
 	public static final String TAG = "PagesService";
 	
 	public static final String ACTION_ADD_PAGE = "com.manga.services." + TAG + ".reload";
+	public static final String ACTION_COUNT_PAGES = "com.manga.services." + TAG + ".numberPages";
+	public static final String ACTION_ERROR = "com.manga.services." + TAG + ".error";
 	
 	public static final String EXTRA_MANGA_TITLE = "title";
 	public static final String EXTRA_CHAPTER_NUMBER = "number";
 	public static final String EXTRA_PAGE_URL = "url";
+	public static final String EXTRA_NUMBER_PAGES = "numberPages";
 	
 	public PagesService() {
 		super("PagesService");
@@ -39,35 +44,39 @@ public class PagesService extends OrmliteIntentService{
 		Intent result = new Intent(ACTION_ADD_PAGE);
 		String url = esMangaHere.buildChapterUrl(title, number);
 
-		Document doc;
-		String nextPage = url;
-	
+		Document doc = null;
+		int nPages = 0;
+		
 		try {
-			do {
-				doc = Internet.getURL(nextPage);
-				
-				try{
-					// Next page link
-					nextPage = esMangaHere.nextPageChapter(doc);
-				} catch(NullPointerException e){
-					System.out.println("Chapter url error: " + nextPage);
-					doc = Internet.getURL(esMangaHere.buildChapterUrl(title, ++number));
-					nextPage = esMangaHere.nextPageChapter(doc);
-				}
-				
+			// Count the pages number
+			doc = Internet.getURL(url);
+			nPages = esMangaHere.numberPageChapter(doc);
+			
+			// Notify the number of pages
+			Intent numberPages = new Intent(ACTION_COUNT_PAGES);
+			System.out.println("nPages: " + nPages);
+			numberPages.putExtra(EXTRA_NUMBER_PAGES, nPages);
+			sendBroadcast(numberPages);
+		
+			// Get pages
+			for(int i = 1; i <= nPages; i++){
+				System.out.println(String.format(Locale.US, "%s/%d.html", url, i));
+				doc = Internet.getURL(String.format(Locale.US, "%s/%d.html", url, i));
 				// Notify with image src
 				result.putExtra(EXTRA_PAGE_URL, esMangaHere.getPageImage(doc));
 				sendBroadcast(result);
 			}
-			while(nextPage != "");
-			
 		} catch (IOException e) {
+			//TODO: 
+			Log.d(TAG, "Couldn't retrive page");
 			e.printStackTrace();
-			Log.d(TAG, "Couldn't retrives url: " + nextPage);
-		} catch(NullPointerException e){
-			Log.d(TAG, "Chapter url error: " + nextPage);
-			Toast.makeText(this, "Sorry, this manga hasn't chapters yet!", Toast.LENGTH_LONG).show();
-			e.printStackTrace();
+		} catch (DocException e) {
+			// Notify the error
+			Intent error = new Intent(ACTION_ERROR);
+			error.putExtra(EXTRA_MANGA_TITLE, title);
+			error.putExtra(EXTRA_CHAPTER_NUMBER, number);
+			sendBroadcast(error);
+			Log.d(TAG, "Thats chapter doesn't exists");
 		}
 		
 		long end = System.currentTimeMillis();
