@@ -101,11 +101,9 @@ public class ChapterPageFragment extends Fragment {
 			public void onLoadingComplete(String imageUri, View view,
 					Bitmap loadedImage) {
 				
-				if(loadedImage != null){
+				if(loadedImage != null && mImageView != null){
 			        // Resize the image view to full with screen
 					mImageView.setImageBitmap(adjustWith(loadedImage));
-					// Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
-			        mAttacher = new PhotoViewAttacher(mImageView);
 				}
 			}
 
@@ -117,14 +115,16 @@ public class ChapterPageFragment extends Fragment {
         });
         
     }
-  
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if(mAttacher != null){
-	        // Need to call clean-up
-	        mAttacher.cleanup();
-        }
+    
+    public void onStart(){
+    	super.onStart();
+    	//Attach a PhotoViewAttacher, which takes care of all of the zooming functionality.
+        mAttacher = new PhotoViewAttacher(mImageView);
+    }
+    
+    public void onStop(){
+    	super.onStop();
+    	mAttacher.cleanup();
     }
     
     private Bitmap adjustWith(Bitmap bitmap){

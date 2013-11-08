@@ -61,9 +61,6 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 	    	int nPages = intent.getIntExtra(PagesService.EXTRA_NUMBER_PAGES, 0);
 	    	System.out.println(intent.getAction());
 	    	if((intent.getAction() == PagesService.ACTION_ADD_PAGE) && (url != null)){
-	    		if(mAdapter.pagesLinks.size() == 70){
-	    			mAdapter.pagesLinks.remove(0);
-	    		}
 	    		mAdapter.pagesLinks.add(url);
 	    		mAdapter.notifyDataSetChanged();
 	    	} else if((intent.getAction() == PagesService.ACTION_COUNT_PAGES) && (nPages > 0)) {
@@ -111,7 +108,6 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 
 			public void onPageSelected(int position) {
 				// When only missing 3 pages for the end, it loads the next chapter
-				System.out.println("Tamaño lista: " + mAdapter.pagesLinks.size() + " position: " + position);
 				if(mAdapter.pagesLinks.size() - position < 3){
 					currentChapter++;
 					intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
