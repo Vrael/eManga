@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.emanga.R;
 import com.emanga.activities.ReaderActivity;
@@ -24,6 +23,7 @@ import com.emanga.loaders.MangaDetailLoader;
 import com.emanga.models.Category;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateDescriptionService;
+import com.emanga.utils.Notification;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
@@ -112,7 +112,7 @@ public class MangaDetailFragment extends OrmliteFragment
 		return new MangaDetailLoader(getActivity(), mangaId);
 	}
 	
-	public void onLoadFinished(Loader<Manga> loader, Manga manga) {
+	public void onLoadFinished(Loader<Manga> loader, final Manga manga) {
 		mManga = manga;
 		
 		ProgressBar bar = (ProgressBar) rootView.findViewById(R.id.manga_progressbar);
@@ -132,7 +132,7 @@ public class MangaDetailFragment extends OrmliteFragment
 		names.append(" ").append(Character.toUpperCase(category.name.charAt(0))).append(category.name.substring(1));
 		manga.categories.remove(0);
 		for(Category c : manga.categories){
-			names.append(", ").append(Character.toUpperCase(c.name.charAt(0))).append(c.name.substring(1));
+			names.append(", ").append(c.toString());
 		}
 		text.setText(names);
 			
@@ -142,15 +142,32 @@ public class MangaDetailFragment extends OrmliteFragment
 		text.setText(descriptionText);
 		text.setVisibility(View.VISIBLE);
 		
-		Button button = (Button) rootView.findViewById(R.id.manga_button_start);
-		button.setOnClickListener(new View.OnClickListener() {
+		if(manga.chaptersList != null && manga.chaptersList.length > 0){
+			Button buttonContinue = (Button) rootView.findViewById(R.id.manga_button_continue);
+			buttonContinue.setVisibility(View.VISIBLE);
+			buttonContinue.setOnClickListener(new View.OnClickListener() {
+	            public void onClick(View v) {
+	            	Intent intent = new Intent(getActivity(), ReaderActivity.class);
+	            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, manga.chaptersList[0].number);
+	            	intent.putExtra(Manga.TITLE_COLUMN_NAME, mManga.title);
+	            	intent.putExtra(Manga.ID_COLUMN_NAME, mManga.id);
+	            	
+	            	Notification.enjoyReading(getActivity()).show();
+	            	
+	            	startActivity(intent);
+	            }
+	        });
+		}
+		Button buttonStart = (Button) rootView.findViewById(R.id.manga_button_start);
+		buttonStart.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 				Intent intent = new Intent(getActivity(), ReaderActivity.class);
             	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, 0);
             	intent.putExtra(Manga.TITLE_COLUMN_NAME, mManga.title);
             	intent.putExtra(Manga.ID_COLUMN_NAME, mManga.id);
             	
-            	Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
+            	Notification.enjoyReading(getActivity()).show();
+            	
             	startActivity(intent);
             }
         });

@@ -1,5 +1,7 @@
 package com.emanga.adapters;
 
+import org.apache.commons.lang.WordUtils;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -69,7 +71,7 @@ implements SectionIndexer{
         TextView categories = (TextView) view.findViewById(R.id.manga_list_categories);
 
         title.setText(cursor.getString(cursor.getColumnIndex(Manga.TITLE_COLUMN_NAME)));
-        categories.setText(cursor.getString(cursor.getColumnIndex(Category.NAME_COLUMN_NAME)));
+        categories.setText(WordUtils.capitalize(cursor.getString(cursor.getColumnIndex(Category.NAME_COLUMN_NAME))));
         
         ImageView cover = (ImageView) view.findViewById(R.id.manga_list_cover);
         imageLoader.displayImage(cursor.getString(cursor.getColumnIndex(Manga.COVER_COLUMN_NAME)),

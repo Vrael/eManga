@@ -1,6 +1,10 @@
 package com.emanga.activities;
 
+import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
+
+import org.apache.commons.lang.WordUtils;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
@@ -10,6 +14,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -20,18 +27,26 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.emanga.R;
 import com.emanga.adapters.ThumbnailChapterAdapter;
+import com.emanga.adapters.ThumbnailChapterAdapter.ViewHolder;
+import com.emanga.database.OrmliteFragment;
 import com.emanga.fragments.LibrarySectionFragment;
 import com.emanga.fragments.MangaDetailFragment;
 import com.emanga.fragments.MangaListFragment;
@@ -39,6 +54,13 @@ import com.emanga.loaders.LatestChaptersLoader;
 import com.emanga.models.Chapter;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateLatestChaptersService;
+import com.emanga.utils.Image;
+import com.emanga.utils.Notification;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
 
 public class MainActivity extends FragmentActivity 
 	implements ActionBar.TabListener, MangaListFragment.Callbacks {
@@ -130,17 +152,14 @@ public class MainActivity extends FragmentActivity
                 case 1:
                 	return new LibrarySectionFragment();
                 	
-                case 2: 
-                	return new FavouritesSectionFragment();
-                
                 default:
-                   return new HistorySectionFragment();
+                	return new HistorySectionFragment();
             }
         }
 
         @Override
         public int getCount() {
-            return 4;
+            return 3;
         }
 
         @Override
@@ -210,7 +229,8 @@ public class MainActivity extends FragmentActivity
 	            	intent.putExtra(Manga.TITLE_COLUMN_NAME, chapter.manga.title);
 	            	intent.putExtra(Manga.ID_COLUMN_NAME, chapter.manga.id);
 	            	
-	            	// Toast.makeText(getActivity(), "Enjoy reading!", Toast.LENGTH_SHORT).show();
+	            	Notification.enjoyReading(getActivity()).show();
+	            	
 	            	startActivity(intent);
 	            }
 	        });
@@ -240,33 +260,152 @@ public class MainActivity extends FragmentActivity
     }
     
     /**
-     * A fragment that with favourites Mangas
-     */
-    public static class FavouritesSectionFragment extends Fragment {
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-        	View rootView = inflater.inflate(
-	                R.layout.fragment_section, container, false);
-        	
-        	return rootView;
-        }
-    }
-    
-    /**
      * A fragment that with history
      */
-    public static class HistorySectionFragment extends Fragment {
-
-        @Override
+    public static class HistorySectionFragment extends OrmliteFragment {
+    	
+    	private GridView mGridView;
+    	private ItemAdapter mAdapter;
+    	
+    	@Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
+    		// Get chapters from database
+    		new LoadHistory().execute();
+    		
+    		// Set view fot this fragment
         	View rootView = inflater.inflate(
 	                R.layout.fragment_section, container, false);
+            
+        	mGridView = (GridView) rootView.findViewById(R.id.grid_view); 
+        	mAdapter = new ItemAdapter(getActivity());
         	
-        	return rootView;
+        	mGridView.setOnItemClickListener(new OnItemClickListener() {
+	        	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+            		Intent intent = new Intent(getActivity(), ReaderActivity.class);
+            		Chapter chapter = mAdapter.getItem(position);
+	            	intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter.number);
+	            	intent.putExtra(Chapter.ID_COLUMN_NAME, chapter.id);
+	            	intent.putExtra(Manga.TITLE_COLUMN_NAME, chapter.manga.title);
+	            	intent.putExtra(Manga.ID_COLUMN_NAME, chapter.manga.id);
+	            	
+	            	Notification.enjoyReading(getActivity()).show();
+	            	
+	            	startActivity(intent);
+	            }
+	        });
+	        
+	        return rootView;
         }
+    	
+    	private static class ItemAdapter extends BaseAdapter {
+        	private Context mContext;
+        	private DisplayImageOptions options;
+        	private ImageLoader imageLoader;
+    		public Chapter[] mChapters;
+    		
+    		public ItemAdapter(Context context){
+    			mContext = context;
+                
+            	options = new DisplayImageOptions.Builder()
+        	    	.showImageForEmptyUri(R.drawable.ic_content_picture)
+        	    	.showImageOnFail(R.drawable.ic_content_remove)
+        	    	.cacheInMemory(true)
+        	    	.cacheOnDisc(true)
+        	    	.build();
+            	
+            	imageLoader = ImageLoader.getInstance();
+    		}
+    		
+			public int getCount() {
+				return mChapters.length;
+			}
+
+			public Chapter getItem(int position) {
+				return mChapters[position];
+			}
+
+			public long getItemId(int position) {
+				return mChapters[position].id;
+			}
+
+			public View getView(int position, View convertView, ViewGroup parent) {
+		    	final ViewHolder holder;
+		    	
+		    	// if it's not recycled, initialize some attributes
+		    	if (convertView == null) {
+		    		convertView = LayoutInflater.from(mContext).inflate(R.layout.thumbnail_read_item, parent, false);
+		    		
+		    		holder = new ViewHolder();
+		    		holder.cover = (ImageView) convertView.findViewById(R.id.thumb_read_cover);
+		    		holder.date = (TextView) convertView.findViewById(R.id.thumb_read_date);
+		    		holder.title = (TextView) convertView.findViewById(R.id.thumb_read_title);
+		    		
+		    		convertView.setTag(holder);
+				} else {
+				    holder = (ViewHolder) convertView.getTag();
+				}	
+		    	
+		    	Chapter chapter = getItem(position);
+		    	
+		    	holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.read));
+		    	holder.title.setText(WordUtils.capitalize(chapter.manga.title));
+		    	
+		    	imageLoader.displayImage(chapter.manga.cover, holder.cover, options, new ImageLoadingListener() {
+
+					public void onLoadingStarted(String imageUri, View view) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					public void onLoadingFailed(String imageUri, View view,
+							FailReason failReason) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					public void onLoadingComplete(String imageUri, View view,
+							Bitmap loadedImage) {
+						holder.cover.setImageBitmap(Image.getCroppedBitmap(loadedImage));
+					}
+
+					public void onLoadingCancelled(String imageUri, View view) {
+						// TODO Auto-generated method stub
+						
+					}
+		    		
+		    	});    	
+		        return convertView;
+			}
+    	}
+    	
+    	private class LoadHistory extends AsyncTask<Void, Integer, Chapter[]>{
+
+			@Override
+			protected Chapter[] doInBackground(Void... arg0) {
+				List<Chapter> chapters = null;
+				try {
+					QueryBuilder<Chapter, Integer> qBc = getHelper().getChapterRunDao().queryBuilder();
+					qBc.where().isNotNull(Chapter.READ_COLUMN_NAME);
+					qBc.orderBy(Chapter.READ_COLUMN_NAME, false);
+					qBc.groupBy(Chapter.MANGA_COLUMN_NAME);
+				
+					chapters = qBc.query();
+				} catch (SQLException e) {
+
+					e.printStackTrace();
+				}
+				return (chapters != null)? chapters.toArray(new Chapter[chapters.size()]) : null;
+			}
+    		
+			@Override
+			protected void onPostExecute(Chapter[] result) {
+		         if(result != null){
+		        	 mAdapter.mChapters = result;
+		        	 mGridView.setAdapter(mAdapter);
+		         }
+		    }
+    	}
     }
 
     @Override

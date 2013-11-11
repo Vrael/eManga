@@ -31,4 +31,9 @@ public class Category {
 		// Two categories are equals if they have same name
 		return Objects.hashCode(name);
 	}
+	
+	@Override
+	public String toString(){
+		return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+	}
 }

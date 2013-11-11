@@ -1,5 +1,5 @@
 #
-# generated on 2013/11/03 03:14:06
+# generated on 2013/11/09 06:10:33
 #
 # --table-start--
 dataClass=com.emanga.models.Link
@@ -51,6 +51,10 @@ fieldName=links
 columnName=links
 foreignCollection=true
 foreignCollectionColumnName=links
+# --field-end--
+# --field-start--
+fieldName=read
+columnName=read
 # --field-end--
 # --table-fields-end--
 # --table-end--

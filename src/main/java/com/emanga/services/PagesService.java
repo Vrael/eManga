@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.emanga.database.OrmliteIntentService;
-import com.emanga.models.Manga;
 import com.emanga.parsers.esMangaHere;
 import com.emanga.parsers.esMangaHere.DocException;
 import com.emanga.utils.Internet;

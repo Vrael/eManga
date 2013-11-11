@@ -9,6 +9,7 @@ import android.support.v4.content.AsyncTaskLoader;
 import com.emanga.database.DatabaseHelper;
 import com.emanga.models.Category;
 import com.emanga.models.CategoryManga;
+import com.emanga.models.Chapter;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateDescriptionService;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
@@ -24,14 +25,17 @@ public class MangaDetailLoader extends AsyncTaskLoader<Manga> {
 	
 	private RuntimeExceptionDao<Manga, Integer> mangaDao;
 	private QueryBuilder<Category, Integer> qBc;
+	private QueryBuilder<Chapter, Integer> cBc;
     
-	private SelectArg mangaIdQuery;
+	private SelectArg mangaIdQueryCategory;
+	private SelectArg mangaIdQueryChapters;
 	
 	public MangaDetailLoader(Context context, int mangaId) {
 		super(context);
 		
 		id = mangaId;
-		mangaIdQuery = new SelectArg();
+		mangaIdQueryCategory = new SelectArg();
+		mangaIdQueryChapters = new SelectArg();
 		
 		DatabaseHelper helper = OpenHelperManager.getHelper(context, DatabaseHelper.class);
 		
@@ -41,8 +45,13 @@ public class MangaDetailLoader extends AsyncTaskLoader<Manga> {
 			// Query for category list
 			qBc = helper.getCategoryRunDao().queryBuilder();
 			QueryBuilder<CategoryManga, Integer> qBcm = helper.getCategoryMangaRunDao().queryBuilder();
-			qBcm.where().eq(CategoryManga.MANGA_COLUMN_NAME, mangaIdQuery);
+			qBcm.where().eq(CategoryManga.MANGA_COLUMN_NAME, mangaIdQueryCategory);
 			qBc.join(qBcm);
+			
+			// Query for last chapter
+			cBc = helper.getChapterRunDao().queryBuilder();
+			cBc.where().eq(Chapter.MANGA_COLUMN_NAME, mangaIdQueryChapters);
+			cBc.orderBy(Chapter.READ_COLUMN_NAME, true);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -62,10 +71,16 @@ public class MangaDetailLoader extends AsyncTaskLoader<Manga> {
 			}
 			
 			// Get the category list
-			mangaIdQuery.setValue(id);
+			mangaIdQueryCategory.setValue(id);
 			manga.categories = qBc.query();
 			
-			// TODO: Make something with chapters...
+			// Get last chapter
+			mangaIdQueryChapters.setValue(id);
+			Chapter c = cBc.queryForFirst();
+			if(c != null) { 
+				manga.chaptersList = new Chapter[]{c};
+			}
+				
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

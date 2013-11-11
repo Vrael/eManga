@@ -10,8 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout.LayoutParams;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.emanga.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -27,7 +29,9 @@ public class ChapterPageFragment extends Fragment {
     
     private DisplayImageOptions options;
     private ImageLoader imageLoader;
-    private ImageView mImageView;    
+    private ScrollView mScrollView;
+    private ImageView mImageView;
+    private ProgressBar mProgressBar;
     private String mUrl;
 
     public static ChapterPageFragment newInstance(String pageLink) {
@@ -64,21 +68,11 @@ public class ChapterPageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
     	
-    	ScrollView mScroll = new ScrollView(getActivity());
-    	mScroll.setLayoutParams(new LayoutParams(
-        		LayoutParams.MATCH_PARENT,
-        		LayoutParams.MATCH_PARENT));
-    	
-    	mScroll.setVerticalScrollBarEnabled(false);
-    	mScroll.setHorizontalScrollBarEnabled(false);
-    	
-    	mImageView = new ImageView(getActivity());
-        mImageView.setLayoutParams(new LayoutParams(
-        		LayoutParams.MATCH_PARENT,
-        		LayoutParams.WRAP_CONTENT));
-        
-        mScroll.addView(mImageView);
-        return mScroll;
+    	View view = inflater.inflate(R.layout.page_chapter, container, false);
+    	mScrollView = (ScrollView) view.findViewById(R.id.reader_scroll_image);
+    	mImageView = (ImageView) mScrollView.findViewById(R.id.reader_page_image);
+    	mProgressBar = (ProgressBar) view.findViewById(R.id.reader_progressbar);
+        return view;
     }
     
     public void onActivityCreated (Bundle savedInstanceState){
@@ -94,12 +88,28 @@ public class ChapterPageFragment extends Fragment {
 
 			public void onLoadingFailed(String imageUri, View view,
 					FailReason failReason) {
-				// TODO Auto-generated method stub
+				// Hide progress bar
+				mProgressBar.setVisibility(View.GONE);
+
+				// Show message with the error
+				LayoutInflater inflater = (LayoutInflater) getActivity().getLayoutInflater();
+            	View viewToast = inflater.inflate(R.layout.toast_with_image, (ViewGroup) getActivity().findViewById(R.id.toast));
+            	TextView message = (TextView) viewToast.findViewById(R.id.toast_text);
+            	message.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.error, 0, 0);
+            	message.setText("Could not download the page!\nTry to check the internet conexion.");
+            	
+            	Toast toast = new Toast(getActivity());
+            	toast.setDuration(Toast.LENGTH_LONG);
+            	toast.setView(viewToast);
+            	toast.show();
 				
 			}
 
 			public void onLoadingComplete(String imageUri, View view,
 					Bitmap loadedImage) {
+				// Swap visibility
+				mProgressBar.setVisibility(View.GONE);
+				mScrollView.setVisibility(View.VISIBLE);
 				
 				if(loadedImage != null && mImageView != null){
 			        // Resize the image view to full with screen
@@ -108,7 +118,6 @@ public class ChapterPageFragment extends Fragment {
 			}
 
 			public void onLoadingCancelled(String imageUri, View view) {
-				// TODO Auto-generated method stub
 				
 			}
         	

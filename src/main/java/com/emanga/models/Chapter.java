@@ -1,6 +1,5 @@
 package com.emanga.models;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 import com.google.common.base.Objects;
@@ -16,6 +15,7 @@ public class Chapter {
 	public static final String NUMBER_COLUMN_NAME = "number";
 	public static final String MANGA_COLUMN_NAME = "manga_id";
 	public static final String LINKS_COLUMN_NAME = "links";
+	public static final String READ_COLUMN_NAME = "read";
 	
 	@DatabaseField(id = true, columnName = ID_COLUMN_NAME)
 	public int id;
@@ -27,6 +27,8 @@ public class Chapter {
 	public Manga manga;
 	@ForeignCollectionField(columnName = LINKS_COLUMN_NAME)
     public ForeignCollection<Link> links;
+	@DatabaseField(columnName = READ_COLUMN_NAME)
+	public Date read;
 	
 	// Mange N - N relationship
 	public Link[] linksList;
@@ -35,14 +37,20 @@ public class Chapter {
 		// needed by ormlite
 	}
 	
-	public Chapter(int num, Date d, Manga m) throws UnsupportedEncodingException {
+	public Chapter(int num, Manga m) {
+		number = num;
+		manga = m;
+		id = hashCode();
+	}
+	
+	public Chapter(int num, Date d, Manga m){
 		date = d;
 		number = num;
 		manga = m;
 		id = hashCode();
 	}
 	
-	public Chapter(int num, Date d, Manga m, Link ... link ) throws UnsupportedEncodingException {
+	public Chapter(int num, Date d, Manga m, Link ... link ){
 		date = d;
 		number = num;
 		manga = m;
@@ -54,5 +62,10 @@ public class Chapter {
 	public int hashCode() {
 		// Two chapters are equals if they have same title manga and number
 		return Objects.hashCode(manga.title + number);
+	}
+	
+	public void setNumber(int num){
+		number = num;
+		id = hashCode();
 	}
 }

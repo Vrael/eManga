@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang.WordUtils;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -102,7 +104,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	Chapter chapter = getItem(position);
     	
     	holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.date));
-    	holder.title.setText(String.valueOf(chapter.manga.title));
+    	holder.title.setText(WordUtils.capitalize(chapter.manga.title));
     	holder.number.setText(String.valueOf(chapter.number));
     	
     	imageLoader.displayImage(chapter.manga.cover, holder.cover, options);    	

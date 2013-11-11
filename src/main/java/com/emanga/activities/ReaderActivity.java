@@ -1,6 +1,7 @@
 package com.emanga.activities;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -22,6 +23,7 @@ import android.util.Log;
 import com.emanga.R;
 import com.emanga.database.OrmliteFragmentActivity;
 import com.emanga.fragments.ChapterPageFragment;
+import com.emanga.models.Chapter;
 import com.emanga.models.Manga;
 import com.emanga.services.PagesService;
 import com.emanga.utils.CustomViewPager;
@@ -42,7 +44,9 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 	public static final String ACTION_OPEN_CHAPTER = "com.manga.intent.action" 
 			+ TAG + ".openChapter";
 	
-	private int currentChapter;
+	// Current manga and chapter
+	private Manga mManga;
+	private Chapter mChapter;
 	private ImagePagerAdapter mAdapter;
 	private CustomViewPager mPager;
 	
@@ -59,22 +63,32 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 	    	Log.d(TAG, "Received new url image from Page Service");
 	    	String url = intent.getStringExtra(PagesService.EXTRA_PAGE_URL);
 	    	int nPages = intent.getIntExtra(PagesService.EXTRA_NUMBER_PAGES, 0);
-	    	System.out.println(intent.getAction());
+	    	
 	    	if((intent.getAction() == PagesService.ACTION_ADD_PAGE) && (url != null)){
 	    		mAdapter.pagesLinks.add(url);
 	    		mAdapter.notifyDataSetChanged();
 	    	} else if((intent.getAction() == PagesService.ACTION_COUNT_PAGES) && (nPages > 0)) {
 	    		numberPages += nPages - 1; // From 0 to N-1
+				
+	    		// Update date the last read manga
+				mChapter.read = new Date();
+				getHelper().getChapterRunDao().createOrUpdate(mChapter);
+				
+				// Set next chapter
+				mChapter.setNumber(mChapter.number + 1);
+				
 	    	} else if(intent.getAction() == PagesService.ACTION_ERROR) {
 	    		// If there was an error retry with next chapter
 	    		if(tries < 1){
-	    			System.out.println("Error! try one time more");
-	    			currentChapter++;
+	    			System.out.println("Error! try one time more " + mChapter.number);
+	    			mChapter.setNumber(mChapter.number + 1);
 	    			tries++;
+	    			
 	    			Intent serviceIntent = new Intent(context, PagesService.class);
 	    			serviceIntent.putExtra(PagesService.EXTRA_MANGA_TITLE, 
 	    					intent.getStringExtra(PagesService.EXTRA_MANGA_TITLE));
-	    			serviceIntent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
+	    			serviceIntent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, mChapter.number);
+	    			
 	    			startService(serviceIntent);
 	    		}
 	    	}
@@ -86,14 +100,15 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_reader);
-		currentChapter = getIntent().getIntExtra(ACTION_OPEN_CHAPTER, 0);
+		mManga = getHelper().getMangaRunDao().queryForId(getIntent().getIntExtra(Manga.ID_COLUMN_NAME, 0));
+		mChapter = new Chapter(getIntent().getIntExtra(ACTION_OPEN_CHAPTER, 0), mManga);
 		
 		// Search the number chapters of the manga
-		new NumberChapters().execute(getIntent().getIntExtra(Manga.ID_COLUMN_NAME, 0));
+		new NumberChapters().execute(mManga.id);
 		
 		final Intent intent = new Intent(this, PagesService.class);
-		intent.putExtra(PagesService.EXTRA_MANGA_TITLE, getIntent().getStringExtra(Manga.TITLE_COLUMN_NAME));
-		intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
+		intent.putExtra(PagesService.EXTRA_MANGA_TITLE, mManga.title);
+		intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, mChapter.number);
 		startService(intent);
 		
 		mAdapter = new ImagePagerAdapter(getSupportFragmentManager());
@@ -109,8 +124,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 			public void onPageSelected(int position) {
 				// When only missing 3 pages for the end, it loads the next chapter
 				if(mAdapter.pagesLinks.size() - position < 3){
-					currentChapter++;
-					intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, currentChapter);
+					intent.putExtra(PagesService.EXTRA_CHAPTER_NUMBER, mChapter.number + 1);
 					startService(intent);
 				}
 			}

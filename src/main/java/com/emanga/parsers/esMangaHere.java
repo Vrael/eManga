@@ -236,23 +236,18 @@ public class esMangaHere {
 			
 			// Process chapters
 			for(Element chapterHtml : chaptersHtml){
-				try {
-					url = new Link(chapterHtml.attr("href"));				
-					c = new Chapter(
-							esMangaHere.parseNumberChapter(chapterHtml),
-							date, 
-							manga,
-							new Link[]{url});
-					url.chapter = c;
-					
-					chapters[j] = c;
-					j++;
-					// All chapters has same publish date, so this emulate a second difference
-					date.setTime(date.getTime() - 1000);
-
-				} catch (UnsupportedEncodingException e){
-					System.out.println("It was an error parsing title for to create manga ID: " + manga.title);
-				}
+				url = new Link(chapterHtml.attr("href"));				
+				c = new Chapter(
+						esMangaHere.parseNumberChapter(chapterHtml),
+						date, 
+						manga,
+						new Link[]{url});
+				url.chapter = c;
+				
+				chapters[j] = c;
+				j++;
+				// All chapters has same publish date, so this emulate a second difference
+				date.setTime(date.getTime() - 1000);
 
 			}
 			
