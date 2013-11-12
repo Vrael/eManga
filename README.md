@@ -1,14 +1,62 @@
-A manga reader for android.
+eManga
+======
 
-The idea is the next. There are different tabs for different categories such as:
+#Overview
+eManga is an Android application where you can read your favourites mangas. 
 
-    1. New (Latest mangas or chapters. eg: all of last seven days)
-    2. Library (all mangas)
-    3. Read (mangas read in the past, history)
-    4. Favourites
+This application doesn't contains any manga by default. All mangas are get from public internet sources and they can be consulted from any browser. So you will need to use internet for a full experience. 
 
-Each tab has a GridView with mangas or chapters in form of thumbnails, with a title and a image cover. User can click on thumbnail and starts to read the manga or chapter.
+This app will search instead you the mangas and then it will show you easily the mangas.
 
-For a good experince in mangas load, there is a database from mangas information is loaded first. Then database will update from repositories of mangas and when this done, views will be updated.
+eManga is completely public and free. 
 
-The database ONLY stores links and some relevant information for choose the better site where download the current manga or chapter.
+#Features
+
+* A big library with many differents mangas
+* A section with latest chapters
+* A function history for you will can continue with a stop read
+* special concern in a fast load for pages to guarantee the best experience
+
+#Installation
+
+Before to start, you will need downloads the [dependencies](https://github.com/Vrael/eManga/edit/master/README.md#dependencies). See in dependencies section.
+
+1. Clone the repository (open a console and write)
+```console
+git clone https://github.com/Vrael/eManga.git
+```
+
+2. Move to eManga folder
+```console
+cd <path_to_folder>/eManga
+```
+
+3. Compile the source code with maven
+```maven
+mvn install
+```
+
+4. Connect your mobile or Android emulator and run
+```mvn
+mvn android:deploy
+```
+
+* You could recompile and redeploy all at the same time with
+```
+mvn clean install android:redeploy
+```
+
+#Dependencies
+1. [Maven 3.0.4 or upper](http://maven.apache.org/download.cgi)
+2. [Maven Android SDK Deployer](https://github.com/mosabua/maven-android-sdk-deployer)
+
+#TODOs:
+* search widget
+* settings options activity
+* the possibility to go back to precedent pages the first time a chapter is open
+* add more internet mangas sources
+* design a logotype for the luncher icon
+* support for multilanguage
+
+#Notes
+This application is under development yet. So any issue or problem is welcome. In the same way, anyone who wants to participate in the development and add new great and amazing ideas is invited too.
