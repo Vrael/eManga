@@ -1,6 +1,8 @@
 eManga
 ======
 
+![alt text](https://raw.github.com/Vrael/eManga/master/eManga.png "eManga print screen")
+
 #Overview
 eManga is an Android application where you can read your favourites mangas. 
 
@@ -19,7 +21,7 @@ eManga is completely public and free.
 
 #Installation
 
-Before to start, you will need downloads the [dependencies](https://github.com/Vrael/eManga/edit/master/README.md#dependencies). See in dependencies section.
+Before to start, you will need downloads the [dependencies](https://github.com/Vrael/eManga#dependencies). See in dependencies section.
 
 1. Clone the repository (open a console and write)
 ```console
