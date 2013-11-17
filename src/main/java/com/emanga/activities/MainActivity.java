@@ -1,7 +1,6 @@
 package com.emanga.activities;
 
 import java.sql.SQLException;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
@@ -15,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,23 +21,17 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.NavUtils;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -70,7 +62,6 @@ public class MainActivity extends FragmentActivity
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
 	
-    
 	/**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
@@ -125,8 +116,6 @@ public class MainActivity extends FragmentActivity
 				// TODO Auto-generated method stub
 				
 			}
-         
-           
         });
     }
       
@@ -406,31 +395,6 @@ public class MainActivity extends FragmentActivity
 		         }
 		    }
     	}
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(com.emanga.R.menu.main, menu);
-		return super.onCreateOptionsMenu(menu);
-    }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-        	case android.R.id.home:
-        		NavUtils.navigateUpFromSameTask(this);
-        		return true;
-        	case R.id.action_search:
-                // openSearch();
-                return true;
-            case R.id.action_settings:
-                // openSettings();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
 	public void onTabReselected(Tab tab, FragmentTransaction ft) {	

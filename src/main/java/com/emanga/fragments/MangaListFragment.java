@@ -7,14 +7,23 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.FilterQueryProvider;
 import android.widget.ListView;
 
 import com.emanga.R;
 import com.emanga.adapters.MangaItemListCursorAdapter;
+import com.emanga.database.DatabaseHelper;
 import com.emanga.loaders.LibraryLoader;
 import com.emanga.models.Category;
 import com.emanga.models.Manga;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 /**
  * A list fragment representing a list of Mangas. This fragment also supports
@@ -66,6 +75,8 @@ public class MangaListFragment extends ListFragment
 		}
 	};
 
+	private EditText inputSearch;
+	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
 	 * fragment (e.g. upon screen orientation changes).
@@ -73,6 +84,24 @@ public class MangaListFragment extends ListFragment
 	public MangaListFragment() {}
 
 	private MangaItemListCursorAdapter mAdapter;
+	private DatabaseHelper databaseHelper = null;
+	
+	protected DatabaseHelper getHelper() {
+        if (databaseHelper == null) {
+            databaseHelper =
+                OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class);
+        }
+        return databaseHelper;
+    }
+	
+	@Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
+    }
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -87,7 +116,6 @@ public class MangaListFragment extends ListFragment
 				SimpleCursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 		
 		setListAdapter(mAdapter);
-		
 		getLoaderManager().initLoader(1, null, this);
 	}
 
@@ -103,6 +131,51 @@ public class MangaListFragment extends ListFragment
 		}
 	}
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+    	View view = inflater.inflate(R.layout.manga_list,
+                container, false);
+    	inputSearch = (EditText) view.findViewById(R.id.inputSearch);
+    	return view;
+    }
+    
+    @Override
+    public void onActivityCreated(Bundle saved) { 
+        super.onActivityCreated(saved);
+        
+        inputSearch.addTextChangedListener(new TextWatcher() {
+        	
+			public void afterTextChanged(Editable arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void beforeTextChanged(CharSequence arg0, int arg1,
+					int arg2, int arg3) {
+				getHelper().updateMangaFTS();
+			}
+
+			public void onTextChanged(CharSequence text, int arg1, int arg2,
+					int arg3) {
+				
+				mAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+				    public Cursor runQuery(CharSequence constraint) {
+				        return getHelper().searchOnLibrary(constraint.toString());
+				    }
+				});
+				
+				Filter filter = mAdapter.getFilter();
+				if(!text.toString().trim().isEmpty()){
+					filter.filter(text.toString());
+				} else {
+					filter = null;
+				}
+				mAdapter.notifyDataSetChanged();
+			}
+        });
+    }
+    
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
@@ -179,6 +252,9 @@ public class MangaListFragment extends ListFragment
 	    ListView lv = getListView();
 	    lv.setFastScrollEnabled(true);
 	    lv.setScrollingCacheEnabled(true);
+	    
+	    // For searchs
+	    // getHelper().updateMangaFTS();
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {

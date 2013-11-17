@@ -55,6 +55,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Chapter.class);
 			TableUtils.createTable(connectionSource, Link.class);
 			
+			// Table for search using fts3: Ormlite doesn't support it yet
+			// The table has same data that cursor manga list on library tab
+			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts3("
+				+ Manga.ID_COLUMN_NAME + "," + Manga.TITLE_COLUMN_NAME + "," + Manga.COVER_COLUMN_NAME + "," 
+				+ Category.NAME_COLUMN_NAME + ")");
+			
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
 			throw new RuntimeException(e);
@@ -79,6 +85,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Manga.class, true);
 			TableUtils.dropTable(connectionSource, Category.class, true);
 			TableUtils.dropTable(connectionSource, CategoryManga.class, true);
+			
+			db.execSQL("DROP TABLE manga_fts");
+			
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -134,16 +143,32 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		linkRuntimeDao = null;
 	}
 	
+	private static String mangasWithCategoriesQuery = 
+			"SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(" + Category.NAME_COLUMN_NAME + ", ', ')"
+			+ " AS " + Category.NAME_COLUMN_NAME + " FROM manga"
+			+ " INNER JOIN categorymanga ON categorymanga.manga_id = manga._id"
+			+ " INNER JOIN category ON category._id = categorymanga.category_id"
+			+ " GROUP BY manga._id"
+			+ " ORDER BY manga.title ASC";
+			
 	public Cursor getMangasWithCategories(){
-		// Field _id is the manga's title too
-		
+		return this.getReadableDatabase().rawQuery(mangasWithCategoriesQuery, null);
+	}
+	
+	/**
+	 * Repopulate the table of search
+	 */
+	public void updateMangaFTS(){
+		this.getReadableDatabase().rawQuery("DELETE FROM manga_fts", null);
+		this.getReadableDatabase().rawQuery(
+				"INSERT INTO manga_fts (" + Manga.ID_COLUMN_NAME + ", " + Manga.TITLE_COLUMN_NAME
+				+ ", " + Manga.COVER_COLUMN_NAME + ", " + Category.NAME_COLUMN_NAME + ")"
+				+ mangasWithCategoriesQuery, null);
+	}
+	
+	public Cursor searchOnLibrary(String text){
 		return this.getReadableDatabase().rawQuery(
-				"SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(category.name, ', ')"
-				+ " AS " + Category.NAME_COLUMN_NAME + " FROM manga"
-				+ " INNER JOIN categorymanga ON categorymanga.manga_id = manga._id"
-				+ " INNER JOIN category ON category._id = categorymanga.category_id"
-				+ " GROUP BY manga._id"
-				+ " ORDER BY manga.title ASC", null);
+				"SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{text + "*"});
 	}
 	
 	public void saveCategories(final Category[] categories){

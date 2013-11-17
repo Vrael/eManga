@@ -1,11 +1,28 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/manga_list"
-    android:tag="manga_list"
-    android:name="com.emanga.fragments.MangaListFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
-    tools:context=".MangaListActivity"
-    tools:layout="@android:layout/list_content" />
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ 	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical" >
+ 
+	<!-- Editext for Search -->
+	<EditText android:id="@+id/inputSearch"
+		android:layout_width="match_parent"
+    	android:layout_height="wrap_content"
+    	android:hint="@string/search_hint"
+    	android:inputType="text"
+        android:maxLines="1"
+        android:drawableLeft="@drawable/ic_action_search"/>
+
+  	<!-- List View -->
+	<ListView
+    	android:id="@id/android:list"
+    	android:layout_width="match_parent"
+    	android:layout_height="wrap_content" />
+
+	<!-- Empty List View -->
+    <TextView android:id="@android:id/empty"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:text="@string/list_empty" />
+    
+</LinearLayout>

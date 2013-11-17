@@ -17,11 +17,11 @@ eManga is completely public and free.
 * A big library with many differents mangas
 * A section with latest chapters
 * A function history for you will can continue with a stop read
-* special concern in a fast load for pages to guarantee the best experience
+* Special concern in a fast load for pages to guarantee the best experience
 
 #Installation
 
-Before to start, you will need downloads the [dependencies](https://github.com/Vrael/eManga#dependencies). See in dependencies section.
+Before to start, you will need download the [dependencies](https://github.com/Vrael/eManga#dependencies). See in dependencies section.
 
 1. Clone the repository (open a console and write)
 ```console
@@ -53,7 +53,6 @@ mvn clean install android:redeploy
 2. [Maven Android SDK Deployer](https://github.com/mosabua/maven-android-sdk-deployer)
 
 #TODOs:
-* search widget
 * settings options activity
 * the possibility to go back to precedent pages the first time a chapter is open
 * add more internet mangas sources

@@ -23,9 +23,9 @@ public class LibrarySectionFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		 // Check if categories in database are updated
-         getActivity().startService(new Intent(getActivity(), UpdateMangasService.class));
+        getActivity().startService(new Intent(getActivity(), UpdateMangasService.class));
         
-		rootView = getLayoutInflater(savedInstanceState).inflate(R.layout.manga_list, null, false);
+		rootView = getLayoutInflater(savedInstanceState).inflate(R.layout.library_section, null, false);
 		
 		if (rootView.findViewById(R.id.manga_detail_container) != null) {
 			// The detail container view will be present only in the

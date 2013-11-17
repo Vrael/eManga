@@ -22,14 +22,26 @@
         
         <activity
             android:name="com.emanga.activities.MainActivity"
+            android:windowSoftInputMode="stateHidden"
             android:configChanges="keyboardHidden|orientation|screenSize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+		
+        <activity
+            android:name="com.emanga.activities.ReaderActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" 
+            android:screenOrientation="landscape"
+            android:label="@string/title_activity_reader"
+            android:parentActivityName="com.emanga.activities.MainActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.emanga.activities.MainActivity" />
+        </activity>
+        
         <service 
             android:name="com.emanga.services.UpdateMangasService"
             android:icon="@drawable/ic_spider"
@@ -53,18 +65,6 @@
             android:icon="@drawable/ic_spider"
             android:exported="false" >
         </service>
-
-        <activity
-            android:name="com.emanga.activities.ReaderActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize" 
-            android:screenOrientation="landscape"
-            android:label="@string/title_activity_reader"
-            android:parentActivityName="com.emanga.activities.MainActivity"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.emanga.activities.MainActivity" />
-        </activity>
     </application>
 
 </manifest>
