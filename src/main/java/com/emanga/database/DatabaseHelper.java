@@ -57,7 +57,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			
 			// Table for search using fts3: Ormlite doesn't support it yet
 			// The table has same data that cursor manga list on library tab
-			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts3(_id, title, cover, name)");
+			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts4(_id, title, cover, name)");
 			
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
@@ -165,12 +165,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		+ " INNER JOIN category ON category._id = categorymanga.category_id"
 		+ " GROUP BY manga._id"
 		+ " ORDER BY manga.title ASC");
+		this.getReadableDatabase().execSQL("INSERT INTO manga_fts(manga_fts) VALUES(?)", new String[]{"optimize"});
 				
 	}
 	
 	public Cursor searchOnLibrary(String text){
 		return this.getReadableDatabase().rawQuery(
-				"SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{text + "*"});
+				"SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{"title:" + text + "* OR name:" + text + "*"});
 	}
 	
 	public void saveCategories(final Category[] categories){

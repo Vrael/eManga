@@ -167,10 +167,8 @@ public class MangaListFragment extends ListFragment
 				
 				Filter filter = mAdapter.getFilter();
 				if(!text.toString().trim().isEmpty()){
-					System.out.println("FILTRO LLENO :" + text + ":");
 					filter.filter(text.toString());
 				} else {
-					System.out.println("FILTRO VACÍO");
 					filter = null;
 				}
 				mAdapter.notifyDataSetChanged();
