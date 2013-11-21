@@ -57,9 +57,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			
 			// Table for search using fts3: Ormlite doesn't support it yet
 			// The table has same data that cursor manga list on library tab
-			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts3("
-				+ Manga.ID_COLUMN_NAME + "," + Manga.TITLE_COLUMN_NAME + "," + Manga.COVER_COLUMN_NAME + "," 
-				+ Category.NAME_COLUMN_NAME + ")");
+			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts3(_id, title, cover, name)");
 			
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
@@ -159,11 +157,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	 * Repopulate the table of search
 	 */
 	public void updateMangaFTS(){
-		this.getReadableDatabase().rawQuery("DELETE FROM manga_fts", null);
-		this.getReadableDatabase().rawQuery(
-				"INSERT INTO manga_fts (" + Manga.ID_COLUMN_NAME + ", " + Manga.TITLE_COLUMN_NAME
-				+ ", " + Manga.COVER_COLUMN_NAME + ", " + Category.NAME_COLUMN_NAME + ")"
-				+ mangasWithCategoriesQuery, null);
+		this.getReadableDatabase().execSQL("DELETE FROM manga_fts");
+		this.getReadableDatabase().execSQL("INSERT INTO manga_fts (_id,title,cover,name)"
+		+ " SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(category.name, ', ')"
+		+ " AS name FROM manga"
+		+ " INNER JOIN categorymanga ON categorymanga.manga_id = manga._id"
+		+ " INNER JOIN category ON category._id = categorymanga.category_id"
+		+ " GROUP BY manga._id"
+		+ " ORDER BY manga.title ASC");
+				
 	}
 	
 	public Cursor searchOnLibrary(String text){

@@ -72,7 +72,9 @@ public class UpdateMangasService extends OrmliteIntentService {
 					sendBroadcast(result);
 				}
 				
-				
+			    // Update table for searchs
+			    getHelper().updateMangaFTS();
+			    
 			} catch (IOException e1) {
 				Log.e(TAG, "Manga Catalog couldn't be retrived!");
 				e1.printStackTrace();

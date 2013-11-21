@@ -167,8 +167,10 @@ public class MangaListFragment extends ListFragment
 				
 				Filter filter = mAdapter.getFilter();
 				if(!text.toString().trim().isEmpty()){
+					System.out.println("FILTRO LLENO :" + text + ":");
 					filter.filter(text.toString());
 				} else {
+					System.out.println("FILTRO VACÍO");
 					filter = null;
 				}
 				mAdapter.notifyDataSetChanged();
@@ -252,9 +254,6 @@ public class MangaListFragment extends ListFragment
 	    ListView lv = getListView();
 	    lv.setFastScrollEnabled(true);
 	    lv.setScrollingCacheEnabled(true);
-	    
-	    // For searchs
-	    // getHelper().updateMangaFTS();
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {

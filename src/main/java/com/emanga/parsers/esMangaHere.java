@@ -1,6 +1,5 @@
 package com.emanga.parsers;
 
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
