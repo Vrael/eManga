@@ -49,14 +49,14 @@ mvn clean install android:redeploy
 ```
 
 #Dependencies
-1. [Maven 3.0.4 or upper](http://maven.apache.org/download.cgi)
+1. [Maven 3.1.1 or upper](http://maven.apache.org/download.cgi)
 2. [Maven Android SDK Deployer](https://github.com/mosabua/maven-android-sdk-deployer)
 
 #TODOs:
 * settings options activity
 * the possibility to go back to precedent pages the first time a chapter is open
 * add more internet mangas sources
-* design a logotype for the luncher icon
+* improve the luncher icon
 * support for multilanguage
 
 #Notes
