@@ -1,6 +1,8 @@
 package com.emanga.utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,5 +23,15 @@ public class Notification {
     	toast.setDuration(Toast.LENGTH_SHORT);
     	toast.setView(view);
     	return toast;
+	}
+	
+	public static void errorMessage(Activity activity, String title, String message, int icon){
+		Builder builder = new AlertDialog.Builder(activity);
+		builder.setIcon(icon);
+	    builder.setTitle(title);
+		builder.setMessage(message);
+	    builder.setCancelable(true);
+	    AlertDialog dialog = builder.create();
+	    dialog.show();
 	}
 }

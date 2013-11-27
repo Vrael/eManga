@@ -47,6 +47,7 @@ import com.emanga.models.Chapter;
 import com.emanga.models.Manga;
 import com.emanga.services.UpdateLatestChaptersService;
 import com.emanga.utils.Image;
+import com.emanga.utils.Internet;
 import com.emanga.utils.Notification;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -84,7 +85,7 @@ public class MainActivity extends FragmentActivity
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mAppSectionsPagerAdapter);
         
-        // 4 Tabs: New, Library, Read, Favourites
+        // 3 Tabs: New, Library, Read
         for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
         	// Create a tab with text corresponding to the page title defined by the adapter.
             // Also specify this Activity object, which implements the TabListener interface, as the
@@ -168,16 +169,7 @@ public class MainActivity extends FragmentActivity
     	
     	// This Receiver updates the progress bar (that indicates there are chapters 
     	// restoring and processing from internet)
-    	private BroadcastReceiver mChapterReceiver = new BroadcastReceiver() {
-		    @Override
-		    public void onReceive(Context context, Intent intent) {
-		    	Log.d(TAG, "Progress received from Latest Chapters Service");
-		    	
-		    	bar.setProgress(
-		    		intent.getIntExtra(UpdateLatestChaptersService.EXTRA_CHAPTERS_PROCESS, 100)
-		    		);
-		   }
-		};
+    	private BroadcastReceiver mChapterReceiver;
 		
     	@Override
 		public void onCreate(Bundle savedInstanceState) {
@@ -186,9 +178,26 @@ public class MainActivity extends FragmentActivity
 			
 			Activity activity = getActivity();
 			
-			// Starts Update Database Services
-			activity.startService(new Intent(getActivity(), UpdateLatestChaptersService.class));
-			activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateLatestChaptersService.ACTION_PROGRESS));
+			if(Internet.checkConnection(activity)){
+				mChapterReceiver = new BroadcastReceiver() {
+				    @Override
+				    public void onReceive(Context context, Intent intent) {
+				    	Log.d(TAG, "Progress received from Latest Chapters Service");
+				    	
+				    	bar.setProgress(
+				    		intent.getIntExtra(UpdateLatestChaptersService.EXTRA_CHAPTERS_PROCESS, 100)
+				    		);
+				    }
+				};
+				// Starts Update Database Services
+				activity.startService(new Intent(getActivity(), UpdateLatestChaptersService.class));
+				activity.registerReceiver(mChapterReceiver, new IntentFilter(UpdateLatestChaptersService.ACTION_PROGRESS));
+			} else {
+				Notification.errorMessage(activity, 
+						"Internet is missing",
+						"Connect it to access the mangas",
+						R.drawable.stop);
+			}
 		}
     		
     	@Override

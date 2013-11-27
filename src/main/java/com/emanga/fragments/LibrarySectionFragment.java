@@ -1,5 +1,6 @@
 package com.emanga.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 
 import com.emanga.R;
 import com.emanga.services.UpdateMangasService;
+import com.emanga.utils.Internet;
 
 public class LibrarySectionFragment extends Fragment {
 
@@ -21,10 +23,12 @@ public class LibrarySectionFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		 // Check if categories in database are updated
-        getActivity().startService(new Intent(getActivity(), UpdateMangasService.class));
-        
-		}
+		
+		Activity activity = getActivity();
+		if(Internet.checkConnection(activity)){
+			getActivity().startService(new Intent(getActivity(), UpdateMangasService.class));
+		} 
+	}
 	
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
