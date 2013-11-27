@@ -203,7 +203,8 @@ public class MainActivity extends FragmentActivity
     	@Override
     	public void onDestroy(){
     		super.onDestroy();
-    		getActivity().unregisterReceiver(mChapterReceiver);
+    		if(mChapterReceiver != null)
+    			getActivity().unregisterReceiver(mChapterReceiver);
     	}
     	
     	@Override
