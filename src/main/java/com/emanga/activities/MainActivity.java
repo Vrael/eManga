@@ -267,10 +267,15 @@ public class MainActivity extends FragmentActivity
     	private ItemAdapter mAdapter;
     	
     	@Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
+    	public void onStart(){
+    		super.onStart();
     		// Get chapters from database
     		new LoadHistory().execute();
+    	}
+    	
+    	@Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
     		
     		// Set view fot this fragment
         	View rootView = inflater.inflate(
