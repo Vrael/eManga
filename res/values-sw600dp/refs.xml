@@ -8,6 +8,6 @@
     For more on layout aliases, see:
     http://developer.android.com/training/multiscreen/screensizes.html#TaskUseAliasFilters
     -->
-    <item name="manga_list" type="layout">@layout/library_section_twopane</item>
+    <item name="manga_list" type="layout">@layout/manga_twopane</item>
 
 </resources>

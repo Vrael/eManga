@@ -17,7 +17,6 @@ public class LibrarySectionFragment extends Fragment {
 	 * device.
 	 */
 	public static boolean mTwoPane;
-	private View rootView;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -25,9 +24,15 @@ public class LibrarySectionFragment extends Fragment {
 		 // Check if categories in database are updated
         getActivity().startService(new Intent(getActivity(), UpdateMangasService.class));
         
-		rootView = getLayoutInflater(savedInstanceState).inflate(R.layout.library_section, null, false);
+		}
+	
+	@Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
 		
-		if (rootView.findViewById(R.id.manga_detail_container) != null) {
+		View view = getLayoutInflater(savedInstanceState).inflate(R.layout.manga_list, null, false);
+		
+		if (view.findViewById(R.id.manga_detail_container) != null) {
 			// The detail container view will be present only in the
 			// large-screen layouts (res/values-large and
 			// res/values-sw600dp). If this view is present, then the
@@ -39,11 +44,7 @@ public class LibrarySectionFragment extends Fragment {
 			((MangaListFragment) getFragmentManager().findFragmentById(
 					R.id.manga_list)).setActivateOnItemClick(true);
 		}
-	}
-	
-	@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-    	return rootView;
+
+    	return view;
     }
 }

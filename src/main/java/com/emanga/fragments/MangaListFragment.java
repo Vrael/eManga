@@ -1,6 +1,7 @@
 package com.emanga.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -9,13 +10,16 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.FilterQueryProvider;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.emanga.R;
 import com.emanga.adapters.MangaItemListCursorAdapter;
@@ -134,26 +138,53 @@ public class MangaListFragment extends ListFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-    	View view = inflater.inflate(R.layout.manga_list,
-                container, false);
-    	inputSearch = (EditText) view.findViewById(R.id.inputSearch);
-    	return view;
+    	
+    	Context context = getActivity();
+    	LinearLayout root = new LinearLayout(context);
+    	root.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        
+        root.setOrientation(LinearLayout.VERTICAL);
+    	
+        // Search input
+    	inputSearch = new EditText(getActivity());
+    	inputSearch.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_search,0,0,0);
+    	inputSearch.setHint("Search Manga");
+    	root.addView(inputSearch, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    	
+    	// Message when list is empty
+        TextView tv = new TextView(getActivity());
+        tv.setId(android.R.id.empty);
+        tv.setGravity(Gravity.CENTER);
+        root.addView(tv, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        
+        // ListView with the mangas
+        ListView lv = new ListView(getActivity());
+        lv.setId(android.R.id.list);
+        lv.setDrawSelectorOnTop(false);
+        lv.setVerticalScrollBarEnabled(false);
+        root.addView(lv, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    	
+    	return root;
     }
-    
-    @Override
+  
+
+	@Override
     public void onActivityCreated(Bundle saved) { 
         super.onActivityCreated(saved);
+        
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         
         inputSearch.addTextChangedListener(new TextWatcher() {
         	
 			public void afterTextChanged(Editable arg0) {
-				// TODO Auto-generated method stub
-				
 			}
 
 			public void beforeTextChanged(CharSequence arg0, int arg1,
 					int arg2, int arg3) {
-				getHelper().updateMangaFTS();
 			}
 
 			public void onTextChanged(CharSequence text, int arg1, int arg2,
@@ -175,7 +206,7 @@ public class MangaListFragment extends ListFragment
 			}
         });
     }
-    
+
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
@@ -201,9 +232,11 @@ public class MangaListFragment extends ListFragment
 			long id) {
 		super.onListItemClick(listView, view, position, id);
 		
+		listView.setItemChecked(position, true);
+		
 		// Notify the active callbacks interface (the activity, if the
 		// fragment is attached to one) that an item has been selected.
-		
+
 		Cursor cursor = mAdapter.getCursor();
 		cursor.moveToPosition(position);
 		mCallbacks.onItemSelected(cursor.getInt(

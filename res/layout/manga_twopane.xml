@@ -22,19 +22,19 @@
     For more on layout aliases, see:
     http://developer.android.com/training/multiscreen/screensizes.html#TaskUseAliasFilters
     -->
-
+	
     <fragment
         android:id="@+id/manga_list"
         android:name="com.emanga.fragments.MangaListFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1.25"
+        android:layout_weight="1.5"
         tools:layout="@android:layout/list_content" />
 
     <FrameLayout
         android:id="@+id/manga_detail_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="2.75" />
+        android:layout_weight="2.5" />
 
 </LinearLayout>
