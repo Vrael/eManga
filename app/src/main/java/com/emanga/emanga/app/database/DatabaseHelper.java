@@ -1,0 +1,291 @@
+package com.emanga.emanga.app.database;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.models.Chapter;
+import com.emanga.emanga.app.models.Genre;
+import com.emanga.emanga.app.models.GenreManga;
+import com.emanga.emanga.app.models.Manga;
+import com.emanga.emanga.app.models.Page;
+import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.SelectArg;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+
+import java.sql.SQLException;
+import java.util.concurrent.Callable;
+
+/**
+ * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
+ * the DAOs used by the other classes.
+ */
+public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
+
+	private static final String DATABASE_NAME = "emanga.db";
+	private static final int DATABASE_VERSION = 4;
+
+	private RuntimeExceptionDao<Genre, String> genreRuntimeDao = null;
+	private RuntimeExceptionDao<Manga, String> mangaRuntimeDao = null;
+	private RuntimeExceptionDao<GenreManga, String> genremangaRuntimeDao = null;
+	private RuntimeExceptionDao<Chapter, String> chapterRuntimeDao = null;
+	private RuntimeExceptionDao<Page, String> pageRuntimeDao = null;
+
+	public DatabaseHelper(Context context) {
+		super(context, DATABASE_NAME, null, DATABASE_VERSION, R.raw.ormlite_config);
+	}
+
+	/**
+	 * This is called when the database is first created. Usually you should call createTable statements here to create
+	 * the tables that will store your data.
+	 */
+	@Override
+	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
+		try {
+			Log.i(DatabaseHelper.class.getName(), "onCreate");
+			TableUtils.createTable(connectionSource, GenreManga.class);
+			TableUtils.createTable(connectionSource, Genre.class);
+			TableUtils.createTable(connectionSource, Manga.class);
+			TableUtils.createTable(connectionSource, Chapter.class);
+            TableUtils.createTable(connectionSource, Page.class);
+			
+			// Table for search using fts3: Ormlite doesn't support it yet
+			// The table has same data that cursor manga list on library tab
+			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts4(_id, title, cover, name)");
+			
+		} catch (SQLException e) {
+			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	
+	private QueryBuilder<Chapter, String> cQbIsChapters = null;
+	private SelectArg cQbIsChaptersNchapter = null; 
+	private SelectArg cQbIsChaptersMTitle = null;
+	
+	/**
+	 * This is called when your application is upgraded and it has a higher version number. This allows you to adjust
+	 * the various data to match the new version number.
+	 */
+	@Override
+	public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
+		try {
+			Log.i(DatabaseHelper.class.getName(), "onUpgrade");
+			TableUtils.dropTable(connectionSource, Page.class, true);
+			TableUtils.dropTable(connectionSource, Chapter.class, true);
+			TableUtils.dropTable(connectionSource, Manga.class, true);
+			TableUtils.dropTable(connectionSource, Genre.class, true);
+			TableUtils.dropTable(connectionSource, GenreManga.class, true);
+			
+			db.execSQL("DROP TABLE manga_fts");
+			
+			// after we drop the old databases, we create the new ones
+			onCreate(db, connectionSource);
+		} catch (SQLException e) {
+			Log.e(DatabaseHelper.class.getName(), "Can't drop databases", e);
+			throw new RuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Returns the RuntimeExceptionDao, a version of a Dao for our classes. It will
+	 * create it or just give the cached value. 
+	 * RuntimeExceptionDao only through RuntimeExceptions.
+	 */
+	public RuntimeExceptionDao<Genre, String> getGenreRunDao() {
+		if (genreRuntimeDao == null)
+			genreRuntimeDao = getRuntimeExceptionDao(Genre.class);
+		return genreRuntimeDao;
+	}
+	
+	public RuntimeExceptionDao<Manga, String> getMangaRunDao() {
+		if (mangaRuntimeDao == null) 
+			mangaRuntimeDao = getRuntimeExceptionDao(Manga.class);
+		return mangaRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<GenreManga, String> getGenreMangaRunDao() {
+		if (genremangaRuntimeDao == null)
+			genremangaRuntimeDao = getRuntimeExceptionDao(GenreManga.class);
+		return genremangaRuntimeDao;
+	}
+	
+	public RuntimeExceptionDao<Chapter, String> getChapterRunDao() {
+		if (chapterRuntimeDao == null) 
+			chapterRuntimeDao = getRuntimeExceptionDao(Chapter.class);
+		return chapterRuntimeDao;
+	}
+
+    public RuntimeExceptionDao<Page, String> getPageRunDao() {
+        if (pageRuntimeDao == null)
+            pageRuntimeDao = getRuntimeExceptionDao(Page.class);
+        return pageRuntimeDao;
+    }
+
+	/**
+	 * Close the database connections and clear any cached DAOs.
+	 */
+	@Override
+	public void close() {
+		super.close();
+		genreRuntimeDao = null;
+		mangaRuntimeDao = null;
+		chapterRuntimeDao = null;
+		pageRuntimeDao = null;
+	}
+	
+	private static String mangasWithGenresQuery =
+			"SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(" + GenreManga.CATEGORY_COLUMN_NAME + ", ', ')"
+			+ " AS " + Genre.NAME_COLUMN_NAME + " FROM manga"
+			+ " INNER JOIN genremanga ON genremanga.manga_id = manga._id"
+			+ " GROUP BY manga._id"
+			+ " ORDER BY manga.title ASC";
+			
+	public Cursor getMangasWithGenres(){
+		return this.getReadableDatabase().rawQuery(mangasWithGenresQuery, null);
+	}
+	
+	/**
+	 * Repopulate the table of search
+	 */
+	public void updateMangaFTS(){
+		this.getReadableDatabase().execSQL("DELETE FROM manga_fts");
+		this.getReadableDatabase().execSQL("INSERT INTO manga_fts (_id,title,cover,name)"
+        + " SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(genremanga.genre_id, ', ')"
+		+ " AS name FROM manga"
+		+ " INNER JOIN genremanga ON genremanga.manga_id = manga._id"
+		+ " GROUP BY manga._id"
+		+ " ORDER BY manga.title ASC");
+		this.getReadableDatabase().execSQL("INSERT INTO manga_fts(manga_fts) VALUES(?)", new String[]{"optimize"});
+				
+	}
+
+    public String lastMangaDate(){
+        Cursor cursor = this.getReadableDatabase().rawQuery(
+                "SELECT MAX(" + Manga.DATE_COLUMN_NAME + ") AS last FROM manga", null);
+        cursor.moveToFirst();
+        String date = cursor.getString(cursor.getColumnIndex("last"));
+        cursor.close();
+        return date != null? date : "";
+    }
+
+    public String lastChapterDate(){
+        Cursor cursor = this.getReadableDatabase().rawQuery(
+                "SELECT MAX(" + Chapter.DATE_COLUMN_NAME + ") AS last FROM chapter", null);
+        cursor.moveToFirst();
+        String date = cursor.getString(cursor.getColumnIndex("last"));
+        cursor.close();
+        return date != null? date : "";
+    }
+
+	public Cursor searchOnLibrary(String text){
+        if(!text.isEmpty())
+		    return this.getReadableDatabase().rawQuery(
+				"SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{text + "*"});
+        else
+            return this.getReadableDatabase().rawQuery(
+                    "SELECT * FROM manga_fts", null);
+	}
+	
+	public void saveGenres(final Genre[] genres){
+		final RuntimeExceptionDao<Genre, String> dao = getGenreRunDao();
+		
+		dao.callBatchTasks(new Callable<Void>() {
+            public Void call() throws Exception {
+            	for(Genre c: genres){
+        			dao.createIfNotExists(c);
+        		}
+             return null;
+            }
+		});
+	}
+
+    public void saveChapters(final Chapter[] chapters){
+        final RuntimeExceptionDao<Chapter, String> chapterDAO = getChapterRunDao();
+        chapterDAO.callBatchTasks(
+                new Callable<Void>(){
+                    public Void call() throws Exception {
+                        for(Chapter c : chapters){
+                            chapterDAO.createIfNotExists(c);
+                        }
+                        return null;
+                    }
+                }
+        );
+    }
+
+
+	public void saveMangas(final Manga[] mangas){
+		final RuntimeExceptionDao<Manga, String> mangaDao = getMangaRunDao();
+        final RuntimeExceptionDao<Chapter, String> chapterDao = getChapterRunDao();
+		final RuntimeExceptionDao<Genre, String> genreDao = getGenreRunDao();
+		final RuntimeExceptionDao<GenreManga, String> genremangaDao = getGenreMangaRunDao();
+		
+		mangaDao.callBatchTasks(
+				new Callable<Void>(){
+					public Void call() throws Exception {
+						for(Manga m : mangas){
+							mangaDao.createIfNotExists(m);
+                            if(m.chapters != null){
+                                for(Chapter c: m.chapters){
+                                    c.manga = m;
+                                    chapterDao.createIfNotExists(c);
+                                }
+                            }
+							if(m.genres != null){
+								for(Genre g : m.genres) {
+									genreDao.createIfNotExists(g);
+									genremangaDao.createIfNotExists(new GenreManga(g,m));
+								}
+							}
+						}
+						return null;
+					}
+				}
+			);
+	}
+
+    /*
+	public boolean isChapter(Manga manga, int number){
+		Chapter chapter = null;
+		try {
+			if(cQbIsChapters == null){
+				cQbIsChapters = getChapterRunDao().queryBuilder();
+				cQbIsChaptersNchapter = new SelectArg();
+				cQbIsChaptersMTitle = new SelectArg();
+				
+				cQbIsChapters.where().eq(Chapter.MANGA_COLUMN_NAME, cQbIsChaptersMTitle).and()
+					.eq(Chapter.NUMBER_COLUMN_NAME, cQbIsChaptersNchapter);
+			}
+			
+			cQbIsChaptersMTitle.setValue(manga.title);
+			cQbIsChaptersNchapter.setValue(number);		
+			
+			chapter = cQbIsChapters.queryForFirst();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return (chapter) != null? true : false;
+	}
+	*/
+	/**
+	 * Check if Manga entity in database is empty
+	 * @return true if there is at least one manga, false in the opposite case
+	 */
+    /*
+	public boolean isMangas(){
+		boolean result = false;
+		CloseableIterator<Manga> it = getMangaRunDao().iterator();
+		result = it.hasNext()? true : false;
+		it.closeQuietly();
+		return result;
+	}
+    */
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:paddingBottom="14dp">
+
+    <TextView android:id="@+id/thumb_date"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center"
+              android:textColor="@android:color/black"
+              android:maxLines="1"
+              android:padding="8dp"
+              android:textSize="@dimen/thumbnail_item_date_size"/>
+
+    <com.emanga.emanga.app.utils.CoverNetworkImageView
+        android:id="@+id/thumb_cover"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gridview_cover_height"
+        android:scaleType="centerCrop" />
+
+    <TextView android:id="@+id/thumb_title"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center"
+              android:maxLines="1"
+              android:padding="8dp"
+              android:textSize="@dimen/thumbnail_item_title_size"/>
+
+    <TextView android:id="@+id/thumb_number"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center"
+              android:maxLines="1"
+              android:paddingTop="8dp"
+              android:textSize="@dimen/thumbnail_item_number_size"/>
+
+</LinearLayout>

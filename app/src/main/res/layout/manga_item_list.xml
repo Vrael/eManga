@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:padding="8dip"
+    android:background="?android:attr/activatedBackgroundIndicator" >
+
+    <com.emanga.emanga.app.utils.CoverNetworkImageView
+        android:id="@+id/manga_list_cover"
+        android:layout_width="80dp"
+        android:layout_height="110dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="6dip"
+        android:contentDescription="Manga cover" />
+
+    <TextView
+        android:id="@+id/manga_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/manga_list_cover"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:text="Manga title"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/manga_list_categories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/manga_list_cover"
+        android:layout_below="@id/manga_list_title"
+        android:ellipsize="marquee"
+        android:text="Categories name"
+        android:textSize="14sp"
+        android:paddingLeft="16dp"
+        android:paddingTop="8dp" />
+
+</RelativeLayout> 

@@ -1,0 +1,18 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">18dp</dimen>
+    <dimen name="activity_vertical_margin">12dp</dimen>
+
+    <dimen name="gridview_columnWidth">90dp</dimen>
+    <dimen name="gridview_thumb_width">104dp</dimen>
+    <dimen name="gridview_thumb_height">234dp</dimen>
+    <dimen name="gridview_cover_height">138dp</dimen>
+
+    <dimen name="thumbnail_read_item_number_size">14sp</dimen>
+    <dimen name="thumbnail_read_item_date_size">12sp</dimen>
+
+    <dimen name="thumbnail_item_number_size">14sp</dimen>
+    <dimen name="thumbnail_item_date_size">12sp</dimen>
+    <dimen name="thumbnail_item_title_size">12sp</dimen>
+</resources>

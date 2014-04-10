@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="14dp" >
+
+    <com.emanga.emanga.app.utils.CoverNetworkImageView
+        android:id="@+id/thumb_read_cover"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/gridview_cover_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/thumb_read_number"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textAlignment="center"
+            android:text="000"
+            android:gravity="center"
+            android:background="@android:color/white"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textSize="@dimen/thumbnail_read_item_number_size"/>
+
+        <TextView
+            android:id="@+id/thumb_read_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@android:color/white"
+            android:maxLines="1"
+            android:text="01/01/2001"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textSize="@dimen/thumbnail_read_item_date_size"/>
+    </LinearLayout>
+
+</RelativeLayout>

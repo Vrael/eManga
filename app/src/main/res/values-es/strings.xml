@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">eManga</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Search</string>
+
+    <string-array name="tabs_titles">
+        <item>Novedades</item>
+        <item>Biblioteca</item>
+        <item>Historial</item>
+    </string-array>
+
+    <!-- Ormlite -->
+    <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
+
+    <!-- Manga Buttons -->
+    <string name="button_continue">Continuar</string>
+    <string name="button_start">Empezar</string>
+    <string name="title_activity_reader">Lector</string>
+
+    <string name="search_hint">Buscar manga</string>
+    <string name="list_empty">Sin resultados</string>
+
+    <!-- Error Messages -->
+    <string name="volley_error_title">Problema de Conectividad</string>
+    <string name="volley_error_body">Un samurai cortó la comunicación. Estamos intentando solucionarlo. Vuelve a intentarlo en unos minutos.</string>
+    <string name="connectivity_error_body">Necesitas estar conectado a internet para leer los capítulos. Revisa tu conexion.</string>
+    <string name="not_found_error_title">No encontrado</string>
+    <string name="not_found_error_body">El capitulo no se ha encontrado. Prueba más tarde</string>
+    <string name="enjoy_reading">¡Disfruta de la lectura!</string>
+    <string name="chapter_not_found_error">Capítulo no disponible</string>
+
+    <!-- Loading Messages -->
+    <string name="loading">Cargando&#8230;</string>
+
+    <!-- Search Messages -->
+    <string name="search">Buscar Manga</string>
+
+    <!-- Date labels -->
+    <string name="date_today_label">Hoy</string>
+    <string name="date_yesterday_label">Ayer</string>
+
+    <!-- Dialogs -->
+    <string name="go_to_chapter_label">Ir al capítulo</string>
+    <string name="go_to_chapter_button_go">Ir</string>
+
+</resources>
