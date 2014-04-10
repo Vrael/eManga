@@ -20,6 +20,9 @@ local.properties
 .project*
 .settings
 
+# Windows thumbnail db
+.DS_Store
+
 # Maven
 target/
 release.properties
@@ -27,3 +30,18 @@ pom.xml.*
 
 # Folder containing all Google Play APKs
 apks
+
+# Android Studio
+.idea
+#.idea/workspace.xml
+.gradle
+/*/local.properties
+/*/out
+/*/*/build
+/*/*/production
+*.iml
+*.iws
+*.ipr
+*~
+*.swp
+
