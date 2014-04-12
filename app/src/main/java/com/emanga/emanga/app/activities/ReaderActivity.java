@@ -1,6 +1,7 @@
 package com.emanga.emanga.app.activities;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -158,13 +159,12 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                             Log.d(TAG, "Chapter recived:\n" + chapter.toString());
                             // Add new pages to adapter
                             mAdapter.pages.addAll(chapter.pages);
-
                             mChapter = chapter;
+                            mAdapter.notifyDataSetChanged();
+
                             // Set as read the chapter
                             mChapter.read = new Date();
                             mChapter.manga = mManga;
-
-                            mAdapter.notifyDataSetChanged();
 
                             // If is a resume reading
                             if(mark != null){
@@ -174,8 +174,14 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                                 mark = null;
                             }
 
-                            Log.d(TAG, "Saving chapter as read");
-                            getHelper().getChapterRunDao().createOrUpdate(mChapter);
+                            new AsyncTask<Void,Void,Void>(){
+                                @Override
+                                protected Void doInBackground(Void... voids) {
+                                    Log.d(TAG, "Saving chapter as read");
+                                    getHelper().getChapterRunDao().createOrUpdate(mChapter);
+                                    return null;
+                                }
+                            }.execute();
 
                             asked = false;
                         } else {

@@ -18,11 +18,12 @@ import com.emanga.emanga.app.utils.CoverNetworkImageView;
 import org.apache.commons.lang.WordUtils;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,7 +32,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
 	
 	private Context mContext;
 
-	public List<Chapter> chapters = new LinkedList<Chapter>();
+	public List<Chapter> chapters = new ArrayList<Chapter>(40);
 
 	private ImageLoader imageLoader;
 	
@@ -68,10 +69,9 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	notifyDataSetChanged();
     }
     
-    public void addChapters(List<Chapter> list) {
-    	chapters = list;
+    public void addChapters(Collection<Chapter> list) {
+    	chapters.addAll(list);
     	Collections.sort(chapters, mComparator);
-    	notifyDataSetChanged();
     }
 
     // create a new TextView for each item referenced by the Adapter

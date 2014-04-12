@@ -1,7 +1,6 @@
 package com.emanga.emanga.app.listeners;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
@@ -11,15 +10,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonRequest;
+import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
-import com.emanga.emanga.app.loaders.LatestChaptersLoader;
 import com.emanga.emanga.app.models.Manga;
-import com.emanga.emanga.app.requests.MangasRequest;
+import com.emanga.emanga.app.requests.MangaRequest;
 import com.emanga.emanga.app.utils.Internet;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
-
-import com.emanga.emanga.app.R;
 
 /**
  * Created by Ciro on 3/03/14.
@@ -48,13 +45,13 @@ public class CoverListener implements ImageLoader.ImageListener {
     public void onErrorResponse(VolleyError error) {
         Log.e(TAG, "It was an error with a cover!");
 
-        MangasRequest newCover = new MangasRequest(
+        MangaRequest newCover = new MangaRequest(
                 JsonRequest.Method.GET,
                 Internet.HOST + "manga/" + manga._id + "/cover?e[]=" + manga.cover,
-                new Response.Listener<Manga[]>() {
+                new Response.Listener<Manga>() {
                     @Override
-                    public void onResponse(Manga[] response) {
-                        if(response.length > 0){
+                    public void onResponse(Manga response) {
+                        if(response != null){
                             Log.d(TAG, response.toString());
                             new AsyncTask<Manga, Void, Void>() {
                                 @Override
@@ -63,14 +60,13 @@ public class CoverListener implements ImageLoader.ImageListener {
                                             OpenHelperManager.getHelper(
                                                     App.getInstance().getApplicationContext(),
                                                     DatabaseHelper.class);
-                                    Log.d(TAG, "New cover recived: " + mangas[0].cover);
+                                    Log.d(TAG, "New cover received: " + mangas[0].cover);
                                     manga.cover = mangas[0].cover;
                                     dbs.getMangaRunDao().update(manga);
                                     OpenHelperManager.releaseHelper();
-                                    ctx.sendBroadcast(new Intent(LatestChaptersLoader.ACTION_RELOAD));
                                     return null;
                                 }
-                            }.execute(response[0]);
+                            }.execute(response);
                         } else {
                             Log.d(TAG, "There aren't any new cover for: " + manga._id + " " + manga.title);
                             cover.setImageResource(R.drawable.enjoy_reading);

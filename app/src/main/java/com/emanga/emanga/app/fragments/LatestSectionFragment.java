@@ -3,8 +3,6 @@ package com.emanga.emanga.app.fragments;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,23 +19,28 @@ import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.adapters.ThumbnailChapterAdapter;
 import com.emanga.emanga.app.controllers.App;
+import com.emanga.emanga.app.database.DatabaseHelper;
 import com.emanga.emanga.app.database.OrmliteFragment;
-import com.emanga.emanga.app.loaders.LatestChaptersLoader;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangasRequest;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
  * A fragment that with Latest Chapters of Manga
  */
-public class LatestSectionFragment extends OrmliteFragment
-        implements LoaderManager.LoaderCallbacks<List<Chapter>> {
+public class LatestSectionFragment extends OrmliteFragment {
 
     public static final String TAG = LatestSectionFragment.class.getSimpleName();
 
@@ -48,6 +51,7 @@ public class LatestSectionFragment extends OrmliteFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAdapter = new ThumbnailChapterAdapter(getActivity());
+        LinkedHashSet<Chapter> hash = new LinkedHashSet();
 
         String chapterDate = getHelper().lastChapterDate();
         try {
@@ -60,21 +64,60 @@ public class LatestSectionFragment extends OrmliteFragment
         bar = (ProgressBar) getActivity().findViewById(R.id.progressbar_background_tasks);
         bar.setProgress(1);
 
+        // Load chapters from database
+        new AsyncTask<Void,Integer,List<Chapter>>(){
+            @Override
+            protected List<Chapter> doInBackground(Void... voids) {
+                RuntimeExceptionDao<Chapter, String> chapterDao;
+                QueryBuilder<Chapter, String> qBcLocal;
+
+                Calendar time = Calendar.getInstance();
+                time.add(Calendar.getInstance().DATE, -7);
+
+                chapterDao = OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class)
+                        .getChapterRunDao();
+
+                List<Chapter> chapters = null;
+                try {
+                    qBcLocal = chapterDao.queryBuilder();
+                    qBcLocal.where().ge(Chapter.DATE_COLUMN_NAME, time.getTime());
+                    qBcLocal.groupBy(Chapter.MANGA_COLUMN_NAME).having("MAX(" + Chapter.DATE_COLUMN_NAME + ")");
+                    qBcLocal.orderBy(Chapter.DATE_COLUMN_NAME, true);
+                    chapters = qBcLocal.query();
+                } catch (SQLException e) {
+                    Log.e(TAG, "Error when it was building the chapters query");
+                    e.printStackTrace();
+                }
+
+                return chapters;
+            }
+
+            @Override
+            public void onPostExecute(List<Chapter> chapters){
+                if(chapters != null && chapters.size() > 0) {
+                    mAdapter.addChapters(chapters);
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+        }.execute();
+
         MangasRequest latestChaptersRequest = new MangasRequest(
                 Request.Method.GET,
                 Internet.HOST + "chapters/newest?&c=" + chapterDate,
                 new Response.Listener<Manga[]>() {
                     @Override
                     public void onResponse(final Manga[] mangas){
+                        Log.d(TAG, "Mangas received and parsed: " + mangas.length);
+                        bar.setProgress(35);
+                        for(Manga m: mangas){
+                            mAdapter.addChapters(m.chapters);
+                        }
+                        mAdapter.notifyDataSetChanged();
+                        bar.setProgress(80);
                         new AsyncTask<Void,Void,Void>(){
                             @Override
                             protected Void doInBackground(Void... voids) {
-                                Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                                bar.setProgress(35);
                                 getHelper().saveMangas(mangas);
-                                bar.setProgress(80);
-                                Log.d(TAG, "Notify new chapters in the database");
-                                getLoaderManager().getLoader(0).onContentChanged();
                                 bar.setProgress(100);
                                 return null;
                             }
@@ -140,23 +183,4 @@ public class LatestSectionFragment extends OrmliteFragment
 
         return rootView;
     }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        getLoaderManager().initLoader(0, null, this);
-    }
-
-    public Loader<List<Chapter>> onCreateLoader(int id, Bundle args) {
-        return new LatestChaptersLoader(getActivity());
-    }
-
-    public void onLoadFinished(Loader<List<Chapter>> loader, List<Chapter> chapters) {
-        mAdapter.addChapters(chapters);
-    }
-
-    public void onLoaderReset(Loader<List<Chapter>> chapters) {
-        mAdapter.setChapters(null);
-    }
-
 }
