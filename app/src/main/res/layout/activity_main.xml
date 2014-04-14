@@ -7,7 +7,8 @@
         android:id="@+id/progressbar_background_tasks"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        style="@android:style/Widget.ProgressBar.Horizontal" />
+        style="?android:attr/progressBarStyleHorizontal"
+        android:progressDrawable="@drawable/progress_horizontal_emanga"/>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"

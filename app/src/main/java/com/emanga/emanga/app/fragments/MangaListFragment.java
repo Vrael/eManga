@@ -207,6 +207,7 @@ public class MangaListFragment extends ListFragment
     	
         // Search input
     	inputSearch = new EditText(getActivity());
+
     	inputSearch.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_search,0,0,0);
     	inputSearch.setHint(getResources().getString(R.string.search));
     	root.addView(inputSearch, new LinearLayout.LayoutParams(
@@ -260,6 +261,8 @@ public class MangaListFragment extends ListFragment
 				mAdapter.notifyDataSetChanged();
 			}
         });
+
+
     }
 
 	@Override
