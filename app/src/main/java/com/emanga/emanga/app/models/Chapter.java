@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.emanga.emanga.app.deserializers.ChapterDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -29,7 +30,7 @@ public class Chapter implements Parcelable{
 	public String _id;
 	@DatabaseField(index = true, columnName = NUMBER_COLUMN_NAME)
 	public Integer number;
-    @DatabaseField(columnName = DATE_COLUMN_NAME)
+    @DatabaseField(columnName = DATE_COLUMN_NAME, dataType = DataType.DATE_LONG)
     public Date created_at;
     @DatabaseField(columnName = READ_COLUMN_NAME)
     public Date read;

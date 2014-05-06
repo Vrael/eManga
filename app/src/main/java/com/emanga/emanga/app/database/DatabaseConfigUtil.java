@@ -1,5 +1,7 @@
 package com.emanga.emanga.app.database;
 
+import com.emanga.emanga.app.models.Author;
+import com.emanga.emanga.app.models.AuthorManga;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.GenreManga;
@@ -22,6 +24,8 @@ public class DatabaseConfigUtil extends OrmLiteConfigUtil {
 		Manga.class,
 		Genre.class,
 		GenreManga.class,
+        Author.class,
+        AuthorManga.class
 	};
 	
 	public static void main(String[] args) throws SQLException, IOException {

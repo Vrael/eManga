@@ -29,7 +29,7 @@
 
         <activity
             android:name=".activities.ReaderActivity"
-            android:label="eManga"
+            android:label="@string/app_name"
             android:windowSoftInputMode="stateHidden"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:parentActivityName=".activities.MainActivity"

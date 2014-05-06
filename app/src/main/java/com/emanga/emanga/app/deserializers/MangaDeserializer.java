@@ -1,6 +1,7 @@
 package com.emanga.emanga.app.deserializers;
 
 import com.emanga.emanga.app.controllers.App;
+import com.emanga.emanga.app.models.Author;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.Manga;
@@ -42,6 +43,16 @@ public class MangaDeserializer extends JsonDeserializer<Manga> {
           title = titleNode.asText();
         }
 
+        List<Author> authors = null;
+        JsonNode authorsNode = node.get("authors");
+        if(authorsNode != null && !(authorsNode instanceof NullNode)){
+            ArrayNode authorsNames = (ArrayNode) authorsNode;
+            authors = new ArrayList<Author>(authorsNames.size());
+            for(int i = 0; i < authorsNames.size(); i++){
+                authors.add(new Author(authorsNames.get(i).asText()));
+            }
+        }
+
         String summary = null;
         JsonNode summaryNode = node.get("summary");
         if(summaryNode != null && !(summaryNode instanceof NullNode)){
@@ -74,22 +85,35 @@ public class MangaDeserializer extends JsonDeserializer<Manga> {
             }
         }
 
-        Manga manga = new Manga(_id, title, cover, summary, created_at, genres);
+        Date modified_at = null;
+        JsonNode modified_atNode = node.get("modify_at");
+        if(modified_atNode != null && !(modified_atNode instanceof NullNode)){
+            try {
+                modified_at = Dates.sdf.parse(modified_atNode.asText());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        int numberChapters = 0;
+        JsonNode n_chapters_atNode = node.get("n_chapters");
+        if(n_chapters_atNode != null && !(n_chapters_atNode instanceof NullNode)){
+            numberChapters = n_chapters_atNode.asInt();
+        }
+
+        Manga manga = new Manga(_id, title, authors, cover, summary, created_at, modified_at,
+                genres, numberChapters);
 
         JsonNode chaptersNode = node.get("chapters");
         if(chaptersNode != null && !(chaptersNode instanceof NullNode)){
-            manga.chapters = App.getInstance().mMapper.readValue(chaptersNode.toString(), new TypeReference<Collection<Chapter>>(){});
+            manga.chapters = App.getInstance().mMapper.readValue(chaptersNode.toString(),
+                    new TypeReference<Collection<Chapter>>(){});
             if(manga.chapters != null) {
                 Iterator<Chapter> it = manga.chapters.iterator();
                 while(it.hasNext()){
                     it.next().manga = manga;
                 }
             }
-        }
-
-        JsonNode n_chapters_atNode = node.get("n_chapters");
-        if(n_chapters_atNode != null && !(n_chapters_atNode instanceof NullNode)){
-            manga.numberChapters = n_chapters_atNode.asInt();
         }
 
         return manga;

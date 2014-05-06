@@ -23,9 +23,12 @@ import java.sql.SQLException;
 public class CoverNetworkImageView extends CustomNetworkImageView {
     public static final String TAG = CoverNetworkImageView.class.getSimpleName();
 
-    private static final DatabaseHelper dbs = OpenHelperManager.getHelper(
-                    App.getInstance().getApplicationContext(),
-                    DatabaseHelper.class);
+    private static final DatabaseHelper dbs;
+    static {
+        dbs = OpenHelperManager.getHelper(
+                App.getInstance().getApplicationContext(),
+                DatabaseHelper.class);
+    }
 
     public CoverNetworkImageView(Context context) {
         super(context);
@@ -111,4 +114,5 @@ public class CoverNetworkImageView extends CustomNetworkImageView {
     public void setImageUrl(final Manga manga, final ImageLoader imageLoader) {
         setImageUrl(manga,imageLoader,null);
     }
+
 }

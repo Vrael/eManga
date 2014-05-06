@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.models.Author;
+import com.emanga.emanga.app.models.AuthorManga;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.GenreManga;
@@ -31,9 +33,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private static final int DATABASE_VERSION = 4;
 
 	private RuntimeExceptionDao<Genre, String> genreRuntimeDao = null;
+    private RuntimeExceptionDao<Author, String> authorRuntimeDao = null;
 	private RuntimeExceptionDao<Manga, String> mangaRuntimeDao = null;
 	private RuntimeExceptionDao<GenreManga, String> genremangaRuntimeDao = null;
-	private RuntimeExceptionDao<Chapter, String> chapterRuntimeDao = null;
+    private RuntimeExceptionDao<AuthorManga, String> authormangaRuntimeDao = null;
+    private RuntimeExceptionDao<Chapter, String> chapterRuntimeDao = null;
 	private RuntimeExceptionDao<Page, String> pageRuntimeDao = null;
 
 	public DatabaseHelper(Context context) {
@@ -50,6 +54,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			Log.i(DatabaseHelper.class.getName(), "onCreate");
 			TableUtils.createTable(connectionSource, GenreManga.class);
 			TableUtils.createTable(connectionSource, Genre.class);
+            TableUtils.createTable(connectionSource, AuthorManga.class);
+            TableUtils.createTable(connectionSource, Author.class);
 			TableUtils.createTable(connectionSource, Manga.class);
 			TableUtils.createTable(connectionSource, Chapter.class);
             TableUtils.createTable(connectionSource, Page.class);
@@ -82,6 +88,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Manga.class, true);
 			TableUtils.dropTable(connectionSource, Genre.class, true);
 			TableUtils.dropTable(connectionSource, GenreManga.class, true);
+            TableUtils.dropTable(connectionSource, Author.class, true);
+            TableUtils.dropTable(connectionSource, AuthorManga.class, true);
 			
 			db.execSQL("DROP TABLE manga_fts");
 			
@@ -103,6 +111,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			genreRuntimeDao = getRuntimeExceptionDao(Genre.class);
 		return genreRuntimeDao;
 	}
+
+    public RuntimeExceptionDao<Author, String> getAuthorRunDao() {
+        if (authorRuntimeDao == null)
+            authorRuntimeDao = getRuntimeExceptionDao(Author.class);
+        return authorRuntimeDao;
+    }
 	
 	public RuntimeExceptionDao<Manga, String> getMangaRunDao() {
 		if (mangaRuntimeDao == null) 
@@ -115,6 +129,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			genremangaRuntimeDao = getRuntimeExceptionDao(GenreManga.class);
 		return genremangaRuntimeDao;
 	}
+
+    public RuntimeExceptionDao<AuthorManga, String> getAuthorMangaRunDao() {
+        if (authormangaRuntimeDao == null)
+            authormangaRuntimeDao = getRuntimeExceptionDao(AuthorManga.class);
+        return authormangaRuntimeDao;
+    }
 	
 	public RuntimeExceptionDao<Chapter, String> getChapterRunDao() {
 		if (chapterRuntimeDao == null) 
@@ -192,40 +212,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             return this.getReadableDatabase().rawQuery(
                     "SELECT * FROM manga_fts", null);
 	}
-	
-	public void saveGenres(final Genre[] genres){
-		final RuntimeExceptionDao<Genre, String> dao = getGenreRunDao();
-		
-		dao.callBatchTasks(new Callable<Void>() {
-            public Void call() throws Exception {
-            	for(Genre c: genres){
-        			dao.createIfNotExists(c);
-        		}
-             return null;
-            }
-		});
-	}
-
-    public void saveChapters(final Chapter[] chapters){
-        final RuntimeExceptionDao<Chapter, String> chapterDAO = getChapterRunDao();
-        chapterDAO.callBatchTasks(
-                new Callable<Void>(){
-                    public Void call() throws Exception {
-                        for(Chapter c : chapters){
-                            chapterDAO.createIfNotExists(c);
-                        }
-                        return null;
-                    }
-                }
-        );
-    }
-
 
 	public void saveMangas(final Manga[] mangas){
 		final RuntimeExceptionDao<Manga, String> mangaDao = getMangaRunDao();
         final RuntimeExceptionDao<Chapter, String> chapterDao = getChapterRunDao();
 		final RuntimeExceptionDao<Genre, String> genreDao = getGenreRunDao();
 		final RuntimeExceptionDao<GenreManga, String> genremangaDao = getGenreMangaRunDao();
+        final RuntimeExceptionDao<Author, String> authorDao = getAuthorRunDao();
+        final RuntimeExceptionDao<AuthorManga, String> authormangaDao = getAuthorMangaRunDao();
 		
 		mangaDao.callBatchTasks(
 				new Callable<Void>(){
@@ -244,48 +238,16 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 									genremangaDao.createIfNotExists(new GenreManga(g,m));
 								}
 							}
+                            if(m.authors != null){
+                                for(Author a : m.authors){
+                                    authorDao.createIfNotExists(a);
+                                    authormangaDao.createIfNotExists(new AuthorManga(a,m));
+                                }
+                            }
 						}
 						return null;
 					}
 				}
 			);
 	}
-
-    /*
-	public boolean isChapter(Manga manga, int number){
-		Chapter chapter = null;
-		try {
-			if(cQbIsChapters == null){
-				cQbIsChapters = getChapterRunDao().queryBuilder();
-				cQbIsChaptersNchapter = new SelectArg();
-				cQbIsChaptersMTitle = new SelectArg();
-				
-				cQbIsChapters.where().eq(Chapter.MANGA_COLUMN_NAME, cQbIsChaptersMTitle).and()
-					.eq(Chapter.NUMBER_COLUMN_NAME, cQbIsChaptersNchapter);
-			}
-			
-			cQbIsChaptersMTitle.setValue(manga.title);
-			cQbIsChaptersNchapter.setValue(number);		
-			
-			chapter = cQbIsChapters.queryForFirst();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		return (chapter) != null? true : false;
-	}
-	*/
-	/**
-	 * Check if Manga entity in database is empty
-	 * @return true if there is at least one manga, false in the opposite case
-	 */
-    /*
-	public boolean isMangas(){
-		boolean result = false;
-		CloseableIterator<Manga> it = getMangaRunDao().iterator();
-		result = it.hasNext()? true : false;
-		it.closeQuietly();
-		return result;
-	}
-    */
 }

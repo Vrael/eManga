@@ -23,7 +23,9 @@ public class Manga implements Parcelable{
 	public static final String COVER_COLUMN_NAME = "cover";
 	public static final String DESCRIPTION_COLUMN_NAME = "summary";
     public static final String DATE_COLUMN_NAME = "created_at";
+    public static final String MODIFY_COLUMN_NAME = "modified_at";
     public static final String CHAPTERS_COLUMN_NAME = "chapters";
+    public static final String NUMBER_CHAPTERS_COLUMN_NAME = "number_chapters";
 
     @DatabaseField(id = true, columnName = ID_COLUMN_NAME)
     public String _id;
@@ -36,13 +38,19 @@ public class Manga implements Parcelable{
 	public String summary;
     @DatabaseField(columnName = DATE_COLUMN_NAME)
     public Date created_at;
+    @DatabaseField(columnName = MODIFY_COLUMN_NAME)
+    public Date modified_at;
 	@ForeignCollectionField(columnName = CHAPTERS_COLUMN_NAME)
 	public Collection<Chapter> chapters;
-
+    @DatabaseField(columnName = NUMBER_CHAPTERS_COLUMN_NAME)
     public int numberChapters;
+
 	
 	// Handle genres for N - N relationship in GenreManga
 	public List<Genre> genres;
+
+    // Handle authors for N - N relationship in AuthorManga
+    public List<Author> authors;
 	
 	public Manga() {
 		// needed by ormlite
@@ -54,26 +62,33 @@ public class Manga implements Parcelable{
         this.cover = p.readString();
         this.summary = p.readString();
         this.created_at = new Date(p.readLong());
+        this.modified_at = new Date(p.readLong());
         // this.chapters = unparcelCollection(p, Chapter.CREATOR);
         // p.readList(this.genres, Genre.class.getClassLoader());
     }
 
-    public Manga(String _id, String title, String cover, Date created_at){
+    public Manga(String _id, String title, String cover, Date created_at, Date modified_at){
         this._id = _id;
         this.title = title;
         this.cover = cover;
         this.created_at = created_at;
+        this.modified_at = modified_at;
+        this.numberChapters = 0;
     }
 
 	public Manga(String _id, String title, String cover, String summary, Date created_at,
-                 List<Genre> genres) {
-		this._id = _id;
-        this.title = title;
-		this.cover = cover;
+                 Date modified_at, List<Genre> genres) {
+        this(_id, title, cover, created_at, modified_at);
         this.summary = summary;
-        this.created_at = created_at;
 		this.genres = genres;
 	}
+
+    public Manga(String _id, String title, List<Author> authors, String cover, String summary,
+                 Date created_at, Date modified_at, List<Genre> genres, int nChapters){
+        this(_id, title, cover, summary, created_at, modified_at, genres);
+        this.numberChapters = nChapters;
+        this.authors = authors;
+    }
 
     public String toString(){
         return _id + "\n"
@@ -83,12 +98,6 @@ public class Manga implements Parcelable{
                 + ((created_at != null)? created_at.toString() + "\n": "")
                 + ((genres != null)? genres: "") + "\n"
                 + numberChapters  + "\n";
-    }
-
-    public boolean someAttributeNull(){
-        return (this._id != null && this.title != null && this.cover != null && !this.cover.isEmpty() &&
-                this.summary != null && !this.summary.isEmpty() && this.created_at != null &&
-                this.genres != null);
     }
 
     public static final Parcelable.Creator<Manga> CREATOR = new Creator<Manga>() {
@@ -115,6 +124,7 @@ public class Manga implements Parcelable{
         p.writeString(cover);
         p.writeString(summary);
         p.writeLong(created_at.getTime());
+        p.writeLong(modified_at.getTime());
         // parcelCollection(p, null);
         // p.writeList(genres);
     }

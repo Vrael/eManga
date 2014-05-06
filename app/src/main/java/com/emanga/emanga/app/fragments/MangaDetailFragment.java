@@ -5,13 +5,16 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -21,6 +24,7 @@ import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.OrmliteFragment;
+import com.emanga.emanga.app.models.Author;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.GenreManga;
@@ -31,7 +35,11 @@ import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
 import com.j256.ormlite.stmt.QueryBuilder;
 
+import org.apache.commons.lang.WordUtils;
+
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
 
 /**
  * A fragment representing a single Manga detail screen. This fragment is either
@@ -44,7 +52,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 	 * represents.
 	 */
 	public static final String ARG_MANGA_ID = "manga_id";
-	
+
 	/**
 	 * The manga content this fragment is presenting.
 	 */
@@ -120,7 +128,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         // Show resume button if there is a last chapter read
         if(lastChapterRead != null){
-            Button buttonContinue = holder.resume;
+            ImageButton buttonContinue = holder.resume;
             buttonContinue.setVisibility(View.VISIBLE);
             buttonContinue.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -141,29 +149,31 @@ public class MangaDetailFragment extends OrmliteFragment {
                 }
             });
 
-            buttonContinue.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    goToChapterDialog(getActivity());
-                    return true;
-                }
-            });
+            holder.start.setImageResource(R.drawable.ic_action_replay);
+
+            holder.last_read.setText(SimpleDateFormat.getInstance().format(lastChapterRead.read));
+            holder.last_read.getLayoutParams().height = 30;
+
+            holder.percent.setText(calculatePercent(manga.numberChapters, lastChapterRead.number) + "%");
         }
     }
 
     private static class ViewHolder {
         TextView title;
+        TextView author;
         CoverNetworkImageView cover;
         TextView numberChapters;
-        TextView genres;
+        TextView percent;
+        TextView last_read;
+        TableLayout genres;
         TextView summary;
-        Button resume;
+        ImageButton start;
+        ImageButton resume;
+        ImageButton go;
     }
 
     private void updateValues(){
-        holder.title.setText(manga.title);
-
-        holder.numberChapters.setText("{ " + manga.numberChapters + " }");
+        holder.numberChapters.setText(manga.numberChapters + "");
 
         holder.cover.setImageUrl(manga, ImageCacheManager.getInstance().getImageLoader());
 
@@ -175,17 +185,42 @@ public class MangaDetailFragment extends OrmliteFragment {
                     (manga.summary == null || manga.summary.isEmpty()) ? "" : manga.summary);
         }
 
-        StringBuilder names = new StringBuilder();
-        if(manga.genres != null && manga.genres.size() > 0){
-            Genre genre = manga.genres.get(0);
-            names.append(" ").append(Character.toUpperCase(genre.name.charAt(0))).append(genre.name.substring(1));
-            manga.genres.remove(0);
-            for(Genre c : manga.genres){
-                names.append(", ").append(c.toString());
+        if(manga.authors != null && manga.authors.size() > 0){
+            Iterator<Author> it = manga.authors.iterator();
+            String authors = "";
+            if (it.hasNext()) {
+                authors = it.next().name;
             }
-            holder.genres.setText(names);
+            while (it.hasNext()) {
+                authors += "\n" + it.next().name;
+            }
+            holder.author.setText(authors);
+            holder.author.getLayoutParams().height = 50;
         }
-        holder.genres.setText(names);
+
+        if(manga.genres != null && manga.genres.size() > 0){
+            holder.genres.removeAllViews();
+            TableRow tableRow = null;
+            for(int i = 0; i < manga.genres.size(); i++){
+                if(i % 4 == 0){
+                    tableRow = new TableRow(getActivity());
+                    holder.genres.addView(tableRow);
+                }
+                TextView label = new TextView(getActivity());
+                label.setPadding(20,0,20,0);
+                label.setText(Html.fromHtml(WordUtils.capitalize(manga.genres.get(i).name.trim())));
+                tableRow.addView(label);
+            }
+        }
+
+        if(lastChapterRead != null) {
+            holder.percent.setText(calculatePercent(manga.numberChapters, lastChapterRead.number) + "%");
+        }
+    }
+
+    private static int calculatePercent(int total, int part){
+        Log.d(TAG, "Total: " + total + ", Part: " + part);
+        return (total > 0)? part * 100 / total : 0;
     }
 
 	@Override
@@ -197,17 +232,22 @@ public class MangaDetailFragment extends OrmliteFragment {
         if(holder == null){
             holder = new ViewHolder();
             holder.title = (TextView) rootView.findViewById(R.id.manga_title);
+            holder.author = (TextView) rootView.findViewById(R.id.manga_author);
             holder.numberChapters = (TextView) rootView.findViewById(R.id.manga_chapters);
             holder.cover = (CoverNetworkImageView) rootView.findViewById(R.id.manga_cover);
-            holder.genres = (TextView) rootView.findViewById(R.id.manga_categories);
+            holder.percent = (TextView) rootView.findViewById(R.id.manga_read);
+            holder.last_read = (TextView) rootView.findViewById(R.id.manga_last_read_date);
+            holder.genres = (TableLayout) rootView.findViewById(R.id.manga_categories_table);
             holder.summary = (TextView) rootView.findViewById(R.id.manga_description);
-            holder.resume = (Button) rootView.findViewById(R.id.manga_button_continue);
+            holder.resume = (ImageButton) rootView.findViewById(R.id.manga_button_continue);
+            holder.start = (ImageButton) rootView.findViewById(R.id.manga_button_start);
+            holder.go = (ImageButton) rootView.findViewById(R.id.manga_button_go);
         }
 
+        holder.title.setText(manga.title);
         updateValues();
 
-        Button buttonStart = (Button) rootView.findViewById(R.id.manga_button_start);
-        buttonStart.setOnClickListener(new View.OnClickListener() {
+        holder.start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(Internet.checkConnection(getActivity())) {
                     Intent intent = new Intent(getActivity(), ReaderActivity.class);
@@ -226,14 +266,20 @@ public class MangaDetailFragment extends OrmliteFragment {
             }
         });
 
-        buttonStart.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                goToChapterDialog(getActivity());
-                return true;
+        holder.go.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if(Internet.checkConnection(getActivity())) {
+                    goToChapterDialog(getActivity());
+                } else {
+                    Notification.errorMessage(
+                            getActivity(),
+                            getResources().getString(R.string.volley_error_title),
+                            getResources().getString(R.string.connectivity_error_body),
+                            R.drawable.alone
+                    );
+                }
             }
         });
-
 		return rootView;
 	}
 

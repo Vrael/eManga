@@ -24,6 +24,7 @@ import com.emanga.emanga.app.database.OrmliteFragment;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangasRequest;
+import com.emanga.emanga.app.utils.Dates;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
@@ -34,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -54,8 +56,15 @@ public class LatestSectionFragment extends OrmliteFragment {
         LinkedHashSet<Chapter> hash = new LinkedHashSet();
 
         String chapterDate = getHelper().lastChapterDate();
+        Date date = null;
+        if(!chapterDate.isEmpty())
+            date = new Date(Long.valueOf(chapterDate));
+
         try {
-            chapterDate = URLEncoder.encode(chapterDate, "utf-8");
+            if(date != null)
+                chapterDate = URLEncoder.encode(Dates.sdf.format(date), "utf-8");
+            else
+                chapterDate = URLEncoder.encode("", "utf-8");
             Log.d(TAG,Internet.HOST + "chapters/newest?&c=" + chapterDate);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();

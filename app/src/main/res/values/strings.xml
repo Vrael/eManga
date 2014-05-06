@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">eManga</string>
+    <string name="app_name">Mangapp</string>
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
 	
@@ -13,10 +13,7 @@
 
     <!-- Ormlite -->
     <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
-    
-    <!-- Manga Buttons -->
-    <string name="button_continue">Resume</string>
-    <string name="button_start">Start</string>
+
     <string name="title_activity_reader">Reader</string>
     
     <string name="search_hint">Search manga</string>

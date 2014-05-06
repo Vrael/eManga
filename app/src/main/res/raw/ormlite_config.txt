@@ -1,5 +1,5 @@
 #
-# generated on 2014/03/17 01:01:30
+# generated on 2014/04/20 12:42:41
 #
 # --table-start--
 dataClass=com.emanga.emanga.app.models.Page
@@ -48,6 +48,7 @@ indexName=chapter_number_idx
 # --field-start--
 fieldName=created_at
 columnName=created_at
+dataPersister=DATE_LONG
 # --field-end--
 # --field-start--
 fieldName=read
@@ -94,10 +95,18 @@ fieldName=created_at
 columnName=created_at
 # --field-end--
 # --field-start--
+fieldName=modified_at
+columnName=modified_at
+# --field-end--
+# --field-start--
 fieldName=chapters
 columnName=chapters
 foreignCollection=true
 foreignCollectionColumnName=chapters
+# --field-end--
+# --field-start--
+fieldName=numberChapters
+columnName=number_chapters
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -126,6 +135,40 @@ id=true
 # --field-start--
 fieldName=genre
 columnName=genre_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=manga
+columnName=manga_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.emanga.emanga.app.models.Author
+tableName=author
+# --table-fields-start--
+# --field-start--
+fieldName=name
+columnName=name
+id=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.emanga.emanga.app.models.AuthorManga
+tableName=authormanga
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+columnName=_id
+id=true
+# --field-end--
+# --field-start--
+fieldName=author
+columnName=author_id
 foreign=true
 # --field-end--
 # --field-start--
