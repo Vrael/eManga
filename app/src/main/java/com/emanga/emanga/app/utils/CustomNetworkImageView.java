@@ -15,23 +15,26 @@ import com.android.volley.toolbox.ImageLoader;
  */
 public class CustomNetworkImageView extends ImageView {
     /** The URL of the network image to load */
-    private String mUrl;
+    protected String mUrl;
 
     /**
      * Resource ID of the image to be used as a placeholder until the network image is loaded.
      */
-    private int mDefaultImageId;
+    protected int mDefaultImageId;
 
     /**
      * Resource ID of the image to be used if the network response fails.
      */
-    private int mErrorImageId;
+    protected int mErrorImageId;
 
     /** Local copy of the ImageLoader. */
-    private ImageLoader mImageLoader;
+    protected ImageLoader mImageLoader;
+
+    /** Local copy of the ImageListener */
+    private ImageLoader.ImageListener mListener;
 
     /** Current ImageContainer. (either in-flight or finished) */
-    private ImageLoader.ImageContainer mImageContainer;
+    protected ImageLoader.ImageContainer mImageContainer;
 
     public CustomNetworkImageView(Context context) {
         this(context, null);
@@ -48,10 +51,10 @@ public class CustomNetworkImageView extends ImageView {
     /**
      * Sets URL of the image that should be loaded into this view. Note that calling this will
      * immediately either set the cached image (if available) or the default image specified by
-     * {@link NetworkImageView#setDefaultImageResId(int)} on the view.
+     * {@link CustomNetworkImageView#setDefaultImageResId(int)} on the view.
      *
-     * NOTE: If applicable, {@link NetworkImageView#setDefaultImageResId(int)} and
-     * {@link NetworkImageView#setErrorImageResId(int)} should be called prior to calling
+     * NOTE: If applicable, {@link CustomNetworkImageView#setDefaultImageResId(int)} and
+     * {@link CustomNetworkImageView#setErrorImageResId(int)} should be called prior to calling
      * this function.
      *
      * @param url The URL that should be loaded into this ImageView.
@@ -60,6 +63,7 @@ public class CustomNetworkImageView extends ImageView {
     public void setImageUrl(String url, ImageLoader imageLoader, ImageLoader.ImageListener listener) {
         mUrl = url;
         mImageLoader = imageLoader;
+        mListener = listener;
         // The URL has potentially changed. See if we need to load it.
         loadImageIfNecessary(false, listener);
     }

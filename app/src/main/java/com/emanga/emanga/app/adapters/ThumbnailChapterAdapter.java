@@ -100,7 +100,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.created_at));
     	holder.title.setText(WordUtils.capitalize(chapter.manga.title));
     	holder.number.setText(String.valueOf(chapter.number));
-        holder.cover.setImageUrl(chapter.manga.cover, ImageCacheManager.getInstance().getImageLoader());
+        holder.cover.setImageUrl(chapter.manga, ImageCacheManager.getInstance().getImageLoader());
 
         return convertView;
     }

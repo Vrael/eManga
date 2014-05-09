@@ -132,25 +132,25 @@ public class HistorySectionFragment extends OrmliteFragment {
             holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.read));
             holder.number.setText(chapter.number + "");
 
-            holder.cover.setImageUrl(chapter.manga, ImageCacheManager.getInstance().getImageLoader(), new ImageLoader.ImageListener() {
-                @Override
-                public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
-                    Log.d(TAG, "History listener!");
-                    if(response.getBitmap() != null){
-                        Log.d(TAG, "Rounding bitmap");
-                        RoundedDrawable rd = new RoundedDrawable(response.getBitmap());
-                        rd.setBorderWidth(5);
-                        rd.setBorderColor(Color.WHITE);
-                        rd.setCornerRadius(25);
-                        rd.setOval(false);
-                        holder.cover.setImageDrawable(rd);
-                    }
-                }
+            holder.cover.setImageUrl(chapter.manga, ImageCacheManager.getInstance().getImageLoader(),
+                    new ImageLoader.ImageListener() {
+                        @Override
+                        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                            Log.d(TAG, "History listener!");
+                            if(response.getBitmap() != null){
+                                Log.d(TAG, "Rounding bitmap");
+                                RoundedDrawable rd = new RoundedDrawable(response.getBitmap());
+                                rd.setBorderWidth(5);
+                                rd.setBorderColor(Color.WHITE);
+                                rd.setCornerRadius(25);
+                                rd.setOval(false);
+                                holder.cover.setImageDrawable(rd);
+                            }
+                        }
 
-                @Override
-                public void onErrorResponse(VolleyError error) {
-
-                }
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                        }
             });
 
             return convertView;

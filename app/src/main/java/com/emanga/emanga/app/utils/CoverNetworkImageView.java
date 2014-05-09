@@ -15,104 +15,156 @@ import com.emanga.emanga.app.requests.MangaRequest;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 
 /**
- * Handles fetching an image from a URL as well as the life-cycle of the
- * associated request.
+ * Created by Ciro on 06/05/2014.
  */
 public class CoverNetworkImageView extends CustomNetworkImageView {
     public static final String TAG = CoverNetworkImageView.class.getSimpleName();
-
-    private static final DatabaseHelper dbs;
-    static {
-        dbs = OpenHelperManager.getHelper(
-                App.getInstance().getApplicationContext(),
-                DatabaseHelper.class);
-    }
+    private int mRetries = 3;
+    private Manga mManga;
+    private HashSet<String> mUrlError;
 
     public CoverNetworkImageView(Context context) {
         super(context);
     }
-
     public CoverNetworkImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-
     public CoverNetworkImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    public void setImageUrl(String url, ImageLoader imageLoader, ImageLoader.ImageListener listener) {
-        throw new UnsupportedOperationException("You should use: setImageUrl(Manga manga, ImageLoader imageLoader) instead of this");
-    }
 
-    public void setImageUrl(String url, ImageLoader imageLoader) {
-        Manga manga = null;
+    private void searchMangaByCover(String cover){
+        DatabaseHelper dbs = OpenHelperManager.getHelper(
+                App.getInstance().getApplicationContext(),
+                DatabaseHelper.class);
         try {
-            manga = dbs.getMangaRunDao().queryBuilder().where().eq(Manga.COVER_COLUMN_NAME, url)
+            mManga = dbs.getMangaRunDao().queryBuilder().where().eq(Manga.COVER_COLUMN_NAME, cover)
                     .queryForFirst();
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-
-        if(manga != null){
-            setImageUrl(manga, imageLoader);
+        } finally {
+            OpenHelperManager.releaseHelper();
         }
     }
 
-    private void invokeSetImageUrlParent(String url, ImageLoader imageLoader){
-        super.setImageUrl(url,imageLoader);
+    public void setImageUrl(String url, ImageLoader imageLoader) {
+        searchMangaByCover(url);
+
+        if(mManga != null){
+            super.setImageUrl(mManga.cover, imageLoader, mListener);
+        }
     }
 
-    public void setImageUrl(final Manga manga, final ImageLoader imageLoader, final ImageLoader.ImageListener listener) {
-        Log.d(TAG, "Display cover: " + manga.cover);
-        final CoverNetworkImageView networkImage = this;
-        super.setImageUrl(manga.cover, imageLoader, new ImageLoader.ImageListener() {
+    public void setImageUrl(String url, ImageLoader imageLoader, final ImageLoader.ImageListener listener) {
+        searchMangaByCover(url);
+
+        if(mManga != null){
+            super.setImageUrl(mManga.cover,imageLoader,new ImageLoader.ImageListener(){
+
+                @Override
+                public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                    mListener.onResponse(response,isImmediate);
+                    listener.onResponse(response,true);
+                }
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    mListener.onErrorResponse(error);
+                    listener.onErrorResponse(error);
+                }
+            });
+        }
+    }
+
+    public void setImageUrl(Manga manga, ImageLoader imageLoader) {
+        mManga = manga;
+        super.setImageUrl(manga.cover,imageLoader,mListener);
+    }
+
+    public void setImageUrl(Manga manga, ImageLoader imageLoader, final ImageLoader.ImageListener listener) {
+        mManga = manga;
+        super.setImageUrl(manga.cover,imageLoader,new ImageLoader.ImageListener(){
+
+            @Override
+            public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                mListener.onResponse(response,isImmediate);
+                listener.onResponse(response,true);
+            }
+
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "Ask new cover instead of: " + manga.cover);
+                mListener.onErrorResponse(error);
+                listener.onErrorResponse(error);
+            }
+        });
+    }
+
+    void loadImageIfNecessary(final boolean isInLayoutPass, final ImageLoader.ImageListener listener) {
+        super.loadImageIfNecessary(false, listener);
+    }
+
+    protected ImageLoader.ImageListener mListener = new ImageLoader.ImageListener() {
+        @Override
+        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+            // If there was an error as it saves the new url that works
+            if(mUrlError != null){
+                DatabaseHelper dbs = OpenHelperManager.getHelper(
+                        App.getInstance().getApplicationContext(),
+                        DatabaseHelper.class);
+
+                Log.d(TAG, "Updating: " + mManga.title + " " + mManga.cover);
+                dbs.getMangaRunDao().update(mManga);
+                OpenHelperManager.releaseHelper();
+            } else {
+                Log.d(TAG, "mUrlError IS EMPTY");
+            }
+        }
+
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            if(mUrlError == null){
+                mUrlError = new HashSet<String>(3);
+            }
+
+            if(mManga.cover != null)
+                mUrlError.add(mManga.cover);
+            else
+                Log.d(TAG, "Manga with null cover " + mManga._id);
+
+            if(mRetries > 0) {
+                Log.d(TAG, "Cover: " + mUrl + " not found, asking by a new");
+                Log.d(TAG, "Ask to: " + Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"));
                 MangaRequest newCover = new MangaRequest(
                         JsonRequest.Method.GET,
-                        Internet.HOST + "manga/" + manga._id + "/cover?covers[]=" + manga.cover,
+                        Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"),
                         new Response.Listener<Manga>() {
                             @Override
                             public void onResponse(Manga response) {
                                 Log.d(TAG, response.toString());
                                 if (response.cover != null) {
                                     Log.d(TAG, "New cover received: " + response.cover);
-                                    manga.cover = response.cover;
-                                    // Update the manga with the new cover
-                                    dbs.getMangaRunDao().update(manga);
+                                    mManga.cover = response.cover;
+                                    mUrl = response.cover;
 
-                                    // Try to load the image again
-                                    invokeSetImageUrlParent(manga.cover, imageLoader);
+                                    // Reload image
+                                    setImageUrl(mUrl,mImageLoader,mListener);
                                 } else {
-                                    Log.d(TAG, "There aren't new covers for: " + manga._id + " " + manga.title);
+                                    Log.d(TAG, "There aren't new covers for: " + mManga._id + " " + mManga.title);
                                 }
                             }
                         },
                         null
                 );
-
                 newCover.setTag("Request: New cover");
                 App.getInstance().mRequestQueue.add(newCover);
-
-                if(listener != null){
-                    listener.onErrorResponse(error);
-                }
+                mRetries--;
+            } else {
+                Log.d(TAG, "Reached maximum intents number for ask a new cover with: " + mUrl);
             }
-
-            @Override
-            public void onResponse(final ImageLoader.ImageContainer response, boolean isImmediate) {
-                if(listener != null){
-                    listener.onResponse(response,isImmediate);
-                }
-            }
-        });
-    }
-
-    public void setImageUrl(final Manga manga, final ImageLoader imageLoader) {
-        setImageUrl(manga,imageLoader,null);
-    }
-
+        }
+    };
 }
