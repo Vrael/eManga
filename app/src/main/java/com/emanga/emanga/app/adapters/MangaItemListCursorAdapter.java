@@ -16,9 +16,10 @@ import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.cache.BitmapLruCache;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.controllers.App;
+import com.emanga.emanga.app.listeners.CoverListener;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.Manga;
-import com.emanga.emanga.app.utils.CoverNetworkImageView;
+import com.emanga.emanga.app.utils.CustomNetworkImageView;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -66,10 +67,10 @@ implements SectionIndexer {
         title.setText(cursor.getString(cursor.getColumnIndex(Manga.TITLE_COLUMN_NAME)));
         categories.setText(WordUtils.capitalize(cursor.getString(cursor.getColumnIndex(Genre.NAME_COLUMN_NAME))));
 
-        CoverNetworkImageView cover = (CoverNetworkImageView) view.findViewById(R.id.manga_list_cover);
+        CustomNetworkImageView cover = (CustomNetworkImageView) view.findViewById(R.id.manga_list_cover);
         String url = cursor.getString(cursor.getColumnIndex(Manga.COVER_COLUMN_NAME));
-        cover.setImageUrl(url, ImageCacheManager.getInstance().getImageLoader());
-        cover.setErrorImageResId(R.drawable.no_cover);
+        cover.setImageUrl(url, ImageCacheManager.getInstance().getImageLoader(), new CoverListener(url,cover));
+
     }
     
 	public Cursor swapCursor(Cursor c) {

@@ -114,8 +114,7 @@ public class SmartRequestQueue extends RequestQueue {
 
     /**
      * Creates the worker pool. Processing will not begin until {@link #start()} is called.
-     *
-     * @param cache A Cache to use for persisting responses to disk
+     *  @param cache A Cache to use for persisting responses to disk
      * @param network A Network interface for performing HTTP requests
      */
     public SmartRequestQueue(Cache cache, Network network) {

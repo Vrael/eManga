@@ -42,4 +42,8 @@
     <string name="go_to_chapter_label">Ir al capítulo</string>
     <string name="go_to_chapter_button_go">Ir</string>
 
+    <!-- Info messages -->
+    <string name="messasge_last_chapter">Este es el último capítulo disponible!</string>
+    <string name="messasge_last_page_last_chapter">Esta es la última página!</string>
+
 </resources>

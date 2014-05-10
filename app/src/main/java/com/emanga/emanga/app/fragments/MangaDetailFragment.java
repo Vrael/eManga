@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -24,13 +25,13 @@ import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.OrmliteFragment;
+import com.emanga.emanga.app.listeners.CoverListener;
 import com.emanga.emanga.app.models.Author;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.GenreManga;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangaRequest;
-import com.emanga.emanga.app.utils.CoverNetworkImageView;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -161,7 +162,7 @@ public class MangaDetailFragment extends OrmliteFragment {
     private static class ViewHolder {
         TextView title;
         TextView author;
-        CoverNetworkImageView cover;
+        ImageView cover;
         TextView numberChapters;
         TextView percent;
         TextView last_read;
@@ -175,7 +176,7 @@ public class MangaDetailFragment extends OrmliteFragment {
     private void updateValues(){
         holder.numberChapters.setText(manga.numberChapters + "");
 
-        holder.cover.setImageUrl(manga, ImageCacheManager.getInstance().getImageLoader());
+        ImageCacheManager.getInstance().getImage(manga.cover, holder.cover, new CoverListener(manga,holder.cover));
 
         if(!request.hasHadResponseDelivered()){
             holder.summary.setText(
@@ -234,7 +235,7 @@ public class MangaDetailFragment extends OrmliteFragment {
             holder.title = (TextView) rootView.findViewById(R.id.manga_title);
             holder.author = (TextView) rootView.findViewById(R.id.manga_author);
             holder.numberChapters = (TextView) rootView.findViewById(R.id.manga_chapters);
-            holder.cover = (CoverNetworkImageView) rootView.findViewById(R.id.manga_cover);
+            holder.cover = (ImageView) rootView.findViewById(R.id.manga_cover);
             holder.percent = (TextView) rootView.findViewById(R.id.manga_read);
             holder.last_read = (TextView) rootView.findViewById(R.id.manga_last_read_date);
             holder.genres = (TableLayout) rootView.findViewById(R.id.manga_categories_table);

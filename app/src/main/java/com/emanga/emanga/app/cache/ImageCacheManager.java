@@ -3,7 +3,9 @@ package com.emanga.emanga.app.cache;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
+import android.widget.ImageView;
 
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageLoader.ImageCache;
 import com.android.volley.toolbox.ImageLoader.ImageListener;
@@ -102,6 +104,30 @@ public class ImageCacheManager {
      */
     public void getImage(String url, ImageListener listener){
         mImageLoader.get(url, listener);
+    }
+
+    /**
+     * 	Executes and image load
+     * @param url
+     * 		location of image
+     * @param listener
+     * 		Listener for completion
+     */
+    public void getImage(String url, final ImageView imageView, final ImageListener listener){
+        mImageLoader.get(url, new ImageListener() {
+            @Override
+            public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                if(response.getBitmap() != null) {
+                    imageView.setImageBitmap(response.getBitmap());
+                }
+                listener.onResponse(response,isImmediate);
+            }
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                listener.onErrorResponse(error);
+            }
+        });
     }
 
     /**

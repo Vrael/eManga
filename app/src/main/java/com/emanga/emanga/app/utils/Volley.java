@@ -71,6 +71,7 @@ public class Volley {
         Network network = new BasicNetwork(stack);
 
         SmartRequestQueue queue = new SmartRequestQueue(new DiskBasedCache(cacheDir), network);
+        //SmartRequestQueue queue = new SmartRequestQueue(new BitmapLruImageCache(100), network);
         queue.start();
 
         return queue;

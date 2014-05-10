@@ -12,8 +12,9 @@ import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.cache.BitmapLruCache;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.controllers.App;
+import com.emanga.emanga.app.listeners.CoverListener;
 import com.emanga.emanga.app.models.Chapter;
-import com.emanga.emanga.app.utils.CoverNetworkImageView;
+import com.emanga.emanga.app.utils.CustomNetworkImageView;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -88,8 +89,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     		holder.date = (TextView) convertView.findViewById(R.id.thumb_date);
             holder.title = (TextView) convertView.findViewById(R.id.thumb_title);
             holder.number = (TextView) convertView.findViewById(R.id.thumb_number);
-    		holder.cover = (CoverNetworkImageView) convertView.findViewById(R.id.thumb_cover);
-            holder.cover.setErrorImageResId(R.drawable.no_cover);
+    		holder.cover = (CustomNetworkImageView) convertView.findViewById(R.id.thumb_cover);
     		
     		convertView.setTag(holder);
 		} else {
@@ -100,14 +100,14 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.created_at));
     	holder.title.setText(WordUtils.capitalize(chapter.manga.title));
     	holder.number.setText(String.valueOf(chapter.number));
-        holder.cover.setImageUrl(chapter.manga, ImageCacheManager.getInstance().getImageLoader());
+        holder.cover.setImageUrl(chapter.manga.cover, ImageCacheManager.getInstance().getImageLoader(), new CoverListener(chapter.manga, holder.cover));
 
         return convertView;
     }
     
     static class ViewHolder {
     	TextView date;
-        CoverNetworkImageView cover;
+        CustomNetworkImageView cover;
     	TextView title;
     	TextView number;
     }

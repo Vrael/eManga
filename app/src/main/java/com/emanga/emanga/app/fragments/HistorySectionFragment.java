@@ -6,10 +6,8 @@ package com.emanga.emanga.app.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,18 +16,16 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.adapters.ThumbnailChapterAdapter;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.database.OrmliteFragment;
+import com.emanga.emanga.app.listeners.CoverListener;
 import com.emanga.emanga.app.models.Chapter;
-import com.emanga.emanga.app.utils.CoverNetworkImageView;
+import com.emanga.emanga.app.utils.CustomNetworkImageView;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
-import com.emanga.emanga.app.utils.RoundedDrawable;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
@@ -118,9 +114,7 @@ public class HistorySectionFragment extends OrmliteFragment {
                 holder = new ViewHolder();
                 holder.date = (TextView) convertView.findViewById(R.id.thumb_read_date);
                 holder.number = (TextView) convertView.findViewById(R.id.thumb_read_number);
-                holder.cover = (CoverNetworkImageView) convertView.findViewById(R.id.thumb_read_cover);
-                holder.cover.setDefaultImageResId(R.drawable.ic_content_picture);
-                holder.cover.setErrorImageResId(R.drawable.ic_content_remove);
+                holder.cover = (CustomNetworkImageView) convertView.findViewById(R.id.thumb_read_cover);
 
                 convertView.setTag(holder);
             } else {
@@ -132,26 +126,7 @@ public class HistorySectionFragment extends OrmliteFragment {
             holder.date.setText(ThumbnailChapterAdapter.formatDate(chapter.read));
             holder.number.setText(chapter.number + "");
 
-            holder.cover.setImageUrl(chapter.manga, ImageCacheManager.getInstance().getImageLoader(),
-                    new ImageLoader.ImageListener() {
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
-                            Log.d(TAG, "History listener!");
-                            if(response.getBitmap() != null){
-                                Log.d(TAG, "Rounding bitmap");
-                                RoundedDrawable rd = new RoundedDrawable(response.getBitmap());
-                                rd.setBorderWidth(5);
-                                rd.setBorderColor(Color.WHITE);
-                                rd.setCornerRadius(25);
-                                rd.setOval(false);
-                                holder.cover.setImageDrawable(rd);
-                            }
-                        }
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                        }
-            });
+            holder.cover.setImageUrl(chapter.manga.cover, ImageCacheManager.getInstance().getImageLoader(), new CoverListener(chapter.manga, holder.cover));
 
             return convertView;
         }
@@ -159,7 +134,7 @@ public class HistorySectionFragment extends OrmliteFragment {
 
     static class ViewHolder {
         TextView date;
-        CoverNetworkImageView cover;
+        CustomNetworkImageView cover;
         TextView number;
     }
 

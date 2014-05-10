@@ -61,8 +61,19 @@ public class DiskLruImageCache implements ImageCache  {
         return new File(cachePath + File.separator + uniqueName);
     }
 
+    private String editVolleyKeyCache(String key){
+        // Volley loader cache string pattern key is different to DiskLruCache
+        key = key.replaceAll("[^a-z0-9_-]","");
+
+        if(key.length() > 64)
+            key = key.substring(0,63);
+
+        return key;
+    }
+
     @Override
     public void putBitmap( String key, Bitmap data ) {
+        key = editVolleyKeyCache(key);
 
         DiskLruCache.Editor editor = null;
         try {
@@ -99,6 +110,7 @@ public class DiskLruImageCache implements ImageCache  {
 
     @Override
     public Bitmap getBitmap( String key ) {
+        key = editVolleyKeyCache(key);
 
         Bitmap bitmap = null;
         DiskLruCache.Snapshot snapshot = null;

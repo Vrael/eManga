@@ -5,7 +5,7 @@
     android:padding="8dip"
     android:background="?android:attr/activatedBackgroundIndicator" >
 
-    <com.emanga.emanga.app.utils.CoverNetworkImageView
+    <com.emanga.emanga.app.utils.CustomNetworkImageView
         android:id="@+id/manga_list_cover"
         android:layout_width="80dp"
         android:layout_height="110dp"

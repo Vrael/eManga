@@ -22,6 +22,7 @@ import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.models.Page;
 import com.emanga.emanga.app.requests.ChapterRequest;
+import com.emanga.emanga.app.requests.MangaRequest;
 import com.emanga.emanga.app.utils.CustomViewPager;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
@@ -64,6 +65,21 @@ public class ReaderActivity extends OrmliteFragmentActivity {
         if(getIntent().getExtras().get(ACTION_OPEN_CHAPTER) != null) {
             mChapter = (Chapter) getIntent().getExtras().get(ACTION_OPEN_CHAPTER);
             mManga = mChapter.manga;
+
+            if(mManga.numberChapters == 0){
+                App.getInstance().addToRequestQueue(new MangaRequest(Request.Method.GET,
+                        Internet.HOST + "manga/" + mManga._id,
+                        new Response.Listener<Manga>(){
+                            @Override
+                            public void onResponse(Manga response) {
+                                Log.d(TAG, "Manga details: " + mManga.toString());
+                                getHelper().getMangaRunDao().update(response);
+                                mManga = response;
+                            }
+                        },
+                        null
+                ), "Manga info");
+            }
 
             try {
                 // Query for the last page read
@@ -108,10 +124,20 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                 page.read = new Date();
                 getHelper().getPageRunDao().createOrUpdate(page);
 
-                // When only rest 5 pages for the end, it loads the next chapter
-                if(mAdapter.pages.size() - position < 5 && !asked ){
-                    askChapter(mChapter.number + 1);
-				}
+                if(mChapter.number < mManga.numberChapters){
+                    // When only rest 5 pages for the end, it loads the next chapter
+                    // Position begins from 0 whereas that size() does it from 1
+                    if((mAdapter.pages.size() - 1) - position < 5 && !asked ){
+                        askChapter(mChapter.number + 1);
+                    }
+                } else {
+                    // First page of last chapter
+                    if((mAdapter.pages.size() - 1) - position == (mChapter.pages.size() - 1)){
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.messasge_last_chapter), Toast.LENGTH_LONG).show();
+                    } else if((mAdapter.pages.size() - 1) - position < 1){  // Last page of the last chapter
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.messasge_last_page_last_chapter), Toast.LENGTH_LONG).show();
+                    }
+                }
 			}
 
             @Override
@@ -120,7 +146,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
         });
 	}
 
-	// Adapter for framents which contains the ImageViews children
+	// Adapter for fragments which contains the ImageViews children
     private static class ImagePagerAdapter extends FragmentStatePagerAdapter {
         public LinkedList<Page> pages = new LinkedList<Page>();
 

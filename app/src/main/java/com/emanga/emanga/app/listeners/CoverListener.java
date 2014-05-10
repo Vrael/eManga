@@ -1,16 +1,13 @@
 package com.emanga.emanga.app.listeners;
 
-import android.content.Context;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonRequest;
-import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
 import com.emanga.emanga.app.models.Manga;
@@ -18,77 +15,97 @@ import com.emanga.emanga.app.requests.MangaRequest;
 import com.emanga.emanga.app.utils.Internet;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
+import java.sql.SQLException;
+import java.util.HashSet;
+
 /**
  * Created by Ciro on 3/03/14.
  */
 public class CoverListener implements ImageLoader.ImageListener {
     private String TAG = CoverListener.class.getSimpleName();
 
-    private ImageView cover;
-    private Manga manga;
-    private Context ctx;
+    private Manga mManga;
+    private HashSet<String> mUrlError;
+    private int mRetries = 3;
+    private ImageView mImageView;
+    private String url;
 
-    public CoverListener(ImageView cover, Manga manga){
-        this.cover = cover;
-        this.manga = manga;
-        this.ctx = cover.getContext();
+    public CoverListener(Manga manga, ImageView imageView){
+        mManga = manga;
+        mImageView = imageView;
+    }
+
+    public CoverListener(Manga manga, ImageView imageView, int retries){
+        this(manga,imageView);
+        mRetries = retries;
+    }
+
+    public CoverListener(String url, ImageView imageView){
+        this(searchMangaByCover(url),imageView);
+    }
+
+    private static Manga searchMangaByCover(String cover){
+
+        DatabaseHelper dbs = OpenHelperManager.getHelper(
+                App.getInstance().getApplicationContext(),
+                DatabaseHelper.class);
+        Manga manga = null;
+        try {
+            manga = dbs.getMangaRunDao().queryBuilder().where().eq(Manga.COVER_COLUMN_NAME, cover)
+                    .queryForFirst();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            OpenHelperManager.releaseHelper();
+        }
+
+        return manga;
     }
 
     @Override
     public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
-        if (response.getBitmap() != null) {
-            cover.setImageBitmap(response.getBitmap());
-        }
     }
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        Log.e(TAG, "It was an error with a cover!");
+        if(mUrlError == null){
+            mUrlError = new HashSet<String>(3);
+        }
 
-        MangaRequest newCover = new MangaRequest(
-                JsonRequest.Method.GET,
-                Internet.HOST + "manga/" + manga._id + "/cover?e[]=" + manga.cover,
-                new Response.Listener<Manga>() {
-                    @Override
-                    public void onResponse(Manga response) {
-                        if(response != null){
-                            Log.d(TAG, response.toString());
-                            new AsyncTask<Manga, Void, Void>() {
+        mUrlError.add(mManga.cover);
+
+        if(mRetries > 0) {
+            Log.d(TAG, "Cover: " + mManga.cover + "\nAsk to: " + Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"));
+            App.getInstance().addToRequestQueue(
+                    new MangaRequest(
+                            JsonRequest.Method.GET,
+                            Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"),
+                            new Response.Listener<Manga>() {
                                 @Override
-                                protected Void doInBackground(Manga... mangas) {
-                                    DatabaseHelper dbs =
-                                            OpenHelperManager.getHelper(
-                                                    App.getInstance().getApplicationContext(),
-                                                    DatabaseHelper.class);
-                                    Log.d(TAG, "New cover received: " + mangas[0].cover);
-                                    manga.cover = mangas[0].cover;
-                                    dbs.getMangaRunDao().update(manga);
-                                    OpenHelperManager.releaseHelper();
-                                    return null;
+                                public void onResponse(Manga response) {
+                                    Log.d(TAG, response.toString());
+                                    if (response.cover != null) {
+                                        Log.d(TAG, "New cover received: " + response.title + " " + response.cover);
+                                        mManga.cover = response.cover;
+
+                                        // Reload image
+                                        ImageCacheManager.getInstance().getImage(mManga.cover, mImageView, new CoverListener(mManga,mImageView,--mRetries));
+                                        DatabaseHelper dbs = OpenHelperManager.getHelper(
+                                                App.getInstance().getApplicationContext(),
+                                                DatabaseHelper.class);
+                                        dbs.getMangaRunDao().update(mManga);
+                                        OpenHelperManager.releaseHelper();
+                                    } else {
+                                        Log.d(TAG, "There aren't new covers for: "  + mManga.title);
+                                    }
                                 }
-                            }.execute(response);
-                        } else {
-                            Log.d(TAG, "There aren't any new cover for: " + manga._id + " " + manga.title);
-                            cover.setImageResource(R.drawable.enjoy_reading);
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        Log.d(TAG, "Error in response!");
-                        cover.setImageResource(R.drawable.enjoy_reading);
-                    }
-                }
-        );
-
-        newCover.setRetryPolicy(new DefaultRetryPolicy(
-                3 * 60 * 1000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        );
-
-        newCover.setTag("Request: Latest Chapters");
-        App.getInstance().mRequestQueue.add(newCover);
+                            },
+                            null
+                    ),
+                    "New Cover");
+            mRetries--;
+        } else {
+            Log.d(TAG, "Reached maximum intents number for ask a new cover with: " + mManga.cover);
+        }
     }
 }
