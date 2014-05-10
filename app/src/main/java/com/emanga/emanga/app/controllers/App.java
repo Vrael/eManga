@@ -71,8 +71,8 @@ public class App extends Application {
      * Adds the specified request to the global queue, if tag is specified
      * then it is used else Default TAG is used.
      *
-     * @param req
-     * @param tag
+     * @param req request
+     * @param tag label for the request
      */
     public <T> void addToRequestQueue(Request<T> req, String tag) {
         // set the default tag if tag is empty

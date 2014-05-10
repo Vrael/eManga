@@ -1,5 +1,6 @@
 package com.emanga.emanga.app.listeners;
 
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -68,44 +69,52 @@ public class CoverListener implements ImageLoader.ImageListener {
 
     @Override
     public void onErrorResponse(VolleyError error) {
-        if(mUrlError == null){
-            mUrlError = new HashSet<String>(3);
-        }
+        new AsyncTask<Void,Void,Void>(){
 
-        mUrlError.add(mManga.cover);
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if(mUrlError == null){
+                    mUrlError = new HashSet<String>(3);
+                }
 
-        if(mRetries > 0) {
-            Log.d(TAG, "Cover: " + mManga.cover + "\nAsk to: " + Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"));
-            App.getInstance().addToRequestQueue(
-                    new MangaRequest(
-                            JsonRequest.Method.GET,
-                            Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"),
-                            new Response.Listener<Manga>() {
-                                @Override
-                                public void onResponse(Manga response) {
-                                    Log.d(TAG, response.toString());
-                                    if (response.cover != null) {
-                                        Log.d(TAG, "New cover received: " + response.title + " " + response.cover);
-                                        mManga.cover = response.cover;
+                mUrlError.add(mManga.cover);
 
-                                        // Reload image
-                                        ImageCacheManager.getInstance().getImage(mManga.cover, mImageView, new CoverListener(mManga,mImageView,--mRetries));
-                                        DatabaseHelper dbs = OpenHelperManager.getHelper(
-                                                App.getInstance().getApplicationContext(),
-                                                DatabaseHelper.class);
-                                        dbs.getMangaRunDao().update(mManga);
-                                        OpenHelperManager.releaseHelper();
-                                    } else {
-                                        Log.d(TAG, "There aren't new covers for: "  + mManga.title);
-                                    }
-                                }
-                            },
-                            null
-                    ),
-                    "New Cover");
-            mRetries--;
-        } else {
-            Log.d(TAG, "Reached maximum intents number for ask a new cover with: " + mManga.cover);
-        }
+                if(mRetries > 0) {
+                    Log.d(TAG, "Cover: " + mManga.cover + "\nAsk to: " + Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError, "e"));
+                    App.getInstance().addToRequestQueue(
+                            new MangaRequest(
+                                    JsonRequest.Method.GET,
+                                    Internet.HOST + "manga/" + mManga._id + "/cover?" + Internet.arrayParams(mUrlError,"e"),
+                                    new Response.Listener<Manga>() {
+                                        @Override
+                                        public void onResponse(Manga response) {
+                                            Log.d(TAG, response.toString());
+                                            if (response.cover != null) {
+                                                Log.d(TAG, "New cover received: " + response.title + " " + response.cover);
+                                                mManga.cover = response.cover;
+
+                                                // Reload image
+                                                ImageCacheManager.getInstance().getImage(mManga.cover, mImageView, new CoverListener(mManga,mImageView,--mRetries));
+                                                DatabaseHelper dbs = OpenHelperManager.getHelper(
+                                                        App.getInstance().getApplicationContext(),
+                                                        DatabaseHelper.class);
+                                                dbs.getMangaRunDao().update(mManga);
+                                                OpenHelperManager.releaseHelper();
+                                            } else {
+                                                Log.d(TAG, "There aren't new covers for: "  + mManga.title);
+                                            }
+                                        }
+                                    },
+                                    null
+                            ),
+                            "New Cover");
+                    mRetries--;
+                } else {
+                    Log.d(TAG, "Reached maximum intents number for ask a new cover with: " + mManga.cover);
+                }
+                return null;
+            }
+
+        }.execute();
     }
 }

@@ -43,11 +43,20 @@ public class Chapter implements Parcelable{
 		// needed by ormlite
 	}
 
+    public Chapter(String _id, Integer number, Date created_at, Manga manga) {
+        this._id = _id;
+        this.number = number;
+        this.created_at = created_at;
+        this.manga = manga;
+    }
+
     public Chapter(Parcel p){
-        this._id =  p.readString();
-        this.number = (Integer) p.readValue(Integer.class.getClassLoader());
-        this.created_at = new Date(p.readLong());
-        this.manga = (Manga) p.readValue(Manga.class.getClassLoader());
+        this( p.readString(),
+              (Integer) p.readValue(Integer.class.getClassLoader()),
+              new Date(p.readLong()),
+              (Manga) p.readValue(Manga.class.getClassLoader())
+        );
+
         this.pages = unparcelCollection(p, Page.CREATOR);
 
         if(this.pages != null){
@@ -56,13 +65,6 @@ public class Chapter implements Parcelable{
                 it.next().chapter = this;
             }
         }
-    }
-
-    public Chapter(String _id, Integer number, Date created_at, Manga manga) {
-        this._id = _id;
-        this.number = number;
-        this.created_at = created_at;
-        this.manga = manga;
     }
 
     public String toString(){
@@ -95,7 +97,7 @@ public class Chapter implements Parcelable{
         parcelCollection(p,pages);
     }
 
-    protected final static <T extends Page> void parcelCollection(final Parcel out, final Collection<T> collection) {
+    protected static <T extends Page> void parcelCollection(final Parcel out, final Collection<T> collection) {
         if (collection != null) {
             out.writeInt(collection.size());
             out.writeTypedList(new ArrayList<T>(collection));
@@ -104,7 +106,7 @@ public class Chapter implements Parcelable{
         }
     }
 
-    protected final static <T extends Page> Collection<T> unparcelCollection(final Parcel in, final Creator<T> creator) {
+    protected static <T extends Page> Collection<T> unparcelCollection(final Parcel in, final Creator<T> creator) {
         final int size = in.readInt();
         if (size >= 0) {
             final List<T> list = new ArrayList<T>(size);

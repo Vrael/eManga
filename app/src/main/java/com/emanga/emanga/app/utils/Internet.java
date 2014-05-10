@@ -17,12 +17,9 @@ public class Internet {
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo i = conMgr.getActiveNetworkInfo();
-        if (i == null)
+        if (i == null || !i.isConnected() || !i.isAvailable())
             return false;
-        if (!i.isConnected())
-            return false;
-        if (!i.isAvailable())
-            return false;
+
         return true;
     }
 

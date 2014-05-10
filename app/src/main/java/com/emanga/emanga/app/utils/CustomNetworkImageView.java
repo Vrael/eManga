@@ -167,29 +167,30 @@ public class CustomNetworkImageView extends ImageView {
                     }
 
                     @Override
-                    public void onResponse(final ImageLoader.ImageContainer response, boolean isImmediate) {
+                    public void onResponse(final ImageLoader.ImageContainer response, final boolean isImmediate) {
                         // If this was an immediate response that was delivered inside of a layout
                         // pass do not set the image immediately as it will trigger a requestLayout
                         // inside of a layout. Instead, defer setting the image by posting back to
                         // the main thread.
-                        if (isImmediate && isInLayoutPass) {
+
+                        if(isImmediate && isInLayoutPass) {
                             post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    onResponse(response, false);
+                                onResponse(response, false);
                                 }
                             });
-                            return;
+                            return ;
                         }
 
-                        if (response.getBitmap() != null) {
+                        if(response.getBitmap() != null) {
                             setImageBitmap(response.getBitmap());
-                        } else if (mDefaultImageId != 0) {
+                        } else if(mDefaultImageId!=0) {
                             setImageResource(mDefaultImageId);
                         }
 
-                        if(listener != null){
-                            listener.onResponse(response,isImmediate);
+                        if(listener != null) {
+                            listener.onResponse(response, isImmediate);
                         }
                     }
                 }, maxWidth, maxHeight);

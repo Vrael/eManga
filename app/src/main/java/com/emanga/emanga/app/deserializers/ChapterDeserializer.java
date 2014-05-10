@@ -10,9 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -33,13 +31,13 @@ public class ChapterDeserializer extends JsonDeserializer<Chapter> {
         String _id = null;
         JsonNode _idNode = node.get("_id");
         if(_idNode != null && !(_idNode instanceof NullNode)){
-           _id = ((ObjectNode) _idNode).get("$oid").asText();
+           _id = _idNode.get("$oid").asText();
         }
 
         Integer number = null;
         JsonNode numberNode = node.get("number");
         if(numberNode != null && !(numberNode instanceof NullNode)){
-            number = (Integer) ((IntNode) numberNode).asInt();
+            number = numberNode.asInt();
         }
 
 

@@ -34,6 +34,13 @@ public class Page implements Parcelable {
         // needed by ormlite
     }
 
+    public Page(String _id, int number, String url, Chapter chapter) {
+        this._id = _id;
+        this.number = number;
+        this.chapter = chapter;
+        this.url = url;
+    }
+
     public Page(Parcel p){
         this._id = p.readString();
         this.number = p.readInt();
@@ -42,13 +49,6 @@ public class Page implements Parcelable {
             this.read = new Date(date);
         this.url = p.readString();
         // this.chapter = (Chapter) p.readValue(Chapter.class.getClassLoader());
-    }
-
-    public Page(String _id, int number, String url, Chapter chapter) {
-        this._id = _id;
-        this.number = number;
-        this.chapter = chapter;
-        this.url = url;
     }
 
     public static final Parcelable.Creator<Page> CREATOR = new Creator<Page>() {

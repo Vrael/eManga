@@ -156,8 +156,8 @@ public class MangaListFragment extends ListFragment
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d(TAG, "Error in response!");
-                        Log.d(TAG, volleyError.toString());
+                        Log.e(TAG, "Error in response!");
+                        Log.e(TAG, volleyError.toString());
                     }
                 });
 

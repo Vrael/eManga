@@ -63,7 +63,7 @@ public class SmartRequestQueue extends RequestQueue {
             new PriorityBlockingQueue<Request<?>>();
 
     /** Number of network request dispatcher threads to start. */
-    private static final int DEFAULT_NETWORK_THREAD_POOL_SIZE = 4;
+    private static final int DEFAULT_NETWORK_THREAD_POOL_SIZE = 6;
 
     /** Cache interface for retrieving and storing responses. */
     private final Cache mCache;

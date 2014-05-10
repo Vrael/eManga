@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -35,7 +34,7 @@ public class MangaDeserializer extends JsonDeserializer<Manga> {
 
         JsonNode node = jp.getCodec().readTree(jp);
 
-        String _id = ((ObjectNode) node.get("_id")).get("$oid").asText();
+        String _id = node.get("_id").get("$oid").asText();
 
         String title = null;
         JsonNode titleNode = node.get("title");

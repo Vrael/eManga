@@ -12,7 +12,7 @@ import com.emanga.emanga.app.R;
 
 public class Notification {
 	public static Toast enjoyReading(Activity activity){
-		LayoutInflater inflater = (LayoutInflater) activity.getLayoutInflater();
+		LayoutInflater inflater = activity.getLayoutInflater();
     	View view = inflater.inflate(R.layout.toast_with_image, (ViewGroup) activity.findViewById(R.id.toast));
 
     	Toast toast = new Toast(activity);

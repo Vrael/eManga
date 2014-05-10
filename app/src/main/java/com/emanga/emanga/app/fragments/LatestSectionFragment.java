@@ -36,7 +36,6 @@ import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -53,7 +52,6 @@ public class LatestSectionFragment extends OrmliteFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAdapter = new ThumbnailChapterAdapter(getActivity());
-        LinkedHashSet<Chapter> hash = new LinkedHashSet();
 
         String chapterDate = getHelper().lastChapterDate();
         Date date = null;
@@ -136,8 +134,8 @@ public class LatestSectionFragment extends OrmliteFragment {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d(TAG, "Error in response!");
-                        Log.d(TAG, volleyError.toString());
+                        Log.e(TAG, "Error in response!");
+                        Log.e(TAG, volleyError.toString());
                         Notification.errorMessage(getActivity(),
                                 getResources().getString(R.string.volley_error_title),
                                 getResources().getString(R.string.volley_error_body),
@@ -162,10 +160,10 @@ public class LatestSectionFragment extends OrmliteFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(
-                R.layout.fragment_section, container, false);
+                R.layout.fragment_section, parent, false);
 
         GridView gridview = (GridView) rootView.findViewById(R.id.grid_view);
         gridview.setAdapter(mAdapter);

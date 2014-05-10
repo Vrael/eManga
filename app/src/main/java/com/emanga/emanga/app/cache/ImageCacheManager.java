@@ -62,6 +62,7 @@ public class ImageCacheManager {
      * @param compressFormat
      * 			file type compression format.
      * @param quality
+     *          compression rate
      */
     public void init(Context context, String uniqueName, int cacheSize, CompressFormat compressFormat, int quality, CacheType type){
         switch (type) {

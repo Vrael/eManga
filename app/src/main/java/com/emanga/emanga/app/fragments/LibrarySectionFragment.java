@@ -17,10 +17,10 @@ public class LibrarySectionFragment extends Fragment {
 	public static boolean mTwoPane;
 	
 	@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent,
             Bundle savedInstanceState) {
 		
-		View view = getLayoutInflater(savedInstanceState).inflate(R.layout.manga_list, null, false);
+		View view = getLayoutInflater(savedInstanceState).inflate(R.layout.manga_list, parent, false);
 		
 		if (view.findViewById(R.id.manga_detail_container) != null) {
 			// The detail container view will be present only in the
