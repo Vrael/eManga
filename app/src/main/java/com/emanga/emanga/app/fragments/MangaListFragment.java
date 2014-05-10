@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,7 +30,6 @@ import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.adapters.MangaItemListCursorAdapter;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
-import com.emanga.emanga.app.loaders.LibraryLoader;
 import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangasRequest;
@@ -51,8 +48,7 @@ import java.net.URLEncoder;
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-public class MangaListFragment extends ListFragment
-	implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MangaListFragment extends ListFragment {
 
     private static final String TAG = MangaListFragment.class.getName();
 
@@ -103,7 +99,9 @@ public class MangaListFragment extends ListFragment
 	public MangaListFragment() {}
 
 	private MangaItemListCursorAdapter mAdapter;
-	private DatabaseHelper databaseHelper = null;
+    // private MangaItemListAdapter mAdapter;
+
+    private DatabaseHelper databaseHelper = null;
 	
 	protected DatabaseHelper getHelper() {
         if (databaseHelper == null) {
@@ -125,50 +123,59 @@ public class MangaListFragment extends ListFragment
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        new AsyncTask<Void,Void,Void>(){
 
-        String mangaDate = getHelper().lastMangaDate();
+            @Override
+            protected Void doInBackground(Void... voids) {
+                String mangaDate = getHelper().lastMangaDate();
 
-        try {
-            mangaDate = URLEncoder.encode(mangaDate, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+                try {
+                    mangaDate = URLEncoder.encode(mangaDate, "utf-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
 
-        MangasRequest latestChaptersRequest = new MangasRequest(
-                Request.Method.GET,
-                Internet.HOST + "mangas/newest?m=" + mangaDate,
-                new Response.Listener<Manga[]>() {
-                    @Override
-                    public void onResponse(final Manga[] mangas){
-                        new AsyncTask<Void,Void,Void>(){
+                MangasRequest latestChaptersRequest = new MangasRequest(
+                        Request.Method.GET,
+                        Internet.HOST + "mangas/newest?m=" + mangaDate,
+                        new Response.Listener<Manga[]>() {
                             @Override
-                            protected Void doInBackground(Void... voids) {
-                                Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                                getHelper().saveMangas(mangas);
-                                Log.d(TAG, "Notify new chapters in the database");
-                                getLoaderManager().getLoader(1).onContentChanged();
-                                getHelper().updateMangaFTS();
-                                return null;
+                            public void onResponse(final Manga[] mangas){
+                                new AsyncTask<Void,Void,Void>(){
+                                    @Override
+                                    protected Void doInBackground(Void... voids) {
+                                        Log.d(TAG, "Mangas received and parsed: " + mangas.length);
+                                        getHelper().saveMangas(mangas);
+                                        Log.d(TAG, "Notify new chapters in the database");
+                                        getHelper().updateMangaFTS();
+                                        return null;
+                                    }
+                                }.execute();
                             }
-                        }.execute();
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        Log.e(TAG, "Error in response!");
-                        Log.e(TAG, volleyError.toString());
-                    }
-                });
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError volleyError) {
+                                Log.e(TAG, volleyError.toString());
+                            }
+                        });
 
-        latestChaptersRequest.setRetryPolicy(new DefaultRetryPolicy(
-                3 * 60 * 1000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        );
+                latestChaptersRequest.setRetryPolicy(new DefaultRetryPolicy(
+                                3 * 60 * 1000,
+                                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                );
 
-        latestChaptersRequest.setTag("Request: Latest Chapters");
-        App.getInstance().mRequestQueue.add(latestChaptersRequest);
+                App.getInstance().addToRequestQueue(latestChaptersRequest,"Latest Chapters");
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                mAdapter.swapCursor(getHelper().getMangasWithGenres());
+            }
+        }.execute();
 
 		mAdapter = new MangaItemListCursorAdapter(
 				getActivity(), 
@@ -179,7 +186,7 @@ public class MangaListFragment extends ListFragment
 				SimpleCursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 		
 		setListAdapter(mAdapter);
-		getLoaderManager().initLoader(1, null, this);
+        mAdapter.swapCursor(getHelper().getMangasWithGenres());
 	}
 
 	@Override
@@ -192,6 +199,7 @@ public class MangaListFragment extends ListFragment
 			setActivatedPosition(savedInstanceState
 					.getInt(STATE_ACTIVATED_POSITION));
 		}
+
 	}
 
     @Override
@@ -217,6 +225,7 @@ public class MangaListFragment extends ListFragment
         TextView tv = new TextView(getActivity());
         tv.setId(android.R.id.empty);
         tv.setGravity(Gravity.CENTER);
+        tv.setText("No se encontraron resultados");
         root.addView(tv, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         
@@ -225,12 +234,15 @@ public class MangaListFragment extends ListFragment
         lv.setId(android.R.id.list);
         lv.setDrawSelectorOnTop(false);
         lv.setVerticalScrollBarEnabled(false);
+        lv.setFastScrollEnabled(true);
+        lv.setScrollingCacheEnabled(true);
+        lv.setEmptyView(tv);
+
         root.addView(lv, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-    	
+
     	return root;
     }
-  
 
 	@Override
     public void onActivityCreated(Bundle saved) { 
@@ -261,8 +273,6 @@ public class MangaListFragment extends ListFragment
 				mAdapter.notifyDataSetChanged();
 			}
         });
-
-
     }
 
 	@Override
@@ -335,21 +345,5 @@ public class MangaListFragment extends ListFragment
 		}
 
 		mActivatedPosition = position;
-	}
-
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		return new LibraryLoader(getActivity());
-	}
-
-	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		mAdapter.swapCursor(data);
-
-	    ListView lv = getListView();
-	    lv.setFastScrollEnabled(true);
-	    lv.setScrollingCacheEnabled(true);
-	}
-
-	public void onLoaderReset(Loader<Cursor> loader) {
-		mAdapter.swapCursor(null);
 	}
 }

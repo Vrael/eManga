@@ -27,6 +27,7 @@ import com.emanga.emanga.app.utils.CustomViewPager;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -73,7 +74,14 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                             @Override
                             public void onResponse(Manga response) {
                                 Log.d(TAG, "Manga details: " + mManga.toString());
-                                getHelper().getMangaRunDao().update(response);
+                                UpdateBuilder<Manga, String> updateBuilder = getHelper().getMangaRunDao().updateBuilder();
+                                try {
+                                    updateBuilder.where().eq(Manga.ID_COLUMN_NAME, response._id);
+                                    updateBuilder.updateColumnValue(Manga.NUMBER_CHAPTERS_COLUMN_NAME, response.numberChapters);
+                                    updateBuilder.update();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
                                 mManga = response;
                             }
                         },

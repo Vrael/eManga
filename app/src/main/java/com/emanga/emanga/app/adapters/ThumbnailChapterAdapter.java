@@ -82,7 +82,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
         Chapter chapter = getItem(position);
 
         // if it's not recycled, initialize some attributes
-    	if (convertView == null) {  
+    	if (convertView == null) {
     		convertView = LayoutInflater.from(mContext).inflate(R.layout.thumbnail_item, parent, false);
     		
     		holder = new ViewHolder();
