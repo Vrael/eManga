@@ -268,7 +268,7 @@ public class MangaListFragment extends ListFragment {
 					int arg3) {
 				
 				Filter filter = mAdapter.getFilter();
-				filter.filter(text.toString().replaceAll("[^a-zA-ZñÑ0-9]",""));
+				filter.filter(text.toString().replaceAll("[^a-zA-ZñÑ0-9 ]",""));
 				mAdapter.notifyDataSetChanged();
 			}
         });
