@@ -224,7 +224,7 @@ public class MangaListFragment extends ListFragment {
         TextView tv = new TextView(getActivity());
         tv.setId(android.R.id.empty);
         tv.setGravity(Gravity.CENTER);
-        tv.setText("No se encontraron resultados");
+        tv.setText(getString(R.string.search_not_found));
         root.addView(tv, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         

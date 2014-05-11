@@ -33,6 +33,7 @@
 
     <!-- Search Messages -->
     <string name="search">Search Manga</string>
+    <string name="search_not_found">Manga not found. Try different</string>
 
     <!-- Date labels -->
     <string name="date_today_label">Today</string>
