@@ -22,12 +22,11 @@ import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.models.Page;
 import com.emanga.emanga.app.requests.ChapterRequest;
-import com.emanga.emanga.app.requests.MangaRequest;
 import com.emanga.emanga.app.utils.CustomViewPager;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -67,28 +66,6 @@ public class ReaderActivity extends OrmliteFragmentActivity {
             mChapter = (Chapter) getIntent().getExtras().get(ACTION_OPEN_CHAPTER);
             mManga = mChapter.manga;
 
-            if(mManga.numberChapters == 0){
-                App.getInstance().addToRequestQueue(new MangaRequest(Request.Method.GET,
-                        Internet.HOST + "manga/" + mManga._id,
-                        new Response.Listener<Manga>(){
-                            @Override
-                            public void onResponse(Manga response) {
-                                Log.d(TAG, "Manga details: " + mManga.toString());
-                                UpdateBuilder<Manga, String> updateBuilder = getHelper().getMangaRunDao().updateBuilder();
-                                try {
-                                    updateBuilder.where().eq(Manga.ID_COLUMN_NAME, response._id);
-                                    updateBuilder.updateColumnValue(Manga.NUMBER_CHAPTERS_COLUMN_NAME, response.numberChapters);
-                                    updateBuilder.update();
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
-                                }
-                                mManga = response;
-                            }
-                        },
-                        null
-                ), "Manga info");
-            }
-
             try {
                 // Query for the last page read
                 QueryBuilder<Page, String> qBp = getHelper()
@@ -118,7 +95,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 
 		mAdapter = new ImagePagerAdapter(getSupportFragmentManager());
 		mPager.setAdapter(mAdapter);
-		
+
 		mPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
             @Override
@@ -130,20 +107,13 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 				Page page = mAdapter.pages.get(position);
                 Log.d(TAG, "Saving " + page.number + " as mark");
                 page.read = new Date();
-                getHelper().getPageRunDao().createOrUpdate(page);
+                new SaveMark().execute(page);
 
                 if(mChapter.number < mManga.numberChapters){
                     // When only rest 5 pages for the end, it loads the next chapter
                     // Position begins from 0 whereas that size() does it from 1
                     if((mAdapter.pages.size() - 1) - position < 5 && !asked ){
                         askChapter(mChapter.number + 1);
-                    }
-                } else {
-                    // First page of last chapter
-                    if((mAdapter.pages.size() - 1) - position == (mChapter.pages.size() - 1)){
-                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.messasge_last_chapter), Toast.LENGTH_LONG).show();
-                    } else if((mAdapter.pages.size() - 1) - position < 1){  // Last page of the last chapter
-                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.messasge_last_page_last_chapter), Toast.LENGTH_LONG).show();
                     }
                 }
 			}
@@ -227,8 +197,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
-                        Log.d(TAG, "Error in response!");
-                        Log.d(TAG, volleyError.toString());
+                        Log.e(TAG, "Response error:\n" + volleyError.toString());
                         Notification.errorMessage(activity,
                                 getResources().getString(R.string.volley_error_title),
                                 getResources().getString(R.string.volley_error_body),
@@ -236,12 +205,23 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                         asked = false;
                     }
                 });
-        request.setTag("Request pages for chapter " + number);
+
         request.setRetryPolicy(new DefaultRetryPolicy(
             2 * 60 * 1000,
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         );
-        App.getInstance().mRequestQueue.add(request);
+
+        App.getInstance().addToRequestQueue(request, "Pages for chapter " + number);
+    }
+
+    class SaveMark extends AsyncTask<Page,Void,Void>{
+        private RuntimeExceptionDao<Page,String> dao = getHelper().getPageRunDao();
+
+        @Override
+        protected Void doInBackground(Page... pages) {
+            dao.createOrUpdate(pages[0]);
+            return null;
+        }
     }
 }

@@ -29,7 +29,6 @@ public class CoverListener implements ImageLoader.ImageListener {
     private HashSet<String> mUrlError;
     private int mRetries = 3;
     private ImageView mImageView;
-    private String url;
 
     public CoverListener(Manga manga, ImageView imageView){
         mManga = manga;
