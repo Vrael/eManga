@@ -13,10 +13,18 @@ import android.widget.TextView;
 public class DoubleTapTextView extends TextView {
     public static final String TAG = DoubleTapTextView.class.getSimpleName();
 
+    private int mLines;
+
     protected GestureDetector mGestureDetector;
 
     public DoubleTapTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        String lines = attrs.getAttributeValue("http://schemas.android.com/apk/res/android", "lines");
+        if(lines != null){
+            mLines = Integer.valueOf(lines);
+        }
+
         mGestureDetector = new GestureDetector(context, new GestureListener());
     }
 
@@ -35,10 +43,10 @@ public class DoubleTapTextView extends TextView {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             Log.d(TAG, "Double tap on description" );
-            if(getLineCount() == 4){
+            if(getLineCount() == mLines){
                 setMaxLines(Integer.MAX_VALUE);
             } else {
-                setLines(4);
+                setLines(mLines);
             }
 
             return true;
