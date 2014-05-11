@@ -150,6 +150,10 @@ public class MangaListFragment extends ListFragment {
                                         getHelper().updateMangaFTS();
                                         return null;
                                     }
+                                    @Override
+                                    protected void onPostExecute(Void aVoid) {
+                                        mAdapter.swapCursor(getHelper().getMangasWithGenres());
+                                    }
                                 }.execute();
                             }
                         },
@@ -169,11 +173,6 @@ public class MangaListFragment extends ListFragment {
                 App.getInstance().addToRequestQueue(latestChaptersRequest,"Latest Chapters");
 
                 return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                mAdapter.swapCursor(getHelper().getMangasWithGenres());
             }
         }.execute();
 

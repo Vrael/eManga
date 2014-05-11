@@ -86,6 +86,7 @@ implements SectionIndexer {
             mAlphaIndexer = new AlphabetIndexer(c, c.getColumnIndex(Manga.TITLE_COLUMN_NAME),
                     " -0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         }
+        notifyDataSetChanged();
         return super.swapCursor(c);
     }
 

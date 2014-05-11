@@ -85,6 +85,10 @@ public class ChapterPageFragment extends OrmliteFragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 final CustomImageListener customImageListener = this;
+                Log.d(TAG, "Ask new page to: " + Internet.HOST + "manga/" + mPage.chapter.manga._id
+                        + "/chapter/" + mPage.chapter._id
+                        + "/page/" + mPage._id
+                        + "?urls[]=" + mPage.url);
                 PageRequest pageRequest = new PageRequest(
                         Request.Method.GET,
                         Internet.HOST + "manga/" + mPage.chapter.manga._id
