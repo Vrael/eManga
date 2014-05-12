@@ -45,7 +45,7 @@
                     android:text="TITLE"
                     android:textAllCaps="true"
                     android:textStyle="bold"
-                    android:textSize="24sp"
+                    android:textSize="22sp"
                     android:layout_alignTop="@id/manga_cover"
                     android:layout_toRightOf="@id/manga_cover"
                     android:paddingRight="20dp"/>
