@@ -36,5 +36,5 @@ dependencies {
     compile 'com.mcxiaoke.volley:library:1.0.1@jar'
     compile 'com.jakewharton:disklrucache:2.0.2@jar'
     compile 'commons-lang:commons-lang:2.6'
-    compile 'com.github.chrisbanes.photoview:library:1.2.2@jar'
+    compile 'com.github.chrisbanes.photoview:library:1.2.3'
 }

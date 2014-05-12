@@ -10,14 +10,13 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
-import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
 import com.emanga.emanga.app.models.Page;
 import com.emanga.emanga.app.requests.PageRequest;
 import com.emanga.emanga.app.utils.Internet;
-import com.emanga.emanga.app.utils.PhotoViewAttacher;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import java.util.HashSet;
@@ -26,31 +25,30 @@ import java.util.HashSet;
  * Created by Ciro on 12/05/2014.
  */
 public class PageListener implements ImageLoader.ImageListener {
-    private String TAG = CoverListener.class.getSimpleName();
+    private String TAG = PageListener.class.getSimpleName();
 
     private Page mPage;
 
-    private PhotoViewAttacher mAttacher;
     private ImageView mImageView;
     private ProgressBar mProgressBar;
+
+    private ReaderActivity mActivity;
 
     private HashSet<String> mUrlError;
     private int mRetries = 3;
 
-    public PageListener(Page page, ImageView imageView, PhotoViewAttacher attacher, ProgressBar progressBar){
+    public PageListener(Page page, ImageView imageView,
+                        ProgressBar progressBar, ReaderActivity activity){
         mPage = page;
         mImageView = imageView;
-        mAttacher = attacher;
         mProgressBar = progressBar;
+        mActivity = activity;
     }
 
     @Override
     public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
         if (response.getBitmap() != null) {
             mImageView.setImageBitmap(response.getBitmap());
-            mAttacher = new PhotoViewAttacher(mImageView);
-            mAttacher.setZoomable(true);
-            mAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
             mProgressBar.setVisibility(View.GONE);
             mImageView.setVisibility(View.VISIBLE);
         }
@@ -103,10 +101,8 @@ public class PageListener implements ImageLoader.ImageListener {
                                             }
                                             else {
                                                 Log.e(TAG, "There aren't url alternatives for: " + mPage.number);
-                                                mProgressBar.setVisibility(View.GONE);
-                                                mImageView.setVisibility(View.VISIBLE);
-                                                mImageView.setScaleType(ImageView.ScaleType.CENTER);
-                                                mImageView.setImageResource(R.drawable.error);
+                                                mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                                                mActivity.mAdapter.notifyDataSetChanged();
                                             }
                                         }
                                     },
@@ -116,7 +112,10 @@ public class PageListener implements ImageLoader.ImageListener {
                     );
                     mRetries--;
                 } else {
-                    Log.d(TAG, "Reached maximum intents number for ask a new page with: " + mPage.url);
+                    Log.d(TAG, "Reached maximum intents number for ask a new page with: " + mPage.url
+                            + "\nRemoving this page from adapter");
+                    mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                    mActivity.mAdapter.notifyDataSetChanged();
                 }
                 return null;
             }

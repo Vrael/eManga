@@ -1,6 +1,5 @@
 package com.emanga.emanga.app.fragments;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,11 +9,14 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.database.OrmliteFragment;
 import com.emanga.emanga.app.listeners.PageListener;
 import com.emanga.emanga.app.models.Page;
-import com.emanga.emanga.app.utils.PhotoViewAttacher;
+
+import uk.co.senab.photoview.PhotoViewAttacher;
+
 
 // import uk.co.senab.photoview.PhotoViewAttacher;
 
@@ -29,7 +31,8 @@ public class ChapterPageFragment extends OrmliteFragment {
     private ImageView mImageView;
     private ProgressBar mProgressBar;
     private Page mPage;
-    private Activity mActivity;
+
+    private ImageView preLoad;
 
     public static ChapterPageFragment newInstance(Page page) {
         final ChapterPageFragment f = new ChapterPageFragment();
@@ -46,7 +49,6 @@ public class ChapterPageFragment extends OrmliteFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPage = getArguments() != null ? (Page) getArguments().getParcelable(PAGE) : null;
-        mActivity = getActivity();
     }
     
     @Override
@@ -59,20 +61,31 @@ public class ChapterPageFragment extends OrmliteFragment {
         Log.d(TAG, "Page url: " + mPage.url);
 
         ImageCacheManager.getInstance().getImageLoader().get(mPage.url,
-                new PageListener(mPage, mImageView, mAttacher, mProgressBar));
+                new PageListener(mPage, mImageView, mProgressBar,
+                        (ReaderActivity) getActivity()));
 
         return view;
     }
 
-    public void onResume(){
+    public void onStart(){
+        mAttacher = new PhotoViewAttacher(mImageView);
+        mAttacher.setZoomable(true);
+        mAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
         super.onStart();
+    }
+
+    public void onResume(){
         if(mAttacher != null)
             mAttacher.update();
+
+        super.onStart();
     }
 
     public void onPause(){
-        super.onPause();
         if (mAttacher != null)
             mAttacher.cleanup();
+
+        super.onPause();
     }
 }

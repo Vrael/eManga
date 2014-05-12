@@ -3,9 +3,6 @@ package com.emanga.emanga.app.activities;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.widget.Toast;
@@ -15,9 +12,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.adapters.ImagePagerAdapter;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.OrmliteFragmentActivity;
-import com.emanga.emanga.app.fragments.ChapterPageFragment;
 import com.emanga.emanga.app.models.Chapter;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.models.Page;
@@ -30,7 +27,6 @@ import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.LinkedList;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -52,7 +48,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
     private Page mark;
 	private Chapter mChapter;
     private Manga mManga;
-	private ImagePagerAdapter mAdapter;
+	public ImagePagerAdapter mAdapter;
 	private CustomViewPager mPager;
 
     private ChapterRequest request;
@@ -124,25 +120,6 @@ public class ReaderActivity extends OrmliteFragmentActivity {
         });
 	}
 
-	// Adapter for fragments which contains the ImageViews children
-    private static class ImagePagerAdapter extends FragmentStatePagerAdapter {
-        public LinkedList<Page> pages = new LinkedList<Page>();
-
-        public ImagePagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public int getCount() {
-            return pages.size();
-        }
-        
-        @Override
-        public Fragment getItem(int position) {
-            return ChapterPageFragment.newInstance(pages.get(position));
-        }
-    }
-	
 	@Override
 	public void onDestroy(){
         super.onDestroy();
