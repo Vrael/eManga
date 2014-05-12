@@ -311,6 +311,19 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         dialog.show();
 
+        // Show keyboard automatically
+        inputNumber.requestFocus();
+        inputNumber.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                InputMethodManager keyboard = (InputMethodManager)
+                        getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                keyboard.showSoftInput(inputNumber, 0);
+            }
+
+        },200);
+
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                 .setOnClickListener(new View.OnClickListener() {
             @Override
@@ -336,7 +349,6 @@ public class MangaDetailFragment extends OrmliteFragment {
                     @Override
                     public void onClick(View view) {
                         // Hide the keyboard if it is active
-                        // if(inputSearch.isActivated()){
                         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                                 Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(inputNumber.getWindowToken(), 0);

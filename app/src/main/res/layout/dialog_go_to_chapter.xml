@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         android:maxLength="3"
-        android:hint="eg: 12"
+        android:hint="@string/go_to_chapter_input_hint"
         android:layout_centerVertical="true" />
 
     <TextView

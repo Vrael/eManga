@@ -42,6 +42,7 @@
     <!-- Dialogs -->
     <string name="go_to_chapter_label">Ir al capítulo</string>
     <string name="go_to_chapter_button_go">Ir</string>
+    <string name="go_to_chapter_input_hint">ej: 2</string>
 
     <!-- Info messages -->
     <string name="messasge_last_chapter">Este es el último capítulo disponible!</string>
