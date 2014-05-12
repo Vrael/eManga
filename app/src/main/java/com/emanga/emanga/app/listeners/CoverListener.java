@@ -68,6 +68,7 @@ public class CoverListener implements ImageLoader.ImageListener {
 
     @Override
     public void onErrorResponse(VolleyError error) {
+        final CoverListener listenerReference = this;
         new AsyncTask<Void,Void,Void>(){
 
             @Override
@@ -94,7 +95,9 @@ public class CoverListener implements ImageLoader.ImageListener {
                                                     mManga.cover = response.cover;
 
                                                     // Reload image
-                                                    ImageCacheManager.getInstance().getImage(mManga.cover, mImageView, new CoverListener(mManga, mImageView, --mRetries));
+                                                    ImageCacheManager.getInstance().getImage(mManga.cover, mImageView, listenerReference);
+
+                                                    // Update database
                                                     DatabaseHelper dbs = OpenHelperManager.getHelper(
                                                             App.getInstance().getApplicationContext(),
                                                             DatabaseHelper.class);
