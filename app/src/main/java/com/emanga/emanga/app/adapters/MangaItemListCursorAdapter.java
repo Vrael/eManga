@@ -61,6 +61,8 @@ implements SectionIndexer {
         holder.cover = (CustomNetworkImageView) convertView.findViewById(R.id.manga_list_cover);
         holder.categories = (TextView) convertView.findViewById(R.id.manga_list_categories);
 
+        holder.cover.setErrorImageResId(R.drawable.empty_cover);
+
         convertView.setTag(holder);
         return convertView;
     }

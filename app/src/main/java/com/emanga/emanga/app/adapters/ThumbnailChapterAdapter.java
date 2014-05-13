@@ -90,7 +90,8 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
             holder.title = (TextView) convertView.findViewById(R.id.thumb_title);
             holder.number = (TextView) convertView.findViewById(R.id.thumb_number);
     		holder.cover = (CustomNetworkImageView) convertView.findViewById(R.id.thumb_cover);
-    		
+    		holder.cover.setErrorImageResId(R.drawable.empty_cover);
+
     		convertView.setTag(holder);
 		} else {
 		    holder = (ViewHolder) convertView.getTag();

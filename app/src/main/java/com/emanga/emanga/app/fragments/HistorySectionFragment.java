@@ -115,6 +115,7 @@ public class HistorySectionFragment extends OrmliteFragment {
                 holder.date = (TextView) convertView.findViewById(R.id.thumb_read_date);
                 holder.number = (TextView) convertView.findViewById(R.id.thumb_read_number);
                 holder.cover = (CustomNetworkImageView) convertView.findViewById(R.id.thumb_read_cover);
+                holder.cover.setErrorImageResId(R.drawable.empty_cover);
 
                 convertView.setTag(holder);
             } else {

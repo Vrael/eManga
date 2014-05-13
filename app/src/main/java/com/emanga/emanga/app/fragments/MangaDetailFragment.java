@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -32,6 +31,7 @@ import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.GenreManga;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangaRequest;
+import com.emanga.emanga.app.utils.CustomNetworkImageView;
 import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.Notification;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -162,7 +162,7 @@ public class MangaDetailFragment extends OrmliteFragment {
     private static class ViewHolder {
         TextView title;
         TextView author;
-        ImageView cover;
+        CustomNetworkImageView cover;
         TextView numberChapters;
         TextView percent;
         TextView last_read;
@@ -176,7 +176,8 @@ public class MangaDetailFragment extends OrmliteFragment {
     private void updateValues(){
         holder.numberChapters.setText(manga.numberChapters + "");
 
-        ImageCacheManager.getInstance().getImage(manga.cover, holder.cover, new CoverListener(manga,holder.cover));
+        holder.cover.setImageUrl(manga.cover,ImageCacheManager.getInstance().getImageLoader(),
+                new CoverListener(manga,holder.cover));
 
         if(!request.hasHadResponseDelivered()){
             holder.summary.setText(
@@ -235,7 +236,7 @@ public class MangaDetailFragment extends OrmliteFragment {
             holder.title = (TextView) rootView.findViewById(R.id.manga_title);
             holder.author = (TextView) rootView.findViewById(R.id.manga_author);
             holder.numberChapters = (TextView) rootView.findViewById(R.id.manga_chapters);
-            holder.cover = (ImageView) rootView.findViewById(R.id.manga_cover);
+            holder.cover = (CustomNetworkImageView) rootView.findViewById(R.id.manga_cover);
             holder.percent = (TextView) rootView.findViewById(R.id.manga_read);
             holder.last_read = (TextView) rootView.findViewById(R.id.manga_last_read_date);
             holder.genres = (TableLayout) rootView.findViewById(R.id.manga_categories_table);
@@ -243,6 +244,8 @@ public class MangaDetailFragment extends OrmliteFragment {
             holder.resume = (ImageButton) rootView.findViewById(R.id.manga_button_continue);
             holder.start = (ImageButton) rootView.findViewById(R.id.manga_button_start);
             holder.go = (ImageButton) rootView.findViewById(R.id.manga_button_go);
+
+            holder.cover.setErrorImageResId(R.drawable.empty_cover);
         }
 
         holder.title.setText(manga.title);
