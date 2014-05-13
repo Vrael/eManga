@@ -105,12 +105,10 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                 page.read = new Date();
                 new SaveMark().execute(page);
 
-                if(mChapter.number < mManga.numberChapters){
-                    // When only rest 5 pages for the end, it loads the next chapter
-                    // Position begins from 0 whereas that size() does it from 1
-                    if((mAdapter.pages.size() - 1) - position < 5 && !asked ){
-                        askChapter(mChapter.number + 1);
-                    }
+                // When only rest 5 pages for the end, it loads the next chapter
+                // Position begins from 0 whereas that size() does it from 1
+                if((mAdapter.pages.size() - 1) - position < 5 && !asked ){
+                    askChapter(mChapter.number + 1);
                 }
 			}
 
@@ -126,6 +124,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
         request.cancel();
 	}
 
+    private int mRetries = 0;
     private void askChapter(final int number){
         asked = true;
         final Activity activity = this;

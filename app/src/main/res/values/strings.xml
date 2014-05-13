@@ -27,6 +27,8 @@
     <string name="not_found_error_body">The chapter was not found. Try later</string>
     <string name="enjoy_reading">Enjoy Reading!</string>
     <string name="chapter_not_found_error">Chapter not found</string>
+    <string name="message_chapter_not_found">Not found chapter</string>
+    <string name="message_reach_maximum_retries">Reached maximum retries. Download stop</string>
 
     <!-- Loading Messages -->
     <string name="loading">Loading&#8230;</string>
@@ -45,7 +47,8 @@
     <string name="go_to_chapter_input_hint">eg: 2</string>
 
     <!-- Info messages -->
-    <string name="messasge_last_chapter">This is the last chapter!</string>
-    <string name="messasge_last_page_last_chapter">This is the last page!</string>
+    <string name="message_last_chapter">This is the last chapter!</string>
+    <string name="message_last_page_last_chapter">This is the last page!</string>
+    <string name="message_chapter_try_load">Next chapter will try load</string>
 
 </resources>

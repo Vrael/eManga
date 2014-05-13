@@ -27,6 +27,9 @@
     <string name="not_found_error_body">El capitulo no se ha encontrado. Prueba más tarde</string>
     <string name="enjoy_reading">¡Disfruta de la lectura!</string>
     <string name="chapter_not_found_error">Capítulo no disponible</string>
+    <string name="message_chapter_not_found">No encontrado capítulo</string>
+    <string name="message_reach_maximum_retries">Alcanzado número máximo de reintentos. Se detiene la descarga</string>
+
 
     <!-- Loading Messages -->
     <string name="loading">Cargando&#8230;</string>
@@ -45,8 +48,8 @@
     <string name="go_to_chapter_input_hint">ej: 2</string>
 
     <!-- Info messages -->
-    <string name="messasge_last_chapter">Este es el último capítulo disponible!</string>
-    <string name="messasge_last_page_last_chapter">Esta es la última página!</string>
-
+    <string name="message_last_chapter">Este es el último capítulo disponible!</string>
+    <string name="message_last_page_last_chapter">Esta es la última página!</string>
+    <string name="message_chapter_try_load">Se intentará cargar el siguiente capítulo</string>
 
 </resources>

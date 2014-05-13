@@ -32,8 +32,6 @@ public class ChapterPageFragment extends OrmliteFragment {
     private ProgressBar mProgressBar;
     private Page mPage;
 
-    private ImageView preLoad;
-
     public static ChapterPageFragment newInstance(Page page) {
         final ChapterPageFragment f = new ChapterPageFragment();
         final Bundle args = new Bundle();
