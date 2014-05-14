@@ -115,17 +115,17 @@ public class LatestSectionFragment extends OrmliteFragment {
                     @Override
                     public void onResponse(final Manga[] mangas){
                         Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                        mActivity.setProgress(35);
+                        mActivity.setProgressBar(35);
                         for(Manga m: mangas){
                             mAdapter.addChapters(m.chapters);
                         }
                         mAdapter.notifyDataSetChanged();
-                        mActivity.setProgress(80);
+                        mActivity.setProgressBar(80);
                         new AsyncTask<Void,Void,Void>(){
                             @Override
                             protected Void doInBackground(Void... voids) {
                                 getHelper().saveMangas(mangas);
-                                mActivity.setProgress(100);
+                                mActivity.setProgressBar(100);
                                 return null;
                             }
                         }.execute();
@@ -140,7 +140,7 @@ public class LatestSectionFragment extends OrmliteFragment {
                                 getResources().getString(R.string.volley_error_title),
                                 getResources().getString(R.string.volley_error_body),
                                 R.drawable.sorry);
-                        mActivity.setProgress(100);
+                        mActivity.setProgressBar(100);
                     }
                 });
 
