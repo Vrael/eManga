@@ -124,7 +124,6 @@ public class ReaderActivity extends OrmliteFragmentActivity {
         request.cancel();
 	}
 
-    private int mRetries = 0;
     private void askChapter(final int number){
         asked = true;
         final Activity activity = this;

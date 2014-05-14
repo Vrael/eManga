@@ -9,13 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ProgressBar;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.activities.MainActivity;
 import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.adapters.ThumbnailChapterAdapter;
 import com.emanga.emanga.app.controllers.App;
@@ -46,11 +46,12 @@ public class LatestSectionFragment extends OrmliteFragment {
     public static final String TAG = LatestSectionFragment.class.getSimpleName();
 
     private ThumbnailChapterAdapter mAdapter;
-    private ProgressBar bar;
+    private MainActivity mActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mActivity = ((MainActivity) getActivity());
         mAdapter = new ThumbnailChapterAdapter(getActivity());
 
         String chapterDate = getHelper().lastChapterDate();
@@ -68,8 +69,7 @@ public class LatestSectionFragment extends OrmliteFragment {
             e.printStackTrace();
         }
 
-        bar = (ProgressBar) getActivity().findViewById(R.id.progressbar_background_tasks);
-        bar.setProgress(1);
+        mActivity.setProgressBar(1);
 
         // Load chapters from database
         new AsyncTask<Void,Integer,List<Chapter>>(){
@@ -115,17 +115,17 @@ public class LatestSectionFragment extends OrmliteFragment {
                     @Override
                     public void onResponse(final Manga[] mangas){
                         Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                        bar.setProgress(35);
+                        mActivity.setProgress(35);
                         for(Manga m: mangas){
                             mAdapter.addChapters(m.chapters);
                         }
                         mAdapter.notifyDataSetChanged();
-                        bar.setProgress(80);
+                        mActivity.setProgress(80);
                         new AsyncTask<Void,Void,Void>(){
                             @Override
                             protected Void doInBackground(Void... voids) {
                                 getHelper().saveMangas(mangas);
-                                bar.setProgress(100);
+                                mActivity.setProgress(100);
                                 return null;
                             }
                         }.execute();
@@ -140,7 +140,7 @@ public class LatestSectionFragment extends OrmliteFragment {
                                 getResources().getString(R.string.volley_error_title),
                                 getResources().getString(R.string.volley_error_body),
                                 R.drawable.sorry);
-                        bar.setProgress(100);
+                        mActivity.setProgress(100);
                     }
                 });
 
@@ -150,8 +150,7 @@ public class LatestSectionFragment extends OrmliteFragment {
                         DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
         );
 
-        latestChaptersRequest.setTag("Request: Latest Chapters");
-        App.getInstance().mRequestQueue.add(latestChaptersRequest);
+        App.getInstance().addToRequestQueue(latestChaptersRequest, "Latest Chapters");
     }
 
     @Override
@@ -189,5 +188,11 @@ public class LatestSectionFragment extends OrmliteFragment {
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        mActivity = ((MainActivity) getActivity());
     }
 }

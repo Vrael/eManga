@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.widget.ProgressBar;
 
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.fragments.HistorySectionFragment;
@@ -25,8 +26,9 @@ public class MainActivity extends FragmentActivity
 	
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
-	
-	/**
+    private ProgressBar mProgressBar;
+
+    /**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
      * previously being shut down then this Bundle contains the data it most 
@@ -46,6 +48,8 @@ public class MainActivity extends FragmentActivity
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
         mViewPager = (ViewPager) findViewById(R.id.pager);
+        mProgressBar = (ProgressBar) findViewById(R.id.progressbar_background_tasks);
+
         mViewPager.setAdapter(mAppSectionsPagerAdapter);
         
         // 3 Tabs: New, Library, Read
@@ -155,5 +159,9 @@ public class MainActivity extends FragmentActivity
 					.commit();
 		}
 	}
+
+    public void setProgressBar(int number){
+        mProgressBar.setProgress(number);
+    }
 }
 
