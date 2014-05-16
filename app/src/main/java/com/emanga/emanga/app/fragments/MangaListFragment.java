@@ -10,7 +10,6 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +17,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.FilterQueryProvider;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -91,6 +89,7 @@ public class MangaListFragment extends ListFragment {
 	};
 
 	private EditText inputSearch;
+    private TextView emptyText;
 	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
@@ -153,6 +152,10 @@ public class MangaListFragment extends ListFragment {
                                     @Override
                                     protected void onPostExecute(Void aVoid) {
                                         mAdapter.swapCursor(getHelper().getMangasWithGenres());
+                                        // It database was empty, empty text shows a loading message
+                                        if(emptyText != null){
+                                            emptyText.setText(R.string.search_not_found);
+                                        }
                                     }
                                 }.execute();
                             }
@@ -204,43 +207,16 @@ public class MangaListFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-    	
-    	Context context = getActivity();
-    	LinearLayout root = new LinearLayout(context);
-    	root.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        
-        root.setOrientation(LinearLayout.VERTICAL);
-    	
-        // Search input
-    	inputSearch = new EditText(getActivity());
 
-    	inputSearch.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_search,0,0,0);
-    	inputSearch.setHint(getResources().getString(R.string.search));
-    	root.addView(inputSearch, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-    	
-    	// Message when list is empty
-        TextView tv = new TextView(getActivity());
-        tv.setId(android.R.id.empty);
-        tv.setGravity(Gravity.CENTER);
-        tv.setText(getString(R.string.search_not_found));
-        root.addView(tv, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        
-        // ListView with the mangas
-        ListView lv = new ListView(getActivity());
-        lv.setId(android.R.id.list);
-        lv.setDrawSelectorOnTop(false);
-        lv.setVerticalScrollBarEnabled(false);
-        lv.setFastScrollEnabled(true);
-        lv.setScrollingCacheEnabled(true);
-        lv.setEmptyView(tv);
+        View view = inflater.inflate(R.layout.manga_fragment_list, container, false);
 
-        root.addView(lv, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    	inputSearch = (EditText) view.findViewById(R.id.search_box);
+        if(databaseHelper.getMangaRunDao().countOf() == 0){
+            emptyText = (TextView) view.findViewById(android.R.id.empty);
+            emptyText.setText(R.string.loading);
+        }
 
-    	return root;
+    	return view;
     }
 
 	@Override

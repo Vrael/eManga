@@ -15,9 +15,6 @@
     <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
 
     <string name="title_activity_reader">Reader</string>
-    
-    <string name="search_hint">Search manga</string>
-    <string name="list_empty">No Results</string>
 
     <!-- Error Messages -->
     <string name="volley_error_title">Connectivity issue</string>
@@ -34,8 +31,8 @@
     <string name="loading">Loading&#8230;</string>
 
     <!-- Search Messages -->
-    <string name="search">Search Manga</string>
-    <string name="search_not_found">Manga not found. Try different</string>
+    <string name="search_hint">Search manga</string>
+    <string name="search_not_found">No Results</string>
 
     <!-- Date labels -->
     <string name="date_today_label">Today</string>
