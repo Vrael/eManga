@@ -1,8 +1,8 @@
 package com.emanga.emanga.app.views;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.TextView;
@@ -42,10 +42,11 @@ public class DoubleTapTextView extends TextView {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            Log.d(TAG, "Double tap on description" );
-            if(getLineCount() == mLines){
+            if(getLineCount() <= mLines){
+                setEllipsize(null);
                 setMaxLines(Integer.MAX_VALUE);
             } else {
+                setEllipsize(TextUtils.TruncateAt.END);
                 setLines(mLines);
             }
 

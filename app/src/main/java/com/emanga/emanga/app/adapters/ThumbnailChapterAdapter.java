@@ -39,7 +39,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
 	
 	private Comparator<Chapter> mComparator; 
 	
-	private static DateFormat df = DateFormat.getDateInstance(DateFormat.DEFAULT, new Locale("es"));
+	private static DateFormat df = DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault());
 	
     public ThumbnailChapterAdapter(Context c) {
         mContext = c;
@@ -64,12 +64,7 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     public long getItemId(int position) {
         return position;
     }
-    
-    public void setChapters(List<Chapter> list) {
-    	chapters = list;
-    	notifyDataSetChanged();
-    }
-    
+
     public void addChapters(Collection<Chapter> list) {
     	chapters.addAll(list);
     	Collections.sort(chapters, mComparator);

@@ -62,7 +62,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			
 			// Table for search using fts3: Ormlite doesn't support it yet
 			// The table has same data that cursor manga list on library tab
-			db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts4(_id, title, cover, name)");
+            if (android.os.Build.VERSION.SDK_INT >= 11) {
+                db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts4(_id, title, cover, name)");
+            } else {
+                db.execSQL("CREATE VIRTUAL TABLE manga_fts USING fts3(_id, title, cover, name)");
+            }
 			
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);

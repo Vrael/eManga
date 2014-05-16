@@ -1,15 +1,16 @@
 package com.emanga.emanga.app.activities;
 
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.app.FragmentTransaction;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.app.ActionBarActivity;
 import android.widget.ProgressBar;
 
 import com.emanga.emanga.app.R;
@@ -19,7 +20,7 @@ import com.emanga.emanga.app.fragments.LibrarySectionFragment;
 import com.emanga.emanga.app.fragments.MangaDetailFragment;
 import com.emanga.emanga.app.fragments.MangaListFragment;
 
-public class MainActivity extends FragmentActivity
+public class MainActivity extends ActionBarActivity
 	implements ActionBar.TabListener, MangaListFragment.Callbacks {
 	
 	private static final String TAG = MainActivity.class.getName();
@@ -38,11 +39,11 @@ public class MainActivity extends FragmentActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
         
         // Home button navigates to main activity
-        final ActionBar actionBar = getActionBar();
+        final ActionBar actionBar = getSupportActionBar();
         // actionBar.setHomeButtonEnabled(false);
         // Specify that tabs should be displayed in the action bar.
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);

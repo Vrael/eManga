@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="120dp"
     android:padding="8dip"
-    android:background="?android:attr/activatedBackgroundIndicator" >
+    android:background="@drawable/selectable_background_emanga" >
 
     <com.emanga.emanga.app.utils.CustomNetworkImageView
         android:id="@+id/manga_list_cover"

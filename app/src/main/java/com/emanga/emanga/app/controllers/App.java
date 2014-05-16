@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -33,12 +34,24 @@ public class App extends Application {
 
     @Override
 	public void onCreate() {
+
 		super.onCreate();
 		Log.d(TAG, "Init eManga app");
 
         sInstance = this;
         mRequestQueue = (SmartRequestQueue) Volley.newRequestQueue(this);
-        mMapper = new ObjectMapper();
+        new AsyncTask<Void,Void,Void>(){
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                mRequestQueue.stopNetworkRequest();
+                mMapper = new ObjectMapper();
+                mRequestQueue.startNetworkRequest();
+                return null;
+            }
+
+        }.execute();
+
 
         ImageCacheManager.getInstance().init(this,
                 this.getPackageCodePath()

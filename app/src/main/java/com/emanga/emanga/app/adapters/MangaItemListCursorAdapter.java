@@ -56,7 +56,7 @@ implements SectionIndexer {
         View convertView = mInflater.inflate(R.layout.manga_item_list, parent, false);
 
         final ViewHolder holder = new ViewHolder();
-        ;
+
         holder.title = (TextView) convertView.findViewById(R.id.manga_list_title);
         holder.cover = (CustomNetworkImageView) convertView.findViewById(R.id.manga_list_cover);
         holder.categories = (TextView) convertView.findViewById(R.id.manga_list_categories);

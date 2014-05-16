@@ -166,7 +166,7 @@
     </ScrollView>
 
     <LinearLayout android:id="@+id/footer" android:layout_width="match_parent"
-                  android:layout_height="?android:attr/actionBarSize" android:orientation="horizontal"
+                  android:layout_height="50dp" android:orientation="horizontal"
                   android:layout_alignParentBottom="true" style="@style/ActionBar.Solid.Emanga">
 
         <ImageButton
