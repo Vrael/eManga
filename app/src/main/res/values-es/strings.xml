@@ -36,7 +36,7 @@
 
     <!-- Search Messages -->
     <string name="search">Buscar Manga</string>
-    <string name="search_not_found">No se encontró el Manga</string>
+    <string name="search_not_found">No se encontró el Manga.\nPrueba con otra búsqueda.</string>
 
     <!-- Date labels -->
     <string name="date_today_label">Hoy</string>

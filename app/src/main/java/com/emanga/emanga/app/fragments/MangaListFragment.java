@@ -226,7 +226,7 @@ public class MangaListFragment extends ListFragment {
         tv.setGravity(Gravity.CENTER);
         tv.setText(getString(R.string.search_not_found));
         root.addView(tv, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         
         // ListView with the mangas
         ListView lv = new ListView(getActivity());
