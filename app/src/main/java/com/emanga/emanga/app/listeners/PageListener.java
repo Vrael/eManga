@@ -101,7 +101,11 @@ public class PageListener implements ImageLoader.ImageListener {
                                             }
                                             else {
                                                 Log.e(TAG, "There aren't url alternatives for: " + mPage.number);
-                                                mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                                                if (android.os.Build.VERSION.SDK_INT >= 9) {
+                                                    mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                                                } else {
+                                                    mActivity.mAdapter.pages.remove(mPage);
+                                                }
                                                 mActivity.mAdapter.notifyDataSetChanged();
                                             }
                                         }
@@ -114,7 +118,11 @@ public class PageListener implements ImageLoader.ImageListener {
                 } else {
                     Log.d(TAG, "Reached maximum intents number for ask a new page with: " + mPage.url
                             + "\nRemoving this page from adapter");
-                    mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                    if (android.os.Build.VERSION.SDK_INT >= 9) {
+                        mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                    } else {
+                        mActivity.mAdapter.pages.remove(mPage);
+                    }
                     mActivity.mAdapter.notifyDataSetChanged();
                 }
                 return null;

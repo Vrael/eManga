@@ -10,7 +10,6 @@ import android.widget.Toast;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.adapters.ImagePagerAdapter;
 import com.emanga.emanga.app.controllers.App;
@@ -21,7 +20,6 @@ import com.emanga.emanga.app.models.Page;
 import com.emanga.emanga.app.requests.ChapterRequest;
 import com.emanga.emanga.app.utils.CustomViewPager;
 import com.emanga.emanga.app.utils.Internet;
-import com.emanga.emanga.app.utils.Notification;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 
@@ -169,17 +167,7 @@ public class ReaderActivity extends OrmliteFragmentActivity {
                         }
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        Log.e(TAG, "Response error:\n" + volleyError.toString());
-                        Notification.errorMessage(activity,
-                                getResources().getString(R.string.volley_error_title),
-                                getResources().getString(R.string.volley_error_body),
-                                R.drawable.nooo);
-                        asked = false;
-                    }
-                });
+                null);
 
         request.setRetryPolicy(new DefaultRetryPolicy(
             2 * 60 * 1000,
