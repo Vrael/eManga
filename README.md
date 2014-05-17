@@ -1,25 +1,31 @@
-eManga
+Mangapp
 ======
 
-![alt text](https://raw.github.com/Vrael/eManga/master/eManga.png "eManga print screen")
+![alt text](https://raw.github.com/Vrael/Mangapp/master/Mangapp.png "Mangapp print screen")
 
 #Overview
-eManga is an Android application where you can read your favourites mangas. 
+Mangapp is an Android application where you can read your favourites mangas. 
 
-This application doesn't contains any manga by default. All mangas are get from public internet sources and they can be consulted from any browser. So you will need to use internet for a full experience. 
+This application doesn't contain any manga by default. All mangas are loaded from public internet sources and they can be consulted from any browser. So you will need to use internet for a full experience. 
 
-This app will search instead you the mangas and then it will show you easily the mangas.
+This app will search mangas instead of you and then it will display you them easily.
 
-eManga is completely public and free. 
+Mangapp is completely public and free. 
 
 #Features
 
-* A big library with many differents mangas
+* A big library with many different mangas
 * A section with latest chapters
-* A function history for you will can continue with a stop read
+* A history to resume the read from last point
 * Special concern in a fast load for pages to guarantee the best experience
 
 #Installation
+
+Google Play:
+
+![alt text](https://raw.github.com/Vrael/Mangapp/master/google_play.png "Mangapp in google play")
+
+Github:
 
 Before to start, you will need download the [dependencies](https://github.com/Vrael/eManga#dependencies). See in dependencies section.
 
