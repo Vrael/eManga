@@ -1,17 +1,21 @@
 package com.emanga.emanga.app.activities;
 
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
-import android.widget.ProgressBar;
+import android.view.Window;
 
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.fragments.HistorySectionFragment;
@@ -23,11 +27,26 @@ import com.emanga.emanga.app.fragments.MangaListFragment;
 public class MainActivity extends ActionBarActivity
 	implements ActionBar.TabListener, MangaListFragment.Callbacks {
 	
-	private static final String TAG = MainActivity.class.getName();
-	
+	public static final String TAG = MainActivity.class.getName();
+	public static final String ACTION_TASK_ENDED = ".taskEnded";
+
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
-    private ProgressBar mProgressBar;
+
+    private BroadcastReceiver mProgressBarReceiver = new BroadcastReceiver() {
+        private int taskEnded;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(TAG + ACTION_TASK_ENDED)){
+                taskEnded++;
+                // 2: LatestChapters sync and Library sync
+                if(taskEnded == 2){
+                    setSupportProgressBarIndeterminateVisibility(false);
+                }
+            }
+        }
+    };
 
     /**
      * Called when the activity is first created.
@@ -38,7 +57,10 @@ public class MainActivity extends ActionBarActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_main);
+        setSupportProgressBarIndeterminate(true);
+        setSupportProgressBarIndeterminateVisibility(true);
 
         mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
         
@@ -49,8 +71,6 @@ public class MainActivity extends ActionBarActivity
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
         mViewPager = (ViewPager) findViewById(R.id.pager);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressbar_background_tasks);
-
         mViewPager.setAdapter(mAppSectionsPagerAdapter);
         
         // 3 Tabs: New, Library, Read
@@ -88,7 +108,7 @@ public class MainActivity extends ActionBarActivity
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
      * sections of the app.
      */
-    public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
+    public final static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
 
     	private Context mContext;
     	
@@ -161,8 +181,19 @@ public class MainActivity extends ActionBarActivity
 		}
 	}
 
-    public void setProgressBar(int number){
-        mProgressBar.setProgress(number);
+    @Override
+    public void onResume(){
+        super.onResume();
+        // Register the receiver again
+        LocalBroadcastManager.getInstance(this).registerReceiver(mProgressBarReceiver,
+                new IntentFilter(TAG + ACTION_TASK_ENDED));
+    }
+
+    @Override
+    protected void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mProgressBarReceiver);
+        super.onPause();
     }
 }
 

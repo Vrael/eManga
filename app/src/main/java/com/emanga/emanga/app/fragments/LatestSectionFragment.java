@@ -3,6 +3,7 @@ package com.emanga.emanga.app.fragments;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,17 +47,15 @@ public class LatestSectionFragment extends OrmliteFragment {
     public static final String TAG = LatestSectionFragment.class.getSimpleName();
 
     private ThumbnailChapterAdapter mAdapter;
-    private MainActivity mActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mActivity = ((MainActivity) getActivity());
         mAdapter = new ThumbnailChapterAdapter(getActivity());
 
         String chapterDate = getHelper().lastChapterDate();
         Date date = null;
-        if(!chapterDate.isEmpty())
+        if(!chapterDate.equals(""))
             date = new Date(Long.valueOf(chapterDate));
 
         try {
@@ -68,8 +67,6 @@ public class LatestSectionFragment extends OrmliteFragment {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-
-        mActivity.setProgressBar(1);
 
         // Load chapters from database
         new AsyncTask<Void,Integer,List<Chapter>>(){
@@ -115,17 +112,19 @@ public class LatestSectionFragment extends OrmliteFragment {
                     @Override
                     public void onResponse(final Manga[] mangas){
                         Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                        mActivity.setProgressBar(35);
                         for(Manga m: mangas){
                             mAdapter.addChapters(m.chapters);
                         }
                         mAdapter.notifyDataSetChanged();
-                        mActivity.setProgressBar(80);
+
+                        // Notify for hide the progressbar
+                        LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+
                         new AsyncTask<Void,Void,Void>(){
                             @Override
                             protected Void doInBackground(Void... voids) {
                                 getHelper().saveMangas(mangas);
-                                mActivity.setProgressBar(100);
                                 return null;
                             }
                         }.execute();
@@ -134,13 +133,16 @@ public class LatestSectionFragment extends OrmliteFragment {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
+                        // Notify for hide the progressbar
+                        LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+
                         Log.e(TAG, "Error in response!");
                         Log.e(TAG, volleyError.toString());
                         Notification.errorMessage(getActivity(),
                                 getResources().getString(R.string.volley_error_title),
                                 getResources().getString(R.string.volley_error_body),
                                 R.drawable.sorry);
-                        mActivity.setProgressBar(100);
                     }
                 });
 
@@ -188,11 +190,5 @@ public class LatestSectionFragment extends OrmliteFragment {
         });
 
         return rootView;
-    }
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        mActivity = ((MainActivity) getActivity());
     }
 }

@@ -1,21 +1,7 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:background="@drawable/main_activity_background" >
-
-    <ProgressBar
-        android:id="@+id/progressbar_background_tasks"
-        android:layout_width="match_parent"
-        android:layout_height="4dp"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:progressDrawable="@drawable/progress_horizontal_emanga"/>
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:tools="http://schemas.android.com/tools"
-        tools:context="com.emanga.emanga.app.activities.MainActivity"/>
-
-</LinearLayout>
+<android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_activity_background"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.emanga.emanga.app.activities.MainActivity"/>

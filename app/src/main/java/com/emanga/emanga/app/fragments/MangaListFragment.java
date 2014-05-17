@@ -2,10 +2,12 @@ package com.emanga.emanga.app.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,6 +27,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.activities.MainActivity;
 import com.emanga.emanga.app.adapters.MangaItemListCursorAdapter;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
@@ -134,7 +137,7 @@ public class MangaListFragment extends ListFragment {
                     e.printStackTrace();
                 }
 
-                MangasRequest latestChaptersRequest = new MangasRequest(
+                MangasRequest mangasRequest = new MangasRequest(
                         Request.Method.GET,
                         Internet.HOST + "mangas/newest?m=" + mangaDate,
                         new Response.Listener<Manga[]>() {
@@ -145,6 +148,11 @@ public class MangaListFragment extends ListFragment {
                                     protected Void doInBackground(Void... voids) {
                                         Log.d(TAG, "Mangas received and parsed: " + mangas.length);
                                         getHelper().saveMangas(mangas);
+
+                                        // Notify for hide the progressbar
+                                        LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                                .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+
                                         Log.d(TAG, "Notify new chapters in the database");
                                         getHelper().updateMangaFTS();
                                         return null;
@@ -164,16 +172,19 @@ public class MangaListFragment extends ListFragment {
                             @Override
                             public void onErrorResponse(VolleyError volleyError) {
                                 Log.e(TAG, volleyError.toString());
+                                // Notify for hide the progressbar
+                                LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                        .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
                             }
                         });
 
-                latestChaptersRequest.setRetryPolicy(new DefaultRetryPolicy(
+                mangasRequest.setRetryPolicy(new DefaultRetryPolicy(
                                 3 * 60 * 1000,
                                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
                 );
 
-                App.getInstance().addToRequestQueue(latestChaptersRequest,"Latest Chapters");
+                App.getInstance().addToRequestQueue(mangasRequest,"Mangas Library");
 
                 return null;
             }
