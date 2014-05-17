@@ -23,7 +23,7 @@ Mangapp is completely public and free.
 
 Google Play:
 
-[![Mangapp](https://raw.githubusercontent.com/Vrael/eManga/master/google_play.png)](https://play.google.com/store/apps/details?id=com.emanga.emanga.app/)
+[![Mangapp](https://raw.githubusercontent.com/Vrael/eManga/master/google_play.png)](https://play.google.com/store/apps/details?id=com.emanga.emanga.app)
 
 Github:
 
