@@ -23,23 +23,17 @@ Mangapp is completely public and free.
 
 Google Play:
 
-![alt text](https://raw.githubusercontent.com/Vrael/eManga/master/google_play.png "Mangapp in google play")
+[![Mangapp](https://raw.githubusercontent.com/Vrael/eManga/master/google_play.png)](https://play.google.com/store/apps/details?id=com.emanga.emanga.app/)
 
 Github:
 
-1. Clone the repository (open a console and write)
-```console
-git clone https://github.com/Vrael/eManga.git
-```
-
-2. Move to eManga folder
-```console
-cd <path_to_folder>/eManga
-```
-
-3. Import the project to Android Studio or IntelliJ or Eclipse
-
-4. Start to develop!
+1. Clone the repository (open a console and write) 
+```git clone https://github.com/Vrael/eManga.git```
+3. Move to eManga folder
+```cd <path_to_folder>/eManga```
+4. Import the project to Android Studio or IntelliJ or Eclipse 
+```File > Import Project > "<path_to_folder>"/eManga```
+5. Start to develop!
 
 This project uses Gradle to manage dependencies automatically.
 
