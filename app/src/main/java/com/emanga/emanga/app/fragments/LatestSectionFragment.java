@@ -119,7 +119,7 @@ public class LatestSectionFragment extends OrmliteFragment {
 
                         // Notify for hide the progressbar
                         LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+                                .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
 
                         new AsyncTask<Void,Void,Void>(){
                             @Override
@@ -135,7 +135,7 @@ public class LatestSectionFragment extends OrmliteFragment {
                     public void onErrorResponse(VolleyError volleyError) {
                         // Notify for hide the progressbar
                         LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+                                .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
 
                         Log.e(TAG, "Error in response!");
                         Log.e(TAG, volleyError.toString());

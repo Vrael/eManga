@@ -28,9 +28,8 @@ public class MainActivity extends ActionBarActivity
 	implements ActionBar.TabListener, MangaListFragment.Callbacks {
 	
 	public static final String TAG = MainActivity.class.getName();
-	public static final String ACTION_TASK_ENDED = ".taskEnded";
+	public static final String ACTION_TASK_ENDED = TAG + ".TASKENDED";
 
-	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
     private ViewPager mViewPager;
 
     private BroadcastReceiver mProgressBarReceiver = new BroadcastReceiver() {
@@ -38,7 +37,7 @@ public class MainActivity extends ActionBarActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(TAG + ACTION_TASK_ENDED)){
+            if(intent.getAction().equals(ACTION_TASK_ENDED)){
                 taskEnded++;
                 // 2: LatestChapters sync and Library sync
                 if(taskEnded == 2){
@@ -62,7 +61,8 @@ public class MainActivity extends ActionBarActivity
         setSupportProgressBarIndeterminate(true);
         setSupportProgressBarIndeterminateVisibility(true);
 
-        mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
+        AppSectionsPagerAdapter mAppSectionsPagerAdapter =
+                new AppSectionsPagerAdapter(getSupportFragmentManager(), this);
         
         // Home button navigates to main activity
         final ActionBar actionBar = getSupportActionBar();
@@ -186,7 +186,7 @@ public class MainActivity extends ActionBarActivity
         super.onResume();
         // Register the receiver again
         LocalBroadcastManager.getInstance(this).registerReceiver(mProgressBarReceiver,
-                new IntentFilter(TAG + ACTION_TASK_ENDED));
+                new IntentFilter(ACTION_TASK_ENDED));
     }
 
     @Override

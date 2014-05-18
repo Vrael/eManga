@@ -151,7 +151,7 @@ public class MangaListFragment extends ListFragment {
 
                                         // Notify for hide the progressbar
                                         LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                                .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+                                                .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
 
                                         Log.d(TAG, "Notify new chapters in the database");
                                         getHelper().updateMangaFTS();
@@ -174,7 +174,7 @@ public class MangaListFragment extends ListFragment {
                                 Log.e(TAG, volleyError.toString());
                                 // Notify for hide the progressbar
                                 LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                        .sendBroadcast(new Intent(MainActivity.TAG + MainActivity.ACTION_TASK_ENDED));
+                                        .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
                             }
                         });
 
