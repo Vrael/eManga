@@ -179,7 +179,7 @@ public class MangaListFragment extends ListFragment {
                         });
 
                 mangasRequest.setRetryPolicy(new DefaultRetryPolicy(
-                                3 * 60 * 1000,
+                                2 * 60 * 1000,
                                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
                 );

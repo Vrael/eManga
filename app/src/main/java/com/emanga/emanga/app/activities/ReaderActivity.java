@@ -118,8 +118,8 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 
 	@Override
 	public void onDestroy(){
-        super.onDestroy();
         request.cancel();
+        super.onDestroy();
 	}
 
     private void askChapter(final int number){

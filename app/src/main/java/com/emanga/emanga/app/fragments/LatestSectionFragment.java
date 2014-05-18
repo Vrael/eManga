@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class LatestSectionFragment extends OrmliteFragment {
 
-    public static final String TAG = LatestSectionFragment.class.getSimpleName();
+    public static final String TAG = LatestSectionFragment.class.getName();
 
     private ThumbnailChapterAdapter mAdapter;
 

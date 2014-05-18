@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.android.volley.toolbox.ImageLoader;
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.cache.ImageCacheManager;
@@ -24,13 +25,13 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * Fragment with an ImageView that is a manga chapter page
  */
 public class ChapterPageFragment extends OrmliteFragment {
-    public static final String TAG = ChapterPageFragment.class.getSimpleName();
+    public static final String TAG = ChapterPageFragment.class.getName();
     private static final String PAGE = "link";
 
     private PhotoViewAttacher mAttacher;
     private ImageView mImageView;
-    private ProgressBar mProgressBar;
     private Page mPage;
+    private ImageLoader.ImageContainer request;
 
     public static ChapterPageFragment newInstance(Page page) {
         final ChapterPageFragment f = new ChapterPageFragment();
@@ -54,11 +55,11 @@ public class ChapterPageFragment extends OrmliteFragment {
             Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.page_chapter, container, false);
-        mProgressBar = (ProgressBar) view.findViewById(R.id.reader_progressbar);
+        ProgressBar mProgressBar = (ProgressBar) view.findViewById(R.id.reader_progressbar);
         mImageView = (ImageView) view.findViewById(R.id.reader_page_image);
         Log.d(TAG, "Page url: " + mPage.url);
 
-        ImageCacheManager.getInstance().getImageLoader().get(mPage.url,
+        request = ImageCacheManager.getInstance().getImageLoader().get(mPage.url,
                 new PageListener(mPage, mImageView, mProgressBar,
                         (ReaderActivity) getActivity()));
 
@@ -77,7 +78,7 @@ public class ChapterPageFragment extends OrmliteFragment {
         if(mAttacher != null)
             mAttacher.update();
 
-        super.onStart();
+        super.onResume();
     }
 
     public void onPause(){
@@ -85,5 +86,13 @@ public class ChapterPageFragment extends OrmliteFragment {
             mAttacher.cleanup();
 
         super.onPause();
+    }
+
+    @Override
+    public void onDestroyView(){
+        if (request != null)
+            request.cancelRequest();
+
+        super.onDestroyView();
     }
 }
