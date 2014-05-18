@@ -58,7 +58,6 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         supportRequestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_main);
-        setSupportProgressBarIndeterminate(true);
         setSupportProgressBarIndeterminateVisibility(true);
 
         AppSectionsPagerAdapter mAppSectionsPagerAdapter =
