@@ -3,6 +3,9 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/fullscreen_pager"
 	android:layout_width="match_parent"
-	android:layout_height="match_parent" >
+	android:layout_height="match_parent"
+    android:background="@drawable/main_activity_background"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.emanga.emanga.app.activities.ReaderActivity">
 
 </com.emanga.emanga.app.utils.CustomViewPager>
