@@ -56,8 +56,10 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        if(getIntent().getExtras().get(ACTION_OPEN_CHAPTER) != null) {
-            mChapter = (Chapter) getIntent().getExtras().get(ACTION_OPEN_CHAPTER);
+        Bundle extras = getIntent().getExtras();
+
+        if(extras.get(ACTION_OPEN_CHAPTER) != null) {
+            mChapter = (Chapter) extras.get(ACTION_OPEN_CHAPTER);
             mManga = mChapter.manga;
 
             try {
@@ -80,8 +82,9 @@ public class ReaderActivity extends OrmliteFragmentActivity {
 
             askChapter(mChapter.number);
         } else {
-            mManga = (Manga) getIntent().getExtras().get(ACTION_OPEN_MANGA);
-            askChapter(getIntent().getExtras().getInt(ACTION_OPEN_CHAPTER_NUMBER,1));
+
+            mManga = (Manga) extras.get(ACTION_OPEN_MANGA);
+            askChapter(extras.getInt(ACTION_OPEN_CHAPTER_NUMBER,1));
         }
 
         setContentView(R.layout.activity_reader);

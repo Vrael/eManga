@@ -52,7 +52,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 	 * The fragment argument representing the item ID that this fragment
 	 * represents.
 	 */
-	public static final String ARG_MANGA_ID = "manga_id";
+    public static final String ARG_MANGA = "manga";
 
 	/**
 	 * The manga content this fragment is presenting.
@@ -74,36 +74,22 @@ public class MangaDetailFragment extends OrmliteFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		if (getArguments().containsKey(ARG_MANGA_ID)) {
-            String mangaId = getArguments().getString(ARG_MANGA_ID);
-            manga = getHelper().getMangaRunDao().queryForId(mangaId);
-            try {
-                // Query for genres
-                QueryBuilder<Genre, String> qBg = getHelper()
-                        .getGenreRunDao().queryBuilder();
-                QueryBuilder<GenreManga, String> qBgm = getHelper()
-                        .getGenreMangaRunDao().queryBuilder();
-                qBgm.where().eq(GenreManga.MANGA_COLUMN_NAME, manga._id);
-                qBg.join(qBgm);
-                manga.genres = qBg.query();
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+		if (getArguments().containsKey(ARG_MANGA)) {
+            manga = getArguments().getParcelable(ARG_MANGA);
 
             request = new MangaRequest(
-                Request.Method.GET,
-                Internet.HOST + "manga/" + manga._id,
-                new Response.Listener<Manga>(){
-                    @Override
-                    public void onResponse(Manga response) {
-                        Log.d(TAG, "Manga details: " + manga.toString());
-                        getHelper().getMangaRunDao().update(response);
-                        manga = response;
-                        updateValues();
-                    }
-                },
-                null
+                    Request.Method.GET,
+                    Internet.HOST + "manga/" + manga._id,
+                    new Response.Listener<Manga>(){
+                        @Override
+                        public void onResponse(Manga response) {
+                            Log.d(TAG, "Manga details: " + manga.toString());
+                            getHelper().getMangaRunDao().update(response);
+                            manga = response;
+                            updateValues();
+                        }
+                    },
+                    null
             );
 
             App.getInstance().mRequestQueue.add(request);

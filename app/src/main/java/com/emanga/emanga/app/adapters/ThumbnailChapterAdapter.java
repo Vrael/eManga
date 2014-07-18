@@ -70,7 +70,6 @@ public class ThumbnailChapterAdapter extends BaseAdapter {
     	Collections.sort(chapters, mComparator);
     }
 
-    // create a new TextView for each item referenced by the Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
     	final ViewHolder holder;
 

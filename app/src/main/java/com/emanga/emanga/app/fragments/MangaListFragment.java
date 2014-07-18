@@ -1,26 +1,18 @@
 package com.emanga.emanga.app.fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.Filter;
-import android.widget.FilterQueryProvider;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -28,10 +20,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.activities.MainActivity;
-import com.emanga.emanga.app.adapters.MangaItemListCursorAdapter;
+import com.emanga.emanga.app.adapters.MangaItemListAdapter;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
-import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangasRequest;
 import com.emanga.emanga.app.utils.Internet;
@@ -79,7 +70,7 @@ public class MangaListFragment extends ListFragment {
 		/**
 		 * Callback for when an item has been selected.
 		 */
-		public void onItemSelected(String id);
+        public void onItemSelected(Manga manga);
 	}
 
 	/**
@@ -87,12 +78,11 @@ public class MangaListFragment extends ListFragment {
 	 * nothing. Used only when this fragment is not attached to an activity.
 	 */
 	private static Callbacks sMangaCallbacks = new Callbacks() {
-		public void onItemSelected(String id) {
-		}
+        public void onItemSelected(Manga manga){}
 	};
 
-	private EditText inputSearch;
-    private TextView emptyText;
+    private MangasRequest mangasRequest;
+    private boolean sync;
 	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
@@ -100,8 +90,8 @@ public class MangaListFragment extends ListFragment {
 	 */
 	public MangaListFragment() {}
 
-	private MangaItemListCursorAdapter mAdapter;
-    // private MangaItemListAdapter mAdapter;
+	// private MangaItemListCursorAdapter mAdapter;
+    private MangaItemListAdapter mAdapter;
 
     private DatabaseHelper databaseHelper = null;
 	
@@ -120,86 +110,17 @@ public class MangaListFragment extends ListFragment {
             OpenHelperManager.releaseHelper();
             databaseHelper = null;
         }
+        if(mAdapter != null){
+            mAdapter.destroy();
+            mAdapter = null;
+        }
     }
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        new AsyncTask<Void,Void,Void>(){
-
-            @Override
-            protected Void doInBackground(Void... voids) {
-                String mangaDate = getHelper().lastMangaDate();
-
-                try {
-                    mangaDate = URLEncoder.encode(mangaDate, "utf-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
-                MangasRequest mangasRequest = new MangasRequest(
-                        Request.Method.GET,
-                        Internet.HOST + "mangas/newest?m=" + mangaDate,
-                        new Response.Listener<Manga[]>() {
-                            @Override
-                            public void onResponse(final Manga[] mangas){
-                                new AsyncTask<Void,Void,Void>(){
-                                    @Override
-                                    protected Void doInBackground(Void... voids) {
-                                        Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                                        getHelper().saveMangas(mangas);
-
-                                        // Notify for hide the progressbar
-                                        LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                                .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
-
-                                        Log.d(TAG, "Notify new chapters in the database");
-                                        getHelper().updateMangaFTS();
-                                        return null;
-                                    }
-                                    @Override
-                                    protected void onPostExecute(Void aVoid) {
-                                        mAdapter.swapCursor(getHelper().getMangasWithGenres());
-                                        // It database was empty, empty text shows a loading message
-                                        if(emptyText != null){
-                                            emptyText.setText(R.string.search_not_found);
-                                        }
-                                    }
-                                }.execute();
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError volleyError) {
-                                Log.e(TAG, volleyError.toString());
-                                // Notify for hide the progressbar
-                                LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                        .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
-                            }
-                        });
-
-                mangasRequest.setRetryPolicy(new DefaultRetryPolicy(
-                                2 * 60 * 1000,
-                                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-                );
-
-                App.getInstance().addToRequestQueue(mangasRequest,"Mangas Library");
-
-                return null;
-            }
-        }.execute();
-
-		mAdapter = new MangaItemListCursorAdapter(
-				getActivity(), 
-				R.layout.manga_item_list, 
-				null, 
-				new String[]{Manga.TITLE_COLUMN_NAME, Genre.NAME_COLUMN_NAME},
-				new int[]{R.id.manga_list_title, R.id.manga_list_categories}, 
-				SimpleCursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-		
-		setListAdapter(mAdapter);
-        mAdapter.swapCursor(getHelper().getMangasWithGenres());
+        mAdapter = new MangaItemListAdapter(this.getActivity());
+        setListAdapter(mAdapter);
 	}
 
 	@Override
@@ -212,7 +133,6 @@ public class MangaListFragment extends ListFragment {
 			setActivatedPosition(savedInstanceState
 					.getInt(STATE_ACTIVATED_POSITION));
 		}
-
 	}
 
     @Override
@@ -220,12 +140,6 @@ public class MangaListFragment extends ListFragment {
             Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.manga_fragment_list, container, false);
-
-    	inputSearch = (EditText) view.findViewById(R.id.search_box);
-        if(databaseHelper.getMangaRunDao().countOf() == 0){
-            emptyText = (TextView) view.findViewById(android.R.id.empty);
-            emptyText.setText(R.string.loading);
-        }
 
     	return view;
     }
@@ -235,30 +149,6 @@ public class MangaListFragment extends ListFragment {
         super.onActivityCreated(saved);
         
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
-        mAdapter.setFilterQueryProvider(new FilterQueryProvider() {
-            public Cursor runQuery(CharSequence constraint) {
-                return getHelper().searchOnLibrary(constraint.toString());
-            }
-        });
-
-        inputSearch.addTextChangedListener(new TextWatcher() {
-        	
-			public void afterTextChanged(Editable arg0) {
-			}
-
-			public void beforeTextChanged(CharSequence arg0, int arg1,
-					int arg2, int arg3) {
-			}
-
-			public void onTextChanged(CharSequence text, int arg1, int arg2,
-					int arg3) {
-				
-				Filter filter = mAdapter.getFilter();
-				filter.filter(text.toString().replaceAll("[^a-zA-ZñÑ0-9 ]",""));
-				mAdapter.notifyDataSetChanged();
-			}
-        });
     }
 
 	@Override
@@ -273,6 +163,98 @@ public class MangaListFragment extends ListFragment {
 		mCallbacks = (Callbacks) activity;
 	}
 
+    @Override
+    public void onResume(){
+        Log.d(TAG, "On Resume method");
+
+        if(!sync){
+            Log.d(TAG, "Launching Request");
+            new AsyncTask<Void,Void,Void>(){
+
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    String mangaDate = getHelper().lastMangaDate();
+                    Log.d(TAG, "Last manga date: " + mangaDate);
+
+                    try {
+                        mangaDate = URLEncoder.encode(mangaDate, "utf-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.d(TAG, Internet.HOST + "mangas/newest?m=" + mangaDate);
+                    mangasRequest = new MangasRequest(
+                            Request.Method.GET,
+                            Internet.HOST + "mangas/newest?m=" + mangaDate,
+                            new Response.Listener<Manga[]>() {
+                                @Override
+                                public void onResponse(final Manga[] mangas){
+                                    new AsyncTask<Void,Void,Void>(){
+                                        @Override
+                                        protected Void doInBackground(Void... voids) {
+                                            Log.d(TAG, "Mangas received and parsed: " + mangas.length);
+                                            getHelper().saveMangas(mangas);
+
+                                            // Manage the adapter needs to be in the Main UI
+                                            Handler mainHandler = new Handler(Looper.getMainLooper());
+
+                                            mainHandler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    mAdapter.reload();
+                                                    mAdapter.notifyDataSetChanged();
+
+                                                    // Notify for hide the progressbar
+                                                    LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                                            .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                                                }
+                                            });
+                                            getHelper().updateMangaFTS();
+                                            return null;
+                                        }
+                                    }.execute();
+
+                                    // Mark the request as done
+                                    sync = true;
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError volleyError) {
+                                    Log.e(TAG, volleyError.toString());
+                                    // Notify for hide the progressbar
+                                    LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                            .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                                }
+                            });
+
+                    mangasRequest.setRetryPolicy(new DefaultRetryPolicy(
+                                    2 * 60 * 1000,
+                                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                    );
+
+                    App.getInstance().addToRequestQueue(mangasRequest, MangasRequest.TAG + "." + TAG);
+
+                    return null;
+                }
+            }.execute();
+        }
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause(){
+        if(!sync){
+            Log.d(TAG, "Canceling Request");
+            mangasRequest.cancel();
+            App.getInstance().mRequestQueue.cancelAll(MangasRequest.TAG + "." + TAG);
+        }
+
+        super.onPause();
+    }
+
 	@Override
 	public void onDetach() {
 		super.onDetach();
@@ -286,20 +268,12 @@ public class MangaListFragment extends ListFragment {
 			long id) {
 		super.onListItemClick(listView, view, position, id);
 
-        // Hide the keyboard if it is active
-        // if(inputSearch.isActivated()){
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-                    Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(inputSearch.getWindowToken(), 0);
-        // }
-
 		listView.setItemChecked(position, true);
 		
 		// Notify the active callbacks interface (the activity, if the
 		// fragment is attached to one) that an item has been selected.
-		Cursor cursor = mAdapter.getCursor();
-		cursor.moveToPosition(position);
-		mCallbacks.onItemSelected(cursor.getString(cursor.getColumnIndex(Manga.ID_COLUMN_NAME)));
+        mCallbacks.onItemSelected(mAdapter.getItem(position));
+
 	}
 
 	@Override

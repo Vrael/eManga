@@ -15,12 +15,15 @@ import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.models.Page;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.SelectArg;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -74,11 +77,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		}
 	}
 
-	
-	private QueryBuilder<Chapter, String> cQbIsChapters = null;
-	private SelectArg cQbIsChaptersNchapter = null; 
-	private SelectArg cQbIsChaptersMTitle = null;
-	
 	/**
 	 * This is called when your application is upgraded and it has a higher version number. This allows you to adjust
 	 * the various data to match the new version number.
@@ -167,7 +165,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private static String mangasWithGenresQuery =
 			"SELECT manga._id, manga.title, manga.cover, GROUP_CONCAT(" + GenreManga.CATEGORY_COLUMN_NAME + ", ', ')"
 			+ " AS " + Genre.NAME_COLUMN_NAME + " FROM manga"
-			+ " INNER JOIN genremanga ON genremanga.manga_id = manga._id"
+			+ " LEFT OUTER JOIN genremanga ON genremanga.manga_id = manga._id"
 			+ " GROUP BY manga._id"
 			+ " ORDER BY manga.title ASC";
 			
@@ -209,7 +207,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
 
 	public Cursor searchOnLibrary(String text){
-        if(!text.isEmpty())
+        if(text != null)
 		    return this.getReadableDatabase().rawQuery(
 				"SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{text + "*"});
         else
@@ -254,4 +252,43 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				}
 			);
 	}
+
+    private PreparedQuery<Genre> genresForMangaQuery = null;
+
+    public List<Genre> genresForManga(Manga manga) throws SQLException{
+            if (genresForMangaQuery == null) {
+                genresForMangaQuery = makeGenresForMangaQuery();
+            }
+            genresForMangaQuery.setArgumentHolderValue(0, manga);
+            return genreRuntimeDao.query(genresForMangaQuery);
+    }
+
+    public void genresForMangas(List<Manga> mangas){
+        Iterator<Manga> it = mangas.iterator();
+        while(it.hasNext()){
+            Manga m = it.next();
+            try {
+                m.genres = genresForManga(m);
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Build our query for Genre objects that match a Manga.
+     */
+    private PreparedQuery<Genre> makeGenresForMangaQuery() throws SQLException {
+
+        QueryBuilder<GenreManga, String> mangaGenreQb = getGenreMangaRunDao().queryBuilder();
+        mangaGenreQb.selectColumns(GenreManga.CATEGORY_COLUMN_NAME);
+        SelectArg userSelectArg = new SelectArg();
+        mangaGenreQb.where().eq(GenreManga.MANGA_COLUMN_NAME, userSelectArg);
+
+        QueryBuilder<Genre, String> genreQb = getGenreRunDao().queryBuilder();
+        genreQb.where().in(Genre.NAME_COLUMN_NAME, mangaGenreQb);
+
+        return genreQb.prepare();
+    }
+
 }

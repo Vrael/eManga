@@ -35,6 +35,7 @@ apks
 .idea
 #.idea/workspace.xml
 .gradle
+build/
 /*/local.properties
 /*/out
 /*/*/build
@@ -44,4 +45,3 @@ apks
 *.ipr
 *~
 *.swp
-

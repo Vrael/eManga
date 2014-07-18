@@ -5,9 +5,9 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <com.emanga.emanga.app.views.IndexableListView
+    <ListView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:id="@id/android:list"
         android:scrollbars="none"
         android:fastScrollEnabled="true"
