@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
@@ -18,8 +19,13 @@ import com.emanga.emanga.app.utils.SmartRequestQueue;
 import com.emanga.emanga.app.utils.Volley;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.UUID;
+
 public class App extends Application {
 	private static String TAG = App.class.getName();
+
+    public static final String PREFS_NAME = "MangappPrefs";
+    public UUID userId;
 
     private static App sInstance;
 
@@ -52,7 +58,6 @@ public class App extends Application {
 
         }.execute();
 
-
         ImageCacheManager.getInstance().init(this,
                 this.getPackageCodePath()
                 , DISK_IMAGECACHE_SIZE
@@ -78,8 +83,36 @@ public class App extends Application {
                 new IntentFilter(
                         ConnectivityManager.CONNECTIVITY_ACTION)
         );
+
+        initUserId();
 	}
 
+    private void initUserId(){
+        UUID id = checkUserId();
+        if(id == null){
+            userId = createUserId();
+        } else {
+            userId = id;
+        }
+    }
+
+    private UUID checkUserId(){
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        String id = settings.getString("userId",null);
+        if(id != null){
+            return UUID.fromString(id);
+        }
+        return null;
+    }
+
+    private UUID createUserId(){
+        UUID id = UUID.randomUUID();
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("userId", id.toString());
+        editor.commit();
+        return id;
+    }
     /**
      * Adds the specified request to the global queue, if tag is specified
      * then it is used else Default TAG is used.

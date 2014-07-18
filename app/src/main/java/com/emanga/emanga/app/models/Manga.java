@@ -69,7 +69,7 @@ public class Manga implements Parcelable{
 
     public Manga(String _id, String title, String cover, Date created_at, Date modified_at){
         this._id = _id;
-        this.title = title;
+        this.title = title != null? title.replaceAll("[^a-zñ0-9 ]","") : null;
         this.cover = cover;
         this.created_at = created_at;
         this.modified_at = modified_at;
@@ -123,8 +123,10 @@ public class Manga implements Parcelable{
         p.writeString(title);
         p.writeString(cover);
         p.writeString(summary);
-        p.writeLong(created_at.getTime());
-        p.writeLong(modified_at.getTime());
+        if(created_at != null)
+            p.writeLong(created_at.getTime());
+        if(modified_at != null)
+            p.writeLong(modified_at.getTime());
         // parcelCollection(p, null);
         // p.writeList(genres);
     }

@@ -3,6 +3,8 @@ package com.emanga.emanga.app.fragments;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,25 +50,13 @@ public class LatestSectionFragment extends OrmliteFragment {
 
     private ThumbnailChapterAdapter mAdapter;
 
+    private MangasRequest latestChaptersRequest;
+    private boolean sync;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAdapter = new ThumbnailChapterAdapter(getActivity());
-
-        String chapterDate = getHelper().lastChapterDate();
-        Date date = null;
-        if(!chapterDate.equals(""))
-            date = new Date(Long.valueOf(chapterDate));
-
-        try {
-            if(date != null)
-                chapterDate = URLEncoder.encode(Dates.sdf.format(date), "utf-8");
-            else
-                chapterDate = URLEncoder.encode("", "utf-8");
-            Log.d(TAG,Internet.HOST + "chapters/newest?&c=" + chapterDate);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
 
         // Load chapters from database
         new AsyncTask<Void,Integer,List<Chapter>>(){
@@ -104,55 +94,99 @@ public class LatestSectionFragment extends OrmliteFragment {
                 }
             }
         }.execute();
+    }
+    @Override
+    public void onResume(){
+        if(!sync){
+            new AsyncTask<Void,Void,Void>() {
 
-        MangasRequest latestChaptersRequest = new MangasRequest(
-                Request.Method.GET,
-                Internet.HOST + "chapters/newest?&c=" + chapterDate,
-                new Response.Listener<Manga[]>() {
-                    @Override
-                    public void onResponse(final Manga[] mangas){
-                        Log.d(TAG, "Mangas received and parsed: " + mangas.length);
-                        for(Manga m: mangas){
-                            mAdapter.addChapters(m.chapters);
-                        }
-                        mAdapter.notifyDataSetChanged();
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    String chapterDate = getHelper().lastChapterDate();
+                    Date date = null;
+                    if (!chapterDate.equals(""))
+                        date = new Date(Long.valueOf(chapterDate));
 
-                        // Notify for hide the progressbar
-                        LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                    try {
+                        if (date != null)
+                            chapterDate = URLEncoder.encode(Dates.sdf.format(date), "utf-8");
+                        else
+                            chapterDate = URLEncoder.encode("", "utf-8");
+                        Log.d(TAG, Internet.HOST + "chapters/newest?&c=" + chapterDate);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
 
-                        new AsyncTask<Void,Void,Void>(){
-                            @Override
-                            protected Void doInBackground(Void... voids) {
-                                getHelper().saveMangas(mangas);
-                                return null;
+                    latestChaptersRequest = new MangasRequest(
+                            Request.Method.GET,
+                            Internet.HOST + "chapters/newest?&c=" + chapterDate,
+                            new Response.Listener<Manga[]>() {
+                                @Override
+                                public void onResponse(final Manga[] mangas) {
+                                    Log.d(TAG, "Mangas received and parsed: " + mangas.length);
+
+                                    // Manage the adapter needs to be in the Main UI
+                                    Handler mainHandler = new Handler(Looper.getMainLooper());
+
+                                    mainHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            for (Manga m : mangas) {
+                                                mAdapter.addChapters(m.chapters);
+                                            }
+                                            mAdapter.notifyDataSetChanged();
+
+                                            // Notify for hide the progressbar
+                                            LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                                    .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                                        }
+                                    });
+
+                                    getHelper().saveMangas(mangas);
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError volleyError) {
+                                    // Notify for hide the progressbar
+                                    LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                            .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+
+                                    Log.e(TAG, "Error in response!");
+                                    Log.e(TAG, volleyError.toString());
+                                    Notification.errorMessage(getActivity(),
+                                            getResources().getString(R.string.volley_error_title),
+                                            getResources().getString(R.string.volley_error_body),
+                                            R.drawable.sorry);
+                                }
                             }
-                        }.execute();
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        // Notify for hide the progressbar
-                        LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                    );
 
-                        Log.e(TAG, "Error in response!");
-                        Log.e(TAG, volleyError.toString());
-                        Notification.errorMessage(getActivity(),
-                                getResources().getString(R.string.volley_error_title),
-                                getResources().getString(R.string.volley_error_body),
-                                R.drawable.sorry);
-                    }
-                });
+                    latestChaptersRequest.setRetryPolicy(new DefaultRetryPolicy(
+                                    30 * 1000,
+                                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
+                    );
 
-        latestChaptersRequest.setRetryPolicy(new DefaultRetryPolicy(
-                        30 * 1000,
-                        DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                        DefaultRetryPolicy.DEFAULT_BACKOFF_MULT)
-        );
+                    App.getInstance().addToRequestQueue(latestChaptersRequest, MangasRequest.TAG + "." + TAG);
 
-        App.getInstance().addToRequestQueue(latestChaptersRequest, "Latest Chapters");
+                    return null;
+                }
+            }.execute();
+        }
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause(){
+        if(!sync){
+            Log.d(TAG, "Canceling Request");
+            latestChaptersRequest.cancel();
+            App.getInstance().mRequestQueue.cancelAll(MangasRequest.TAG + "." + TAG);
+        }
+
+        super.onPause();
     }
 
     @Override

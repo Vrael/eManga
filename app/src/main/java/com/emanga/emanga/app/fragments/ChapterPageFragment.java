@@ -32,6 +32,7 @@ public class ChapterPageFragment extends OrmliteFragment {
     private ImageView mImageView;
     private Page mPage;
     private ImageLoader.ImageContainer request;
+    private PageListener mPageListener;
 
     public static ChapterPageFragment newInstance(Page page) {
         final ChapterPageFragment f = new ChapterPageFragment();
@@ -59,9 +60,9 @@ public class ChapterPageFragment extends OrmliteFragment {
         mImageView = (ImageView) view.findViewById(R.id.reader_page_image);
         Log.d(TAG, "Page url: " + mPage.url);
 
-        request = ImageCacheManager.getInstance().getImageLoader().get(mPage.url,
-                new PageListener(mPage, mImageView, mProgressBar,
-                        (ReaderActivity) getActivity()));
+        mPageListener = new PageListener(mPage, mImageView, mProgressBar, (ReaderActivity) getActivity());
+
+        request = ImageCacheManager.getInstance().getImageLoader().get(mPage.url, mPageListener);
 
         return view;
     }
@@ -90,8 +91,11 @@ public class ChapterPageFragment extends OrmliteFragment {
 
     @Override
     public void onDestroyView(){
-        if (request != null)
+        if (request != null) {
             request.cancelRequest();
+        }
+
+        mPageListener.cancelRequest();
 
         super.onDestroyView();
     }

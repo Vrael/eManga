@@ -33,6 +33,10 @@ public class ImagePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getItemPosition(Object object){
-        return PagerAdapter.POSITION_NONE;
+        if(pages.size() > 0) {
+            return PagerAdapter.POSITION_NONE;
+        } else {
+            return PagerAdapter.POSITION_UNCHANGED;
+        }
     }
 }

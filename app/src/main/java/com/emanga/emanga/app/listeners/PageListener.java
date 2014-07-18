@@ -36,6 +36,7 @@ public class PageListener implements ImageLoader.ImageListener {
 
     private HashSet<String> mUrlError;
     private int mRetries = 3;
+    public PageRequest mRetryRequest;
 
     public PageListener(Page page, ImageView imageView,
                         ProgressBar progressBar, ReaderActivity activity){
@@ -73,47 +74,47 @@ public class PageListener implements ImageLoader.ImageListener {
                             + "/chapter/" + mPage.chapter._id
                             + "/page/" + mPage._id + "?" + Internet.arrayParams(mUrlError, "urls"));
 
-                    App.getInstance().addToRequestQueue(
-                            new PageRequest(
-                                    Request.Method.GET,
-                                    Internet.HOST + "manga/" + mPage.chapter.manga._id
-                                            + "/chapter/" + mPage.chapter._id
-                                            + "/page/" + mPage._id
-                                            + "?" + Internet.arrayParams(mUrlError, "urls"),
-                                    new Response.Listener<Page>() {
-                                        @Override
-                                        public void onResponse(Page response) {
-                                            Log.d(TAG, response.toString());
-                                            if(response.url != null) {
-                                                mPage.url = response.url;
-                                                Log.e(TAG, "New page " + response.number + " with url: " + response.url);
+                    PageRequest mRetryRequest = new PageRequest(
+                        Request.Method.GET,
+                        Internet.HOST + "manga/" + mPage.chapter.manga._id
+                                + "/chapter/" + mPage.chapter._id
+                                + "/page/" + mPage._id
+                                + "?" + Internet.arrayParams(mUrlError, "urls"),
+                        new Response.Listener<Page>() {
+                            @Override
+                            public void onResponse(Page response) {
+                                Log.d(TAG, response.toString());
+                                if(response.url != null) {
+                                    mPage.url = response.url;
+                                    Log.e(TAG, "New page " + response.number + " with url: " + response.url);
 
-                                                // Reload image
-                                                ImageCacheManager.getInstance().getImageLoader().get(mPage.url,
-                                                        listenerReference);
+                                    // Reload image
+                                    ImageCacheManager.getInstance().getImageLoader().get(mPage.url,
+                                            listenerReference);
 
-                                                // Update database
-                                                DatabaseHelper dbs = OpenHelperManager.getHelper(
-                                                        App.getInstance().getApplicationContext(),
-                                                        DatabaseHelper.class);
-                                                dbs.getPageRunDao().update(mPage);
-                                                OpenHelperManager.releaseHelper();
-                                            }
-                                            else {
-                                                Log.e(TAG, "There aren't url alternatives for: " + mPage.number);
-                                                if (android.os.Build.VERSION.SDK_INT >= 9) {
-                                                    mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
-                                                } else {
-                                                    mActivity.mAdapter.pages.remove(mPage);
-                                                }
-                                                mActivity.mAdapter.notifyDataSetChanged();
-                                            }
-                                        }
-                                    },
-                                    null
-                            )
-                            ,"New Page"
+                                    // Update database
+                                    DatabaseHelper dbs = OpenHelperManager.getHelper(
+                                            App.getInstance().getApplicationContext(),
+                                            DatabaseHelper.class);
+                                    dbs.getPageRunDao().update(mPage);
+                                    OpenHelperManager.releaseHelper();
+                                }
+                                else {
+                                    Log.e(TAG, "There aren't url alternatives for: " + mPage.number);
+                                    if (android.os.Build.VERSION.SDK_INT >= 9) {
+                                        mActivity.mAdapter.pages.removeFirstOccurrence(mPage);
+                                    } else {
+                                        mActivity.mAdapter.pages.remove(mPage);
+                                    }
+                                    mActivity.mAdapter.notifyDataSetChanged();
+                                }
+                            }
+                        },
+                        null
                     );
+
+                    App.getInstance().addToRequestQueue(mRetryRequest,"New Page");
+
                     mRetries--;
                 } else {
                     Log.d(TAG, "Reached maximum intents number for ask a new page with: " + mPage.url
@@ -129,5 +130,11 @@ public class PageListener implements ImageLoader.ImageListener {
             }
 
         }.execute();
+    }
+
+    public void cancelRequest(){
+        if(mRetryRequest != null){
+            mRetryRequest.cancel();
+        }
     }
 }

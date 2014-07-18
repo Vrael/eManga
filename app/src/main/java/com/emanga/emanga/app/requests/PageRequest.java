@@ -18,6 +18,8 @@ import java.io.UnsupportedEncodingException;
  */
 public class PageRequest extends JsonRequest<Page> {
 
+    public static final String TAG = MangasRequest.class.getSimpleName();
+
     public PageRequest(int method, String url, Response.Listener<Page> listener, Response.ErrorListener errorListener) {
         super(method, url, null, listener, errorListener);
     }

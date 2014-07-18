@@ -18,6 +18,8 @@ import java.io.UnsupportedEncodingException;
  */
 public class MangaRequest extends JsonRequest<Manga> {
 
+    public static final String TAG = MangasRequest.class.getSimpleName();
+
     public MangaRequest(int method, String url, Response.Listener<Manga> listener, Response.ErrorListener errorListener) {
         super(method, url, null, listener, errorListener);
     }

@@ -17,6 +17,9 @@ import java.io.UnsupportedEncodingException;
  * Created by Ciro on 01/04/2014.
  */
 public class ChapterRequest extends JsonRequest<Chapter> {
+
+    public static final String TAG = MangasRequest.class.getSimpleName();
+
     public ChapterRequest(int method, String url, Response.Listener<Chapter> listener, Response.ErrorListener errorListener) {
         super(method, url, null, listener, errorListener);
     }

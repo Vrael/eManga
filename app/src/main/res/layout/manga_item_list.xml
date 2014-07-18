@@ -38,6 +38,7 @@
         android:ellipsize="marquee"
         android:text="Categories name"
         android:textSize="14sp"
+        android:maxLines="2"
         android:paddingLeft="16dp"
         android:paddingTop="8dp" />
 
