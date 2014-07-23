@@ -164,7 +164,7 @@ public class MainActivity extends ActionBarActivity
     private String getRegistrationId(Context context) {
         final SharedPreferences prefs = getGCMPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-        if (registrationId.isEmpty()) {
+        if (registrationId.equals("")) {
             Log.i(TAG, "Registration not found.");
             return "";
         }

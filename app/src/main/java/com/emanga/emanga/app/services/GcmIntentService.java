@@ -9,12 +9,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.emanga.emanga.app.R;
-import com.emanga.emanga.app.activities.MainActivity;
 import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.OrmliteIntentService;
@@ -63,7 +61,6 @@ public class GcmIntentService extends OrmliteIntentService {
                 sendNotification(extras.getString("title"), extras.getString("msg"), cover, m, number);
                 Log.i(TAG, "Received: " + extras.toString());
             }
-
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
         GcmBroadcastReceiver.completeWakefulIntent(intent);
