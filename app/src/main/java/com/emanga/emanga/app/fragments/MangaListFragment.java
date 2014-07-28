@@ -165,16 +165,12 @@ public class MangaListFragment extends ListFragment {
 
     @Override
     public void onResume(){
-        Log.d(TAG, "On Resume method");
-
         if(!sync){
-            Log.d(TAG, "Launching Request");
             new AsyncTask<Void,Void,Void>(){
 
                 @Override
                 protected Void doInBackground(Void... voids) {
                     String mangaDate = getHelper().lastMangaDate();
-                    Log.d(TAG, "Last manga date: " + mangaDate);
 
                     try {
                         mangaDate = URLEncoder.encode(mangaDate, "utf-8");
@@ -182,7 +178,6 @@ public class MangaListFragment extends ListFragment {
                         e.printStackTrace();
                     }
 
-                    Log.d(TAG, Internet.HOST + "mangas/newest?m=" + mangaDate);
                     mangasRequest = new MangasRequest(
                             Request.Method.GET,
                             Internet.HOST + "mangas/newest?m=" + mangaDate,

@@ -13,6 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.emanga.emanga.app.R;
+import com.emanga.emanga.app.activities.MainActivity;
 import com.emanga.emanga.app.activities.ReaderActivity;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.OrmliteIntentService;
@@ -44,6 +45,7 @@ public class GcmIntentService extends OrmliteIntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.i(TAG, "Message GCM recived");
         Bundle extras = intent.getExtras();
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         // The getMessageType() intent parameter must be the intent you received
@@ -51,19 +53,52 @@ public class GcmIntentService extends OrmliteIntentService {
         String messageType = gcm.getMessageType(intent);
 
         if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
-            // Post notification of received message.
-            String manga_id = extras.getString("mangaId");
-            int number = extras.getString("number") != null? Integer.valueOf(extras.getString("number")) : 1;
-            Manga m = getHelper().getMangaRunDao().queryForId(manga_id);
-            if(m != null){
-                Bitmap cover = getBitmapFromURL(m.cover);
-                cover = adaptLargeIcon(cover);
-                sendNotification(extras.getString("title"), extras.getString("msg"), cover, m, number);
-                Log.i(TAG, "Received: " + extras.toString());
+            if (GoogleCloudMessaging.
+                    MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
+                sendNotification("Send error: " + extras.toString());
+            } else if (GoogleCloudMessaging.
+                    MESSAGE_TYPE_DELETED.equals(messageType)) {
+                sendNotification("Deleted messages on server: " +
+                        extras.toString());
+                // If it's a regular GCM message, do some work.
+            } else if (GoogleCloudMessaging.
+                    MESSAGE_TYPE_MESSAGE.equals(messageType)) {
+
+                // Post notification of received message.
+                String manga_id = extras.getString("mangaId");
+                int number = extras.getString("number") != null ? Integer.valueOf(extras.getString("number")) : 1;
+                Manga m = getHelper().getMangaRunDao().queryForId(manga_id);
+                if (m != null) {
+                    Bitmap cover = getBitmapFromURL(m.cover);
+                    cover = adaptLargeIcon(cover);
+                    sendNotification(extras.getString("title"), extras.getString("msg"), cover, m, number);
+                    Log.i(TAG, "Received: " + extras.toString());
+                } else {
+                    Log.i(TAG, "Manga doesn't match in database");
+                }
             }
         }
         // Release the wake lock provided by the WakefulBroadcastReceiver.
         GcmBroadcastReceiver.completeWakefulIntent(intent);
+    }
+
+    private void sendNotification(String msg) {
+        mNotificationManager = (NotificationManager)
+                this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), 0);
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_gcm)
+                        .setContentTitle("GCM Notification")
+                        .setStyle(new NotificationCompat.BigTextStyle()
+                                .bigText(msg))
+                        .setContentText(msg);
+
+        mBuilder.setContentIntent(contentIntent);
+        mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
     }
 
     // Put the message into a notification and post it.

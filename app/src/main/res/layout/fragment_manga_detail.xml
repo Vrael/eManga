@@ -53,7 +53,7 @@
                 <TextView
                     android:id="@+id/manga_author"
                     android:layout_width="wrap_content"
-                    android:layout_height="0dp"
+                    android:layout_height="wrap_content"
                     android:text="Author"
                     android:textAllCaps="true"
                     android:textSize="18sp"
@@ -93,6 +93,17 @@
                     android:gravity="center"
                     android:layout_above="@id/manga_last_read_date"
                     android:layout_toRightOf="@id/manga_cover" />
+
+                <ImageButton android:id="@+id/manga_favorite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_action_star"
+                    android:background="#00ffffff"
+                    android:layout_below="@+id/manga_read"
+                    android:layout_alignRight="@+id/manga_cover"
+                    android:layout_alignEnd="@+id/manga_cover"
+                    android:layout_marginRight="42dp"
+                    android:layout_marginTop="-16dp"/>
 
             </RelativeLayout>
             <TableLayout
@@ -172,7 +183,7 @@
         <ImageButton
             android:id="@+id/manga_button_start"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/ic_action_play"
             android:background="@drawable/detail_action_bar_selector"
@@ -188,7 +199,7 @@
         <ImageButton
             android:id="@+id/manga_button_continue"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/ic_action_play"
             android:background="@drawable/detail_action_bar_selector"
@@ -205,7 +216,7 @@
         <ImageButton
             android:id="@+id/manga_button_go"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:src="@drawable/ic_action_next"
             android:background="@drawable/detail_action_bar_selector"

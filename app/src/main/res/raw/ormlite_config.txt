@@ -1,5 +1,5 @@
 #
-# generated on 2014/04/20 12:42:41
+# generated on 2014/07/27 07:13:06
 #
 # --table-start--
 dataClass=com.emanga.emanga.app.models.Page
@@ -107,6 +107,10 @@ foreignCollectionColumnName=chapters
 # --field-start--
 fieldName=numberChapters
 columnName=number_chapters
+# --field-end--
+# --field-start--
+fieldName=favourite
+columnName=manga
 # --field-end--
 # --table-fields-end--
 # --table-end--

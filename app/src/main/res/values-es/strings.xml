@@ -19,7 +19,8 @@
     <!-- Error Messages -->
     <string name="volley_error_title">Problema de Conectividad</string>
     <string name="volley_error_body">Un samurai cortó la comunicación. Estamos intentando solucionarlo. Vuelve a intentarlo en unos minutos.</string>
-    <string name="connectivity_error_body">Necesitas estar conectado a internet para leer los capítulos. Revisa tu conexion.</string>
+    <string name="connectivity_error_body">Necesitas estar conectado a internet para leer los capítulos. Revisa tu conexión.</string>
+    <string name="connectivity_error_body_fav">Necesitas estar conectado a internet para marcar un manga como favorito. Revisa tu conexión.</string>
     <string name="not_found_error_title">No encontrado</string>
     <string name="not_found_error_body">El capitulo no se ha encontrado. Prueba más tarde</string>
     <string name="enjoy_reading">¡Disfruta de la lectura!</string>

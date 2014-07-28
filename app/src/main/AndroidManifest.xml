@@ -79,6 +79,7 @@
                 <category android:name="com.emanga.emanga.app.gcm" />
             </intent-filter>
         </receiver>
+
         <service android:name=".services.GcmIntentService" />
 
     </application>

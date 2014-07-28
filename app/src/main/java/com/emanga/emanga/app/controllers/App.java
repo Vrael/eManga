@@ -13,19 +13,25 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
 import com.emanga.emanga.app.cache.ImageCacheManager;
+import com.emanga.emanga.app.utils.Internet;
 import com.emanga.emanga.app.utils.SmartRequestQueue;
 import com.emanga.emanga.app.utils.Volley;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
+import javax.xml.transform.ErrorListener;
+
 public class App extends Application {
 	private static String TAG = App.class.getName();
 
     public static final String PREFS_NAME = "MangappPrefs";
-    public UUID userId;
+    public static UUID userId;
 
     private static App sInstance;
 
@@ -85,7 +91,28 @@ public class App extends Application {
         );
 
         initUserId();
+        sendLastAccess();
 	}
+
+    private void sendLastAccess(){
+        Log.i(TAG, "Send last access: " + userId);
+        addToRequestQueue(new StringRequest(Request.Method.POST,
+                        Internet.HOST + "user/" + userId + "/access",
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+
+                            }
+                        }),
+                "Last access request"
+        );
+    }
 
     private void initUserId(){
         UUID id = checkUserId();

@@ -27,9 +27,9 @@ import com.emanga.emanga.app.database.OrmliteFragment;
 import com.emanga.emanga.app.listeners.CoverListener;
 import com.emanga.emanga.app.models.Author;
 import com.emanga.emanga.app.models.Chapter;
-import com.emanga.emanga.app.models.Genre;
-import com.emanga.emanga.app.models.GenreManga;
 import com.emanga.emanga.app.models.Manga;
+import com.emanga.emanga.app.requests.AddFavouriteRequest;
+import com.emanga.emanga.app.requests.DeleteFavouriteRequest;
 import com.emanga.emanga.app.requests.MangaRequest;
 import com.emanga.emanga.app.utils.CustomNetworkImageView;
 import com.emanga.emanga.app.utils.Internet;
@@ -84,6 +84,7 @@ public class MangaDetailFragment extends OrmliteFragment {
                         @Override
                         public void onResponse(Manga response) {
                             Log.d(TAG, "Manga details: " + manga.toString());
+                            response.favourite = manga.favourite;
                             getHelper().getMangaRunDao().update(response);
                             manga = response;
                             updateValues();
@@ -149,6 +150,7 @@ public class MangaDetailFragment extends OrmliteFragment {
         TextView title;
         TextView author;
         CustomNetworkImageView cover;
+        ImageButton favourite;
         TextView numberChapters;
         TextView percent;
         TextView last_read;
@@ -167,10 +169,10 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         if(!request.hasHadResponseDelivered()){
             holder.summary.setText(
-                    (manga.summary == null || manga.summary.isEmpty()) ? getResources().getString(R.string.loading) : manga.summary);
+                    (manga.summary == null || manga.summary.equals("")) ? getResources().getString(R.string.loading) : manga.summary);
         } else {
             holder.summary.setText(
-                    (manga.summary == null || manga.summary.isEmpty()) ? "" : manga.summary);
+                    (manga.summary == null || manga.summary.equals("")) ? "" : manga.summary);
         }
 
         if(manga.authors != null && manga.authors.size() > 0){
@@ -223,6 +225,7 @@ public class MangaDetailFragment extends OrmliteFragment {
             holder.author = (TextView) rootView.findViewById(R.id.manga_author);
             holder.numberChapters = (TextView) rootView.findViewById(R.id.manga_chapters);
             holder.cover = (CustomNetworkImageView) rootView.findViewById(R.id.manga_cover);
+            holder.favourite = (ImageButton) rootView.findViewById(R.id.manga_favorite);
             holder.percent = (TextView) rootView.findViewById(R.id.manga_read);
             holder.last_read = (TextView) rootView.findViewById(R.id.manga_last_read_date);
             holder.genres = (TableLayout) rootView.findViewById(R.id.manga_categories_table);
@@ -236,6 +239,41 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         holder.title.setText(manga.title);
         updateValues();
+
+        if(manga.favourite){
+            holder.favourite.setImageResource(R.drawable.ic_action_star_full);
+        }
+
+        holder.favourite.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (Internet.checkConnection(getActivity()) && App.userId != null) {
+                    String id = App.userId.toString();
+                    if(manga.favourite){
+                        holder.favourite.setImageResource(R.drawable.ic_action_star);
+                        manga.favourite = false;
+                        App.getInstance().addToRequestQueue(
+                                new DeleteFavouriteRequest(id, manga._id, null, null)
+                        , "Delete manga " + manga._id + " from favourites");
+
+                    } else {
+                        holder.favourite.setImageResource(R.drawable.ic_action_star_full);
+                        manga.favourite = true;
+                        App.getInstance().addToRequestQueue(
+                                new AddFavouriteRequest(id, manga._id, null, null)
+                                , "Add manga " + manga._id + " to favourites");
+                    }
+
+                    getHelper().save(manga);
+                } else {
+                    Notification.errorMessage(
+                            getActivity(),
+                            getResources().getString(R.string.volley_error_title),
+                            getResources().getString(R.string.connectivity_error_body_fav),
+                            R.drawable.alone
+                    );
+                }
+            }
+        });
 
         holder.start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

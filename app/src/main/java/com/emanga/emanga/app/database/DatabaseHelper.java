@@ -253,6 +253,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			);
 	}
 
+    public void save(final Manga m){
+        final RuntimeExceptionDao<Manga, String> dao = getMangaRunDao();
+        dao.createOrUpdate(m);
+    }
+
     private PreparedQuery<Genre> genresForMangaQuery = null;
 
     public List<Genre> genresForManga(Manga manga) throws SQLException{

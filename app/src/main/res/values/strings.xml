@@ -20,6 +20,7 @@
     <string name="volley_error_title">Connectivity issue</string>
     <string name="volley_error_body">A samurai cut the communication. We are trying solve it. Try again in a few minutes.</string>
     <string name="connectivity_error_body">You need internet to read the chapters. Check your connection state.</string>
+    <string name="connectivity_error_body_fav">You need internet to mark a manga like favourite. Check your connection state.</string>
     <string name="not_found_error_title">Not found issue</string>
     <string name="not_found_error_body">The chapter was not found. Try later</string>
     <string name="enjoy_reading">Enjoy Reading!</string>

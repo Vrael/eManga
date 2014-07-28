@@ -32,6 +32,7 @@ import com.emanga.emanga.app.fragments.LibrarySectionFragment;
 import com.emanga.emanga.app.fragments.MangaDetailFragment;
 import com.emanga.emanga.app.fragments.MangaListFragment;
 import com.emanga.emanga.app.models.Manga;
+import com.emanga.emanga.app.requests.AddGCMRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -239,11 +240,7 @@ public class MainActivity extends ActionBarActivity
                     // so it can use GCM/HTTP or CCS to send messages to your app.
                     // The request to your server should be authenticated if your app
                     // is using accounts.
-                    sendRegistrationIdToBackend();
-
-                    // For this demo: we don't need to send it because the device
-                    // will send upstream messages to a server that echo back the
-                    // message using the 'from' address in the message.
+                    sendRegistrationIdToBackend(regid);
 
                     // Persist the regID - no need to register again.
                     storeRegistrationId(ctx, regid);
@@ -265,12 +262,14 @@ public class MainActivity extends ActionBarActivity
 
     /**
      * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP
-     * or CCS to send messages to your app. Not needed for this demo since the
-     * device sends upstream messages to a server that echoes back the message
-     * using the 'from' address in the message.
+     * or CCS to send messages to your app.
      */
-    private void sendRegistrationIdToBackend() {
-        // Your implementation here.
+    private void sendRegistrationIdToBackend(String regId) {
+        if(App.userId != null){
+            App.getInstance().addToRequestQueue(
+                    new AddGCMRequest(App.userId.toString(), regId, null,null),
+                    "Send Registration Id for GCM Notifications");
+        }
     }
 
     /**

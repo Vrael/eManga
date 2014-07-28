@@ -112,7 +112,6 @@ public class LatestSectionFragment extends OrmliteFragment {
                             chapterDate = URLEncoder.encode(Dates.sdf.format(date), "utf-8");
                         else
                             chapterDate = URLEncoder.encode("", "utf-8");
-                        Log.d(TAG, Internet.HOST + "chapters/newest?&c=" + chapterDate);
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }

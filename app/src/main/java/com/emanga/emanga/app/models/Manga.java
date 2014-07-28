@@ -18,6 +18,7 @@ import java.util.List;
 @JsonDeserialize(using = MangaDeserializer.class)
 @DatabaseTable
 public class Manga implements Parcelable{
+    public static final String MODEL_NAME = "manga";
 	public static final String ID_COLUMN_NAME = "_id";
 	public static final String TITLE_COLUMN_NAME = "title";
 	public static final String COVER_COLUMN_NAME = "cover";
@@ -26,6 +27,7 @@ public class Manga implements Parcelable{
     public static final String MODIFY_COLUMN_NAME = "modified_at";
     public static final String CHAPTERS_COLUMN_NAME = "chapters";
     public static final String NUMBER_CHAPTERS_COLUMN_NAME = "number_chapters";
+    public static final String FAVOURITE_COLUMN_NNAME = "manga";
 
     @DatabaseField(id = true, columnName = ID_COLUMN_NAME)
     public String _id;
@@ -44,6 +46,8 @@ public class Manga implements Parcelable{
 	public Collection<Chapter> chapters;
     @DatabaseField(columnName = NUMBER_CHAPTERS_COLUMN_NAME)
     public int numberChapters;
+    @DatabaseField(columnName = FAVOURITE_COLUMN_NNAME)
+    public boolean favourite = false;
 
 	
 	// Handle genres for N - N relationship in GenreManga
