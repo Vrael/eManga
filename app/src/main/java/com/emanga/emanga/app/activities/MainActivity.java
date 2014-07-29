@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,7 +24,14 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.adapters.AppSectionsPagerAdapter;
@@ -131,14 +139,6 @@ public class MainActivity extends ActionBarActivity
 			public void onPageScrollStateChanged(int state) {
 			}
         });
-
-        Intent intent = getIntent();
-        if (ACTION_OPEN_MANGA.equals(intent.getAction())){
-            mViewPager.setCurrentItem(1);
-            Manga manga = intent.getParcelableExtra(SearchableActivity.EXTRA_MANGA);
-            Fragment library = mAppSectionsPagerAdapter.getItem(1);
-
-        }
 
         // Check device for Play Services APK (Notifications).
         if (checkPlayServices()) {
@@ -309,6 +309,21 @@ public class MainActivity extends ActionBarActivity
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false);
+
+        SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete)
+                searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+        searchAutoComplete.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+        searchAutoComplete.setTextColor(Color.WHITE);
+
+        ImageView close = (ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
+        close.setImageResource(R.drawable.ic_action_cancel);
+
+        ImageView mag = (ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_mag_icon);
+        mag.setImageResource(R.drawable.ic_action_search);
+
+        View searchPlate = searchView.findViewById(android.support.v7.appcompat.R.id.search_plate);
+        searchPlate.setBackgroundResource(R.drawable.textfield_searchview);
 
         return super.onCreateOptionsMenu(menu);
     }

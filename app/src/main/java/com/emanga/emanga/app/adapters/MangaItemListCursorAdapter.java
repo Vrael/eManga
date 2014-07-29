@@ -37,6 +37,12 @@ implements SectionIndexer {
         mInflater = LayoutInflater.from(context);
 
         imageLoader = ImageCacheManager.getInstance().getImageLoader();
+
+        if (c != null) {
+            mAlphaIndexer = new AlphabetIndexer(c, c.getColumnIndex(Manga.TITLE_COLUMN_NAME),
+                    " -0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        }
+
     }
 
     public int getPositionForSection(int section) {

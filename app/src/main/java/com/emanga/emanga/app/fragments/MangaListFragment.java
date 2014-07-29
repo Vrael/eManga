@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -102,7 +103,7 @@ public class MangaListFragment extends ListFragment {
         }
         return databaseHelper;
     }
-	
+
 	@Override
     public void onDestroy() {
         super.onDestroy();
