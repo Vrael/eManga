@@ -33,7 +33,7 @@ import java.util.concurrent.Callable;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private static final String DATABASE_NAME = "emanga.db";
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 6;
 
 	private RuntimeExceptionDao<Genre, String> genreRuntimeDao = null;
     private RuntimeExceptionDao<Author, String> authorRuntimeDao = null;
@@ -222,7 +222,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		final RuntimeExceptionDao<GenreManga, String> genremangaDao = getGenreMangaRunDao();
         final RuntimeExceptionDao<Author, String> authorDao = getAuthorRunDao();
         final RuntimeExceptionDao<AuthorManga, String> authormangaDao = getAuthorMangaRunDao();
-		
+
 		mangaDao.callBatchTasks(
 				new Callable<Void>(){
 					public Void call() throws Exception {
