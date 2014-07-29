@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SimpleCursorAdapter;
@@ -21,7 +19,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.FilterQueryProvider;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -31,7 +28,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.activities.MainActivity;
-import com.emanga.emanga.app.adapters.MangaItemListAdapter;
 import com.emanga.emanga.app.adapters.MangaItemListCursorAdapter;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
@@ -132,6 +128,7 @@ public class MangaListFragment extends ListFragment {
 
         setListAdapter(mAdapter);
     }
+
 	@Override
     public void onDestroy() {
         super.onDestroy();
@@ -163,11 +160,6 @@ public class MangaListFragment extends ListFragment {
         View view = inflater.inflate(R.layout.manga_fragment_list, container, false);
 
         inputSearch = (EditText) view.findViewById(R.id.search_box);
-
-        if(databaseHelper.getMangaRunDao().countOf() == 0){
-            emptyText = (TextView) view.findViewById(android.R.id.empty);
-            emptyText.setText(R.string.loading);
-        }
 
     	return view;
     }
@@ -243,22 +235,17 @@ public class MangaListFragment extends ListFragment {
                                         protected Void doInBackground(Void... voids) {
                                             Log.d(TAG, "Mangas received and parsed: " + mangas.length);
                                             getHelper().saveMangas(mangas);
-
-                                            // Manage the adapter needs to be in the Main UI
-                                            Handler mainHandler = new Handler(Looper.getMainLooper());
-
-                                            mainHandler.post(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    mAdapter.notifyDataSetChanged();
-
-                                                    // Notify for hide the progressbar
-                                                    LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                                            .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
-                                                }
-                                            });
                                             getHelper().updateMangaFTS();
                                             return null;
+                                        }
+
+                                        @Override
+                                        protected void onPostExecute(Void result) {
+                                            mAdapter.swapCursor(getHelper().getMangasWithGenres());
+
+                                            // Notify for hide the progressbar
+                                            LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                                    .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
                                         }
                                     }.execute();
 

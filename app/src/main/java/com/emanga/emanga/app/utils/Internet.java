@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class Internet {
-    // public static final String HOST = "http://mangapp.dynu.com/api/";
-    public static final String HOST = "http://192.168.2.108:3000/api/";
+    public static final String HOST = "http://mangapp.dynu.com/api/";
+    // public static final String HOST = "http://192.168.2.108:3000/api/";
 
     public static boolean checkConnection(Context context){
         ConnectivityManager conMgr = (ConnectivityManager) context
