@@ -27,6 +27,8 @@ import com.emanga.emanga.app.database.OrmliteFragment;
 import com.emanga.emanga.app.listeners.CoverListener;
 import com.emanga.emanga.app.models.Author;
 import com.emanga.emanga.app.models.Chapter;
+import com.emanga.emanga.app.models.Genre;
+import com.emanga.emanga.app.models.GenreManga;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.AddFavouriteRequest;
 import com.emanga.emanga.app.requests.DeleteFavouriteRequest;
@@ -52,7 +54,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 	 * The fragment argument representing the item ID that this fragment
 	 * represents.
 	 */
-    public static final String ARG_MANGA = "manga";
+    public static final String ARG_MANGA_ID = "manga_id";
 
 	/**
 	 * The manga content this fragment is presenting.
@@ -74,8 +76,23 @@ public class MangaDetailFragment extends OrmliteFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		if (getArguments().containsKey(ARG_MANGA)) {
-            manga = getArguments().getParcelable(ARG_MANGA);
+		if (getArguments().containsKey(ARG_MANGA_ID)) {
+            String mangaId = getArguments().getString(ARG_MANGA_ID);
+            manga = getHelper().getMangaRunDao().queryForId(mangaId);
+
+            try {
+                // Query for genres
+                QueryBuilder<Genre, String> qBg = getHelper()
+                        .getGenreRunDao().queryBuilder();
+                QueryBuilder<GenreManga, String> qBgm = getHelper()
+                        .getGenreMangaRunDao().queryBuilder();
+                qBgm.where().eq(GenreManga.MANGA_COLUMN_NAME, manga._id);
+                qBg.join(qBgm);
+                manga.genres = qBg.query();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
             request = new MangaRequest(
                     Request.Method.GET,

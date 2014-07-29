@@ -1,19 +1,29 @@
 package com.emanga.emanga.app.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.ListFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.FilterQueryProvider;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -22,8 +32,10 @@ import com.android.volley.VolleyError;
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.activities.MainActivity;
 import com.emanga.emanga.app.adapters.MangaItemListAdapter;
+import com.emanga.emanga.app.adapters.MangaItemListCursorAdapter;
 import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.database.DatabaseHelper;
+import com.emanga.emanga.app.models.Genre;
 import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.MangasRequest;
 import com.emanga.emanga.app.utils.Internet;
@@ -70,8 +82,9 @@ public class MangaListFragment extends ListFragment {
 	public interface Callbacks {
 		/**
 		 * Callback for when an item has been selected.
-		 */
-        public void onItemSelected(Manga manga);
+         * @param manga
+         */
+        public void onItemSelected(String manga);
 	}
 
 	/**
@@ -79,11 +92,14 @@ public class MangaListFragment extends ListFragment {
 	 * nothing. Used only when this fragment is not attached to an activity.
 	 */
 	private static Callbacks sMangaCallbacks = new Callbacks() {
-        public void onItemSelected(Manga manga){}
+        public void onItemSelected(String mangaId){}
 	};
 
     private MangasRequest mangasRequest;
     private boolean sync;
+
+    private EditText inputSearch;
+    private TextView emptyText;
 	
 	/**
 	 * Mandatory empty constructor for the fragment manager to instantiate the
@@ -91,8 +107,7 @@ public class MangaListFragment extends ListFragment {
 	 */
 	public MangaListFragment() {}
 
-	// private MangaItemListCursorAdapter mAdapter;
-    private MangaItemListAdapter mAdapter;
+	private MangaItemListCursorAdapter mAdapter;
 
     private DatabaseHelper databaseHelper = null;
 	
@@ -104,6 +119,19 @@ public class MangaListFragment extends ListFragment {
         return databaseHelper;
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mAdapter = new MangaItemListCursorAdapter(
+                getActivity(),
+                R.layout.manga_item_list,
+                getHelper().getMangasWithGenres(),
+                new String[]{Manga.TITLE_COLUMN_NAME, Genre.NAME_COLUMN_NAME},
+                new int[]{R.id.manga_list_title, R.id.manga_list_categories},
+                SimpleCursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+
+        setListAdapter(mAdapter);
+    }
 	@Override
     public void onDestroy() {
         super.onDestroy();
@@ -112,17 +140,9 @@ public class MangaListFragment extends ListFragment {
             databaseHelper = null;
         }
         if(mAdapter != null){
-            mAdapter.destroy();
             mAdapter = null;
         }
     }
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-        mAdapter = new MangaItemListAdapter(this.getActivity());
-        setListAdapter(mAdapter);
-	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -142,6 +162,13 @@ public class MangaListFragment extends ListFragment {
 
         View view = inflater.inflate(R.layout.manga_fragment_list, container, false);
 
+        inputSearch = (EditText) view.findViewById(R.id.search_box);
+
+        if(databaseHelper.getMangaRunDao().countOf() == 0){
+            emptyText = (TextView) view.findViewById(android.R.id.empty);
+            emptyText.setText(R.string.loading);
+        }
+
     	return view;
     }
 
@@ -150,6 +177,32 @@ public class MangaListFragment extends ListFragment {
         super.onActivityCreated(saved);
         
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        mAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+            public Cursor runQuery(CharSequence constraint) {
+                return getHelper().searchOnLibrary(constraint.toString());
+            }
+        });
+
+        inputSearch.addTextChangedListener(new TextWatcher() {
+
+            public void afterTextChanged(Editable arg0) {
+            }
+
+            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+            }
+
+            public void onTextChanged(CharSequence text, int arg1, int arg2, int arg3) {
+                Filter filter = mAdapter.getFilter();
+
+                if(text.length() == 0){
+                    filter.filter(null);
+                }
+
+                filter.filter(text.toString().replaceAll("[^a-zA-ZñÑ0-9 ]",""));
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
 	@Override
@@ -197,7 +250,6 @@ public class MangaListFragment extends ListFragment {
                                             mainHandler.post(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    mAdapter.reload();
                                                     mAdapter.notifyDataSetChanged();
 
                                                     // Notify for hide the progressbar
@@ -242,7 +294,7 @@ public class MangaListFragment extends ListFragment {
 
     @Override
     public void onPause(){
-        if(!sync){
+        if(!sync && mangasRequest != null){
             Log.d(TAG, "Canceling Request");
             mangasRequest.cancel();
             App.getInstance().mRequestQueue.cancelAll(MangasRequest.TAG + "." + TAG);
@@ -259,18 +311,25 @@ public class MangaListFragment extends ListFragment {
 		mCallbacks = sMangaCallbacks;
 	}
 
-	@Override
-	public void onListItemClick(ListView listView, View view, int position,
-			long id) {
-		super.onListItemClick(listView, view, position, id);
+    @Override
+    public void onListItemClick(ListView listView, View view, int position, long id) {
+        super.onListItemClick(listView, view, position, id);
 
-		listView.setItemChecked(position, true);
-		
-		// Notify the active callbacks interface (the activity, if the
-		// fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(mAdapter.getItem(position));
+        // Hide the keyboard if it is active
+        // if(inputSearch.isActivated()){
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(inputSearch.getWindowToken(), 0);
+        // }
 
-	}
+        listView.setItemChecked(position, true);
+
+        // Notify the active callbacks interface (the activity, if the
+        // fragment is attached to one) that an item has been selected.
+        Cursor cursor = mAdapter.getCursor();
+        cursor.moveToPosition(position);
+        mCallbacks.onItemSelected(cursor.getString(cursor.getColumnIndex(Manga.ID_COLUMN_NAME)));
+    }
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
@@ -281,7 +340,7 @@ public class MangaListFragment extends ListFragment {
 		}
 	}
 
-	/**
+    /**
 	 * Turns on activate-on-click mode. When this mode is on, list items will be
 	 * given the 'activated' state when touched.
 	 */

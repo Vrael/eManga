@@ -5,6 +5,13 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/search_box"
+        android:drawableLeft="@drawable/ic_action_search"
+        android:hint="@string/search_hint" />
+
     <com.emanga.emanga.app.views.IndexableListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

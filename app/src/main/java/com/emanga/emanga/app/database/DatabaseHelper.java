@@ -207,12 +207,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     }
 
 	public Cursor searchOnLibrary(String text){
-        if(text != null)
-		    return this.getReadableDatabase().rawQuery(
-				"SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{text + "*"});
+        if(text.length() == 0)
+            return this.getReadableDatabase().rawQuery("SELECT * FROM manga_fts", null);
         else
             return this.getReadableDatabase().rawQuery(
-                    "SELECT * FROM manga_fts", null);
+                    "SELECT * FROM manga_fts WHERE manga_fts MATCH ?", new String[]{text + "*"});
+
 	}
 
 	public void saveMangas(final Manga[] mangas){

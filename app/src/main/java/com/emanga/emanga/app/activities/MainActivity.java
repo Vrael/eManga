@@ -1,7 +1,6 @@
 package com.emanga.emanga.app.activities;
 
 
-import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,29 +8,17 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBar.Tab;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.view.Window;
-import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.emanga.emanga.app.R;
 import com.emanga.emanga.app.adapters.AppSectionsPagerAdapter;
@@ -39,7 +26,6 @@ import com.emanga.emanga.app.controllers.App;
 import com.emanga.emanga.app.fragments.LibrarySectionFragment;
 import com.emanga.emanga.app.fragments.MangaDetailFragment;
 import com.emanga.emanga.app.fragments.MangaListFragment;
-import com.emanga.emanga.app.models.Manga;
 import com.emanga.emanga.app.requests.AddGCMRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -301,30 +287,6 @@ public class MainActivity extends ActionBarActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(false);
-
-        SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete)
-                searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
-
-        searchAutoComplete.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-        searchAutoComplete.setTextColor(Color.WHITE);
-
-        ImageView close = (ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
-        close.setImageResource(R.drawable.ic_action_cancel);
-
-        ImageView mag = (ImageView) searchView.findViewById(android.support.v7.appcompat.R.id.search_mag_icon);
-        mag.setImageResource(R.drawable.ic_action_search);
-
-        View searchPlate = searchView.findViewById(android.support.v7.appcompat.R.id.search_plate);
-        searchPlate.setBackgroundResource(R.drawable.textfield_searchview);
-
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -343,11 +305,12 @@ public class MainActivity extends ActionBarActivity
 	/**
 	 * Callback method from {@link MangaListFragment.Callbacks} indicating that
 	 * the item with the given ID was selected.
-	 */
+     * @param manga
+     */
 
-    public void onItemSelected(Manga manga){
+    public void onItemSelected(String id){
         Bundle arguments = new Bundle();
-        arguments.putParcelable(MangaDetailFragment.ARG_MANGA, manga);
+        arguments.putString(MangaDetailFragment.ARG_MANGA_ID, id);
         MangaDetailFragment fragment = new MangaDetailFragment();
         fragment.setArguments(arguments);
 
