@@ -12,11 +12,11 @@
         android:layout_gravity="center"
         android:layout_weight="1" />
 
-    <uk.co.senab.photoview.PhotoView
+    <com.emanga.emanga.app.utils.PhotoView
         android:id="@+id/reader_page_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
 </LinearLayout>

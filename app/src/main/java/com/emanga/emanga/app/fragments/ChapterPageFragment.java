@@ -15,8 +15,7 @@ import com.emanga.emanga.app.cache.ImageCacheManager;
 import com.emanga.emanga.app.database.OrmliteFragment;
 import com.emanga.emanga.app.listeners.PageListener;
 import com.emanga.emanga.app.models.Page;
-
-import uk.co.senab.photoview.PhotoViewAttacher;
+import com.emanga.emanga.app.utils.PhotoViewAttacher;
 
 
 // import uk.co.senab.photoview.PhotoViewAttacher;
