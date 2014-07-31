@@ -372,19 +372,24 @@ public class MangaDetailFragment extends OrmliteFragment {
                 .setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int number = Integer.parseInt(inputNumber.getText().toString());
-                if(number > manga.numberChapters){
+                String editText = inputNumber.getText().toString();
+                if("".equals(editText)){
                     inputNumber.setBackgroundResource(R.drawable.input_error);
-                    return;
+                } else {
+                    int number = Integer.parseInt(editText);
+                    if(number > manga.numberChapters){
+                        inputNumber.setBackgroundResource(R.drawable.input_error);
+                        return;
+                    }
+
+                    Intent intent = new Intent(getActivity(), ReaderActivity.class);
+                    intent.putExtra(ReaderActivity.ACTION_OPEN_MANGA, manga);
+                    intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER_NUMBER, number);
+
+                    dialog.dismiss();
+                    Notification.enjoyReading(getActivity()).show();
+                    startActivity(intent);
                 }
-
-                Intent intent = new Intent(getActivity(), ReaderActivity.class);
-                intent.putExtra(ReaderActivity.ACTION_OPEN_MANGA, manga);
-                intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER_NUMBER, number);
-
-                dialog.dismiss();
-                Notification.enjoyReading(getActivity()).show();
-                startActivity(intent);
             }
         });
 
