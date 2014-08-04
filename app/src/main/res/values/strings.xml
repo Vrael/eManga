@@ -27,6 +27,7 @@
     <string name="chapter_not_found_error">Chapter not found</string>
     <string name="message_chapter_not_found">Not found chapter</string>
     <string name="message_reach_maximum_retries">Reached maximum retries. Download stop</string>
+    <string name="message_page_not_available">Right now this page is not available</string>
 
     <!-- Loading Messages -->
     <string name="loading">Loading&#8230;</string>

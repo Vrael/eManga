@@ -5,8 +5,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.emanga.emanga.app.R;
@@ -56,10 +58,12 @@ public class ChapterPageFragment extends OrmliteFragment {
 
         View view = inflater.inflate(R.layout.page_chapter, container, false);
         ProgressBar mProgressBar = (ProgressBar) view.findViewById(R.id.reader_progressbar);
+        TextView mTextView = (TextView) view.findViewById(R.id.reader_message);
         mImageView = (ImageView) view.findViewById(R.id.reader_page_image);
         Log.d(TAG, "Page url: " + mPage.url);
 
-        mPageListener = new PageListener(mPage, mImageView, mProgressBar, (ReaderActivity) getActivity());
+        mPageListener = new PageListener(mPage, mImageView, mProgressBar, mTextView,
+                (ReaderActivity) getActivity());
 
         request = ImageCacheManager.getInstance().getImageLoader().get(mPage.url, mPageListener);
 
