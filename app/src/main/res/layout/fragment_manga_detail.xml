@@ -28,15 +28,26 @@
 
                 <com.emanga.emanga.app.utils.CustomNetworkImageView
                     android:id="@+id/manga_cover"
-                    android:layout_width="120dp"
-                    android:layout_height="170dp"
+                    android:layout_width="114dp"
+                    android:layout_height="151dp"
                     android:scaleType="centerCrop"
                     android:layout_alignParentTop="true"
-                    android:layout_marginTop="20dp"
-                    style="@style/cover_border"
+                    android:layout_marginTop="26dp"
                     android:layout_marginBottom="14dp"
                     android:layout_marginRight="20dp"
-                    android:layout_marginLeft="20dp"/>
+                    android:layout_marginLeft="20dp"
+                    android:adjustViewBounds="true" />
+
+                <ImageView
+                    android:id="@+id/manga_cover_border"
+                    android:layout_alignParentTop="true"
+                    android:layout_width="120dp"
+                    android:layout_height="170dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="14dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="20dp"
+                    android:src="@drawable/cover_background" />
 
                 <TextView
                     android:id="@+id/manga_title"
@@ -48,7 +59,7 @@
                     android:textSize="22sp"
                     android:layout_alignTop="@id/manga_cover"
                     android:layout_toRightOf="@id/manga_cover"
-                    android:paddingRight="20dp"/>
+                    android:paddingRight="20dp" />
 
                 <TextView
                     android:id="@+id/manga_author"
@@ -99,11 +110,9 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_action_star"
                     android:background="#00ffffff"
-                    android:layout_below="@+id/manga_read"
-                    android:layout_alignRight="@+id/manga_cover"
-                    android:layout_alignEnd="@+id/manga_cover"
-                    android:layout_marginRight="42dp"
-                    android:layout_marginTop="-16dp"/>
+                    android:layout_alignBottom="@id/manga_cover_border"
+                    android:layout_marginLeft="64dp"
+                    android:layout_marginBottom="-6dp" />
 
             </RelativeLayout>
             <TableLayout
