@@ -186,8 +186,9 @@
     </ScrollView>
 
     <LinearLayout android:id="@+id/footer" android:layout_width="match_parent"
-                  android:layout_height="50dp" android:orientation="horizontal"
-                  android:layout_alignParentBottom="true" style="@style/ActionBar.Solid.Emanga">
+                  android:layout_height="46dp" android:orientation="horizontal"
+                  android:layout_alignParentBottom="true"
+                  android:background="@color/dark_red" >
 
         <ImageButton
             android:id="@+id/manga_button_start"

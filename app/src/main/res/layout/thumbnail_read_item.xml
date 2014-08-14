@@ -24,7 +24,6 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:textAlignment="center"
-            android:text="000"
             android:gravity="center"
             android:background="@android:color/white"
             android:paddingLeft="8dp"
@@ -38,7 +37,6 @@
             android:gravity="center"
             android:background="@android:color/white"
             android:maxLines="1"
-            android:text="01/01/2001"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:textSize="@dimen/thumbnail_read_item_date_size"/>

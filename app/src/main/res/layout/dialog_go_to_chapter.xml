@@ -19,7 +19,6 @@
         android:id="@+id/dialog_max_chapter_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="/ 000"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/dialog_go_to_chapter_number"/>
 
