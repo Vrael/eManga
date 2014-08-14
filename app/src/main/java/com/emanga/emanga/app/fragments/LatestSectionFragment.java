@@ -153,10 +153,13 @@ public class LatestSectionFragment extends OrmliteFragment {
 
                                     Log.e(TAG, "Error in response!");
                                     Log.e(TAG, volleyError.toString());
-                                    Notification.errorMessage(getActivity(),
-                                            getResources().getString(R.string.volley_error_title),
-                                            getResources().getString(R.string.volley_error_body),
-                                            R.drawable.sorry);
+
+                                    if(getActivity() != null) {
+                                        Notification.errorMessage(getActivity(),
+                                                getResources().getString(R.string.volley_error_title),
+                                                getResources().getString(R.string.volley_error_body),
+                                                R.drawable.sorry);
+                                    }
                                 }
                             }
                     );
