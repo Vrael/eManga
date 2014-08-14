@@ -21,8 +21,18 @@ public class CustomViewPager  extends ViewPager {
             return super.onInterceptTouchEvent(ev);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        try {
+            return super.onTouchEvent(ev);
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+        }
+        return false;
     }
 }
 
