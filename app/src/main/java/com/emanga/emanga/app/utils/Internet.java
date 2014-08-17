@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.emanga.emanga.app.controllers.App;
+
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -11,8 +13,8 @@ public class Internet {
     // public static final String HOST = "http://mangapp.dynu.com/api/";
     public static final String HOST = "http://192.168.2.108:3000/api/";
 
-    public static boolean checkConnection(Context context){
-        ConnectivityManager conMgr = (ConnectivityManager) context
+    public static boolean checkConnection(){
+        ConnectivityManager conMgr = (ConnectivityManager) App.getInstance()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo i = conMgr.getActiveNetworkInfo();

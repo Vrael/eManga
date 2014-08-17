@@ -62,7 +62,7 @@ public class HistorySectionFragment extends OrmliteFragment {
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if(Internet.checkConnection(getActivity())) {
+                if(Internet.checkConnection()) {
                     Intent intent = new Intent(getActivity(), ReaderActivity.class);
                     Chapter chapter = mAdapter.getItem(position);
                     intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter);
@@ -74,7 +74,7 @@ public class HistorySectionFragment extends OrmliteFragment {
                             getActivity(),
                             getResources().getString(R.string.volley_error_title),
                             getResources().getString(R.string.connectivity_error_body),
-                            R.drawable.stop
+                            R.drawable.alone
                     );
                 }
             }

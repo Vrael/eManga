@@ -207,7 +207,7 @@ public class LatestSectionFragment extends OrmliteFragment {
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if(Internet.checkConnection(getActivity())) {
+                if(Internet.checkConnection()) {
                     Intent intent = new Intent(getActivity(), ReaderActivity.class);
                     Chapter chapter = mAdapter.getItem(position);
                     intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, chapter);

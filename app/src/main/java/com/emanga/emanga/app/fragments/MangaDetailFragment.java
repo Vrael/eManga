@@ -137,7 +137,7 @@ public class MangaDetailFragment extends OrmliteFragment {
             buttonContinue.setVisibility(View.VISIBLE);
             buttonContinue.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    if(Internet.checkConnection(getActivity())) {
+                    if(Internet.checkConnection()) {
                         Intent intent = new Intent(getActivity(), ReaderActivity.class);
                         intent.putExtra(ReaderActivity.ACTION_OPEN_CHAPTER, lastChapterRead);
 
@@ -263,7 +263,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         holder.favourite.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (Internet.checkConnection(getActivity()) && App.userId != null) {
+                if (Internet.checkConnection() && App.userId != null) {
                     String id = App.userId.toString();
                     if(manga.favourite){
                         holder.favourite.setImageResource(R.drawable.ic_action_star);
@@ -294,7 +294,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         holder.start.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(Internet.checkConnection(getActivity())) {
+                if(Internet.checkConnection()) {
                     Intent intent = new Intent(getActivity(), ReaderActivity.class);
                     intent.putExtra(ReaderActivity.ACTION_OPEN_MANGA, manga);
 
@@ -313,7 +313,7 @@ public class MangaDetailFragment extends OrmliteFragment {
 
         holder.go.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(Internet.checkConnection(getActivity())) {
+                if(Internet.checkConnection()) {
                     goToChapterDialog(getActivity());
                 } else {
                     Notification.errorMessage(
