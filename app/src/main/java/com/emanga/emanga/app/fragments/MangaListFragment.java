@@ -241,11 +241,13 @@ public class MangaListFragment extends ListFragment {
 
                                         @Override
                                         protected void onPostExecute(Void result) {
-                                            mAdapter.swapCursor(getHelper().getMangasWithGenres());
+                                            if(mAdapter != null) {
+                                                mAdapter.swapCursor(getHelper().getMangasWithGenres());
 
-                                            // Notify for hide the progressbar
-                                            LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
-                                                    .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                                                // Notify for hide the progressbar
+                                                LocalBroadcastManager.getInstance(App.getInstance().getApplicationContext())
+                                                        .sendBroadcast(new Intent(MainActivity.ACTION_TASK_ENDED));
+                                            }
                                         }
                                     }.execute();
 
