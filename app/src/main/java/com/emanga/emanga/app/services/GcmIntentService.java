@@ -52,7 +52,7 @@ public class GcmIntentService extends OrmliteIntentService {
         // in your BroadcastReceiver.
         String messageType = gcm.getMessageType(intent);
 
-        if (!extras.isEmpty()) {  // has effect of unparcelling Bundle
+        if (extras != null && !extras.isEmpty()) {  // has effect of unparcelling Bundle
             if (GoogleCloudMessaging.
                     MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
                 sendNotification("Send error: " + extras.toString());
