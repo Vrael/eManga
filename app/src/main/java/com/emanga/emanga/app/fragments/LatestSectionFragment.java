@@ -182,7 +182,7 @@ public class LatestSectionFragment extends OrmliteFragment {
 
     @Override
     public void onPause(){
-        if(!sync){
+        if(!sync && latestChaptersRequest != null){
             Log.d(TAG, "Canceling Request");
             latestChaptersRequest.cancel();
             App.getInstance().mRequestQueue.cancelAll(MangasRequest.TAG + "." + TAG);
