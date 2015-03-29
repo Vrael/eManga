@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Mangapp</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Search</string>
+	
+    <string-array name="tabs_titles">
+        <item>Neu</item>
+        <item>Bibliothek</item>
+        <item>Lesen</item>
+    </string-array>
+
+    <!-- Ormlite -->
+    <string name="open_helper_classname">com.emanga.database.DatabaseHelper</string>
+
+    <string name="title_activity_reader">Leser</string>
+
+    <!-- Error Messages -->
+    <string name="volley_error_title">Verbindungsprobleme</string>
+    <string name="volley_error_body">Ein Samurai hat die Kommunikation abgeschnitten. Wir sind dabei das Problem zu lösen. Bitte versuchen Sie es später noch einmal.</string>
+    <string name="connectivity_error_body">Sie müssen verbunden sein um das Kapitel lesen zu können. Bitte überprüfen Sie Ihre Verbindung.</string>
+    <string name="connectivity_error_body_fav">Sie müssen verbunden sein um den Manga als Favorit zu speichern. Bitte überprüfen Sie Ihre Verbindung.</string>
+    <string name="not_found_error_title">Das Problem konnte nicht gefunden werden. </string>
+    <string name="not_found_error_body">Das Kapitel konnte nicht gefunden werden. Bitte versuchen Sie es noch einmal</string>
+    <string name="enjoy_reading">Viel Spaß beim Lesen!</string>
+    <string name="chapter_not_found_error">Kapitel nicht gefunden</string>
+    <string name="message_chapter_not_found">Kapitel nicht gefunden</string>
+    <string name="message_reach_maximum_retries">Maximale Anzahl an Versuchen erreicht. Download wurde angehalten.</string>
+    <string name="message_page_not_available"> Zurzeit ist diese Seite nicht verfügbar.</string>
+
+    <!-- Loading Messages -->
+    <string name="loading">Laden&#8230;</string>
+
+    <!-- Search Messages -->
+    <string name="search_hint">Suche Manga</string>
+    <string name="search_not_found">Keine Ergebnisse</string>
+
+    <!-- Date labels -->
+    <string name="date_today_label">Heute</string>
+    <string name="date_yesterday_label">Gestern</string>
+
+    <!-- Dialogs -->
+    <string name="go_to_chapter_label">Gehe zu Kapitel</string>
+    <string name="go_to_chapter_button_go">Los</string>
+    <string name="go_to_chapter_input_hint">bsp.: 2</string>
+
+    <!-- Info messages -->
+    <string name="message_last_chapter">Das ist das letzte Kapitel!</string>
+    <string name="message_last_page_last_chapter">Das ist die letzte Seite!</string>
+    <string name="message_chapter_try_load">Versuche nächstes Kapitel zu laden.</string>
+
+</resources>
